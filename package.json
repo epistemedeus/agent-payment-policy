@@ -1,0 +1,27 @@
+{
+  "name": "agent-payment-policy",
+  "version": "0.1.0-candidate.1",
+  "private": true,
+  "description": "Credential-free policy and evidence core for x402 and MPP buyers",
+  "type": "module",
+  "exports": "./core.mjs",
+  "bin": {
+    "agent-payment-policy": "./cli.mjs"
+  },
+  "files": [
+    "core.mjs",
+    "cli.mjs",
+    "README.md",
+    "LICENSE",
+    "SECURITY.md",
+    "docs"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test core.test.mjs",
+    "prepack": "npm test"
+  },
+  "license": "MIT"
+}
