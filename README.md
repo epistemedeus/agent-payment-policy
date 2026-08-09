@@ -1,5 +1,7 @@
 # agent-payment-policy
 
+[![verify](https://github.com/epistemedeus/agent-payment-policy/actions/workflows/ci.yml/badge.svg)](https://github.com/epistemedeus/agent-payment-policy/actions/workflows/ci.yml)
+
 Credential-free policy and evidence primitives for machine buyers that use x402
 or MPP.
 

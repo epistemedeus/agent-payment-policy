@@ -3,6 +3,13 @@
   "version": "0.1.0-candidate.1",
   "private": true,
   "description": "Credential-free policy and evidence core for x402 and MPP buyers",
+  "keywords": [
+    "x402",
+    "mpp",
+    "agentic-commerce",
+    "machine-payments",
+    "ed25519"
+  ],
   "type": "module",
   "exports": "./core.mjs",
   "bin": {
@@ -19,6 +26,14 @@
   "engines": {
     "node": ">=22"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/epistemedeus/agent-payment-policy.git"
+  },
+  "bugs": {
+    "url": "https://github.com/epistemedeus/agent-payment-policy/issues"
+  },
+  "homepage": "https://github.com/epistemedeus/agent-payment-policy#readme",
   "scripts": {
     "test": "node --test core.test.mjs",
     "prepack": "npm test"
