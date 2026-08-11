@@ -21,7 +21,9 @@ jobs:
           node-version: "24"
           registry-url: https://registry.npmjs.org
           package-manager-cache: false
+      - run: npm install --global npm@11.5.1
+      - run: node --version && npm --version
       - run: npm ci --ignore-scripts
       - run: npm test
       - run: npm audit --omit=dev
-      - run: npm publish
+      - run: npm publish --provenance
