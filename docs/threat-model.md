@@ -2,9 +2,9 @@
 
 ## Protected decisions
 
-- The machine need and full request query remain private.
-- A seller cannot replace the method, URL, amount, recipient, network, asset, or
-  expiry after planning.
+- The machine need, full request query, and JSON POST body remain private.
+- A seller cannot replace the method, URL, canonical JSON POST body, amount,
+  recipient, network, asset, or expiry after planning.
 - A payment executor cannot treat a broad budget as approval for a different
   purchase.
 - Public receipts do not contain response bodies or query values.
@@ -14,6 +14,7 @@
 - A registry with stale or misleading offer metadata.
 - A seller that changes economics between discovery and execution.
 - A caller that supplies a private-network URL or credential-bearing query.
+- A caller or executor that substitutes a JSON body after authorization.
 - A compromised executor that attempts to spend beyond one signed plan.
 - A response that is oversized, malformed, or missing required fields.
 
@@ -28,6 +29,7 @@
 ## Fail-closed integration requirements
 
 An executor must independently match the live challenge to the verified plan,
+reconstruct and match any canonical JSON request body,
 resolve and pin public IP addresses, reject cross-origin redirects, cap time and
 bytes, enforce idempotency, and reconcile the actual amount before recording a
 successful receipt.

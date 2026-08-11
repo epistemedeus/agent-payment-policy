@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { generateKeyPairSync } from "node:crypto";
+import { readFileSync } from "node:fs";
 import {
   authorizePlan,
   createIntent,
@@ -9,14 +10,17 @@ import {
 } from "./core.mjs";
 
 function usage() {
-  console.error("Usage: agent-payment-policy inspect-url <https-url> | demo");
+  console.error("Usage: agent-payment-policy inspect-url <https-url> | inspect-json-request <https-url> <body-file> | demo");
   process.exitCode = 2;
 }
 
-const [command, argument] = process.argv.slice(2);
+const [command, argument, bodyFile] = process.argv.slice(2);
 
 if (command === "inspect-url" && argument) {
   console.log(JSON.stringify(normalizeRequest("GET", argument), null, 2));
+} else if (command === "inspect-json-request" && argument && bodyFile) {
+  const body = JSON.parse(readFileSync(bodyFile, "utf8"));
+  console.log(JSON.stringify(normalizeRequest("POST", argument, { body, mediaType: "application/json" }), null, 2));
 } else if (command === "demo") {
   const now = Date.now();
   const intent = createIntent({

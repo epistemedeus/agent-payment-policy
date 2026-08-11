@@ -18,6 +18,7 @@ export const SCHEMAS = Object.freeze({
 const CREDENTIAL_QUERY_KEY = /(?:^|[-_.])(api[-_.]?key|access[-_.]?token|auth|authorization|credential|password|secret|token)(?:$|[-_.])/i;
 const PURPOSE_ID = /^[A-Za-z][A-Za-z0-9._:-]{2,127}$/;
 const PROTOCOLS = new Set(["x402", "mpp"]);
+const JSON_BODY_METHODS = new Set(["POST"]);
 const VERIFIED_AUTHORIZATION = Symbol("verified-agent-payment-policy-authorization");
 
 function fail(message) {
@@ -53,6 +54,34 @@ export function canonicalJson(value) {
 
 export function digest(value) {
   return `sha256:${createHash("sha256").update(typeof value === "string" ? value : canonicalJson(value)).digest("hex")}`;
+}
+
+function assertJsonValue(value, seen = new Set()) {
+  if (value === null || typeof value === "string" || typeof value === "boolean") return;
+  if (typeof value === "number") {
+    if (!Number.isFinite(value)) fail("request body contains a non-finite number");
+    return;
+  }
+  if (typeof value !== "object") fail("request body is not JSON compatible");
+  if (seen.has(value)) fail("request body contains a cycle");
+  seen.add(value);
+  if (Array.isArray(value)) {
+    for (const item of value) assertJsonValue(item, seen);
+  } else {
+    const prototype = Object.getPrototypeOf(value);
+    if (prototype !== Object.prototype && prototype !== null) fail("request body must contain only plain objects and arrays");
+    for (const item of Object.values(value)) assertJsonValue(item, seen);
+  }
+  seen.delete(value);
+}
+
+export function canonicalRequestBody(value) {
+  if (!record(value) && !Array.isArray(value)) fail("request body must be a JSON object or array");
+  assertJsonValue(value);
+  const serialized = canonicalJson(value);
+  const bytes = Buffer.byteLength(serialized);
+  if (bytes < 1 || bytes > 1_000_000) fail("request body must be between 1 and 1000000 bytes");
+  return serialized;
 }
 
 function publicIpv4(address) {
@@ -96,9 +125,24 @@ export function assertResolvedPublicAddresses(addresses) {
   return addresses.map((entry) => assertPublicAddress(typeof entry === "string" ? entry : entry?.address));
 }
 
-export function normalizeRequest(method, target) {
+export function normalizeRequest(method, target, options = {}) {
   const normalizedMethod = String(method || "GET").toUpperCase();
   if (!/^[A-Z]{3,12}$/.test(normalizedMethod)) fail("request method is invalid");
+  const requestOptions = record(options) || {};
+  const hasBody = Object.prototype.hasOwnProperty.call(requestOptions, "body");
+  if (JSON_BODY_METHODS.has(normalizedMethod) && !hasBody) fail(`${normalizedMethod} request body is required`);
+  if (!JSON_BODY_METHODS.has(normalizedMethod) && hasBody) fail(`${normalizedMethod} request body is not supported`);
+  let bodyBinding = null;
+  if (hasBody) {
+    const mediaType = (cleanString(requestOptions.mediaType, 200) || "application/json").toLowerCase();
+    if (mediaType !== "application/json") fail("request body mediaType must be application/json");
+    const serialized = canonicalRequestBody(requestOptions.body);
+    bodyBinding = Object.freeze({
+      mediaType,
+      bytes: Buffer.byteLength(serialized),
+      digest: digest(serialized),
+    });
+  }
   let url;
   try {
     url = new URL(target);
@@ -115,13 +159,16 @@ export function normalizeRequest(method, target) {
   if (isIP(hostname)) assertPublicAddress(hostname);
   const queryKeys = [...new Set(url.searchParams.keys())].sort();
   if (queryKeys.some((key) => CREDENTIAL_QUERY_KEY.test(key))) fail("request target contains a credential-like query key");
-  const privateBinding = `${normalizedMethod} ${url.toString()}`;
+  const privateBinding = bodyBinding
+    ? canonicalJson({ method: normalizedMethod, target: url.toString(), bodyBinding })
+    : `${normalizedMethod} ${url.toString()}`;
   return Object.freeze({
     method: normalizedMethod,
     origin: url.origin,
     pathname: url.pathname,
     queryKeys,
     publicRoute: `${normalizedMethod} ${url.origin}${url.pathname}`,
+    bodyBinding,
     bindingDigest: digest(privateBinding),
   });
 }
@@ -203,7 +250,9 @@ function normalizeOffer(offer, intent, now) {
   if (!record(offer)) fail("offer is required");
   const protocol = String(offer.protocol || "");
   if (!intent.policy.allowedProtocols.includes(protocol)) fail("offer protocol is not allowed");
-  const request = normalizeRequest(offer.method, offer.url);
+  const request = normalizeRequest(offer.method, offer.url, Object.prototype.hasOwnProperty.call(offer, "body")
+    ? { body: offer.body, mediaType: offer.mediaType }
+    : {});
   if (intent.policy.ownedOrigins.includes(request.origin)) fail("owned supply is excluded");
   const recipient = cleanString(offer.recipient, 200);
   if (!recipient) fail("offer recipient is required");
@@ -363,6 +412,7 @@ export function createReceipt({ plan, authorization, amountAtomic, transactionRe
     request: {
       publicRoute: plan.selected.request.publicRoute,
       queryKeys: plan.selected.request.queryKeys,
+      bodyBinding: plan.selected.request.bodyBinding,
       bindingDigest: plan.selected.request.bindingDigest,
     },
     settlement: {

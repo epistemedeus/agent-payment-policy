@@ -5,6 +5,7 @@ import test from "node:test";
 import {
   assertResolvedPublicAddresses,
   authorizePlan,
+  canonicalRequestBody,
   createIntent,
   createPlan,
   createReceipt,
@@ -54,6 +55,33 @@ test("binds a private full URL while exposing only route and query-key evidence"
   assert.deepEqual(request.queryKeys, ["asset", "window"]);
   assert.doesNotMatch(JSON.stringify(request), /ETH|5m/);
   assert.match(request.bindingDigest, /^sha256:/);
+  assert.equal(request.bodyBinding, null);
+});
+
+test("canonically binds a private JSON POST body without retaining body values", () => {
+  const left = normalizeRequest("POST", "https://seller.example/analyze?mode=fast", {
+    body: { types: ["A", "MX"], domain: "buyer.example" },
+    mediaType: "application/json",
+  });
+  const right = normalizeRequest("POST", "https://seller.example/analyze?mode=fast", {
+    body: { domain: "buyer.example", types: ["A", "MX"] },
+  });
+  assert.equal(left.bindingDigest, right.bindingDigest);
+  assert.deepEqual(left.bodyBinding, {
+    mediaType: "application/json",
+    bytes: Buffer.byteLength('{"domain":"buyer.example","types":["A","MX"]}'),
+    digest: right.bodyBinding.digest,
+  });
+  assert.doesNotMatch(JSON.stringify(left), /buyer\.example|\"A\"|\"MX\"/);
+  assert.notEqual(left.bindingDigest, normalizeRequest("POST", "https://seller.example/analyze?mode=fast", { body: { domain: "other.example", types: ["A", "MX"] } }).bindingDigest);
+  assert.equal(canonicalRequestBody({ z: 1, a: 2 }), '{"a":2,"z":1}');
+});
+
+test("fails closed on absent, misplaced, or invalid JSON request bodies", () => {
+  assert.throws(() => normalizeRequest("POST", "https://seller.example/analyze"), /body is required/);
+  assert.throws(() => normalizeRequest("GET", "https://seller.example/analyze", { body: {} }), /not supported/);
+  assert.throws(() => normalizeRequest("POST", "https://seller.example/analyze", { body: {}, mediaType: "text/plain" }), /application\/json/);
+  assert.throws(() => normalizeRequest("POST", "https://seller.example/analyze", { body: { value: Number.NaN } }), /non-finite/);
 });
 
 test("rejects credential URLs and private or reserved destinations", () => {
@@ -93,6 +121,25 @@ test("keeps approval separate from execution and verifies exact plan binding", (
   assert.equal(authorization.requestBindingDigest, plan.selected.request.bindingDigest);
   const tamperedSignature = `${envelope.signature[0] === "A" ? "B" : "A"}${envelope.signature.slice(1)}`;
   assert.throws(() => verifyAuthorization({ ...envelope, signature: tamperedSignature }, { publicKey, plan, now: NOW + 1_000 }), /signature/);
+});
+
+test("carries a JSON POST body digest through plan, authorization, and receipt", () => {
+  const postOffer = offer({
+    method: "POST",
+    url: "https://seller.example/analyze",
+    body: { domain: "buyer.example", types: ["A"] },
+    mediaType: "application/json",
+  });
+  const plan = createPlan({ intent: intent(), offers: [postOffer], now: NOW });
+  const { privateKey, publicKey } = generateKeyPairSync("ed25519");
+  const envelope = authorizePlan(plan, { privateKey, kid: "policy-post", now: NOW });
+  const authorization = verifyAuthorization(envelope, { publicKey, plan, now: NOW + 1_000 });
+  const receipt = createReceipt({ plan, authorization, amountAtomic: "10000", transactionReference: "0xpost", response: { data: { value: 42 } }, now: NOW + 2_000 });
+  assert.equal(plan.selected.request.method, "POST");
+  assert.match(plan.selected.request.bodyBinding.digest, /^sha256:[0-9a-f]{64}$/);
+  assert.equal(authorization.requestBindingDigest, plan.selected.request.bindingDigest);
+  assert.deepEqual(receipt.request.bodyBinding, plan.selected.request.bodyBinding);
+  assert.doesNotMatch(JSON.stringify({ plan, authorization, receipt }), /buyer\.example/);
 });
 
 test("creates public-safe receipt evidence and rejects overcharge or invalid output", () => {

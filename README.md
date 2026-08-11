@@ -12,7 +12,7 @@ This candidate package separates four concerns:
    expiry constraints.
 3. A separate Ed25519 policy identity authorizes one exact plan.
 4. A public-safe receipt binds settlement and output evidence without retaining
-   query values or response bodies.
+   query values, JSON request bodies, or response bodies.
 
 It contains no wallet executor, payment signer, facilitator credential, seller
 key, RPC key, live project identity, or default wallet path. It cannot move
@@ -24,6 +24,7 @@ funds.
 npm test
 node cli.mjs demo
 node cli.mjs inspect-url 'https://example.com/data?asset=ETH'
+node cli.mjs inspect-json-request 'https://example.com/analyze' ./request.json
 ```
 
 The demo generates an ephemeral policy key and produces a plan plus a verified
@@ -39,7 +40,11 @@ the resolved address, reject cross-origin redirects, enforce time and response
 size limits, and repeat the check after every allowed redirect.
 
 The package hashes the full private request URL for exact binding while exposing
-only method, origin, path, and query-key names in plans and receipts. See
+only method, origin, path, and query-key names in plans and receipts. For JSON
+POST requests, it canonicalizes the private object and additionally exposes only
+the media type, byte count, and SHA-256 body digest. The request body itself is
+not retained. An executor must reconstruct the canonical bytes and match the
+signed request binding before sending or paying. See
 [`docs/threat-model.md`](docs/threat-model.md) and
 [`docs/data-handling.md`](docs/data-handling.md).
 

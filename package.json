@@ -1,6 +1,6 @@
 {
   "name": "agent-payment-policy",
-  "version": "0.1.0-candidate.1",
+  "version": "0.1.0-candidate.2",
   "private": true,
   "description": "Credential-free policy and evidence core for x402 and MPP buyers",
   "keywords": [
