@@ -1,10 +1,18 @@
 {
   "name": "agent-payment-policy",
-  "version": "0.1.1",
-  "description": "Credential-free policy and evidence core for x402 and MPP buyers",
+  "version": "0.1.2",
+  "description": "Policy, authorization, and receipt evidence for AI agents buying APIs through x402 or MPP",
   "keywords": [
     "x402",
     "mpp",
+    "x402-buyer",
+    "mpp-buyer",
+    "agent-payments",
+    "payment-policy",
+    "payment-authorization",
+    "payment-receipts",
+    "buyer-policy",
+    "ai-agents",
     "agentic-commerce",
     "machine-payments",
     "ed25519"

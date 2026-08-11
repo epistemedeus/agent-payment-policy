@@ -5,6 +5,11 @@
 Credential-free policy and evidence primitives for machine buyers that use x402
 or MPP.
 
+Use it when an AI agent needs to turn a private purchase need into a bounded
+payment plan, reject incompatible x402 or MPP offers, authorize one exact
+request separately from execution, and produce a public-safe payment receipt.
+It is a buyer policy layer, not a wallet, facilitator, or seller proxy.
+
 The package separates four concerns:
 
 1. A private machine need becomes an immutable intent digest.
