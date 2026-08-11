@@ -13,7 +13,37 @@ export const SCHEMAS = Object.freeze({
   authorization: "agent-payment-policy.authorization.v1",
   authorizationJws: "agent-payment-policy.authorization-jws.v1",
   receipt: "agent-payment-policy.receipt.v1",
+  controlCoverage: "agent-payment-policy.control-coverage.v1",
 });
+
+export const PAYMENT_CONTROL_DIMENSIONS = Object.freeze([
+  "authorization",
+  "operation",
+  "chain",
+  "token_contract",
+  "recipient",
+  "amount",
+  "function",
+  "route_lock",
+  "protocol_challenge",
+  "replay",
+  "output_contract",
+  "receipt",
+  "balance_reconciliation",
+]);
+
+const PRE_SIGNATURE_CONTROLS = new Set([
+  "authorization",
+  "operation",
+  "chain",
+  "token_contract",
+  "recipient",
+  "amount",
+  "function",
+  "route_lock",
+  "protocol_challenge",
+  "replay",
+]);
 
 const CREDENTIAL_QUERY_KEY = /(?:^|[-_.])(api[-_.]?key|access[-_.]?token|auth|authorization|credential|password|secret|token)(?:$|[-_.])/i;
 const PURPOSE_ID = /^[A-Za-z][A-Za-z0-9._:-]{2,127}$/;
@@ -32,6 +62,138 @@ function record(value) {
 function cleanString(value, max = 2_000) {
   const result = typeof value === "string" ? value.trim() : "";
   return result && result.length <= max ? result : null;
+}
+
+function controlSet(values, label) {
+  if (!Array.isArray(values)) fail(`${label} must be an array`);
+  const result = new Set();
+  for (const value of values) {
+    if (!PAYMENT_CONTROL_DIMENSIONS.includes(value)) fail(`${label} contains an unsupported control: ${value}`);
+    if (result.has(value)) fail(`${label} contains a duplicate control: ${value}`);
+    result.add(value);
+  }
+  return result;
+}
+
+function coverageIdentity(input) {
+  const identity = {};
+  for (const field of ["profileId", "provider", "network", "protocol"]) {
+    const value = cleanString(input?.[field], 200);
+    if (!value) fail(`control coverage ${field} is required`);
+    identity[field] = value;
+  }
+  return identity;
+}
+
+export function createControlCoverage({
+  profileId,
+  provider,
+  network,
+  protocol,
+  required = PAYMENT_CONTROL_DIMENSIONS,
+  providerNativeVerified = [],
+  providerNativeUnsupported = [],
+  independentVerified = [],
+} = {}) {
+  const identity = coverageIdentity({ profileId, provider, network, protocol });
+  const requiredSet = controlSet(required, "required");
+  if (!requiredSet.size) fail("required must include at least one control");
+  const native = controlSet(providerNativeVerified, "providerNativeVerified");
+  const unsupported = controlSet(providerNativeUnsupported, "providerNativeUnsupported");
+  const independent = controlSet(independentVerified, "independentVerified");
+  for (const control of native) {
+    if (unsupported.has(control)) fail(`provider-native status contradicts itself for ${control}`);
+  }
+  for (const evidence of [native, unsupported, independent]) {
+    for (const control of evidence) {
+      if (!requiredSet.has(control)) fail(`coverage evidence includes an unrequired control: ${control}`);
+    }
+  }
+
+  const controls = [...requiredSet].map((control) => {
+    const nativeVerified = native.has(control);
+    const independentVerified = independent.has(control);
+    let disposition = "uncovered";
+    if (nativeVerified && independentVerified) disposition = "defense_in_depth";
+    else if (nativeVerified) disposition = "provider_native_only";
+    else if (independentVerified) disposition = "provider_neutral_only";
+    return Object.freeze({
+      control,
+      phase: PRE_SIGNATURE_CONTROLS.has(control) ? "pre_signature" : "post_settlement",
+      providerNative: nativeVerified ? "verified" : unsupported.has(control) ? "unsupported" : "unverified",
+      independent: independentVerified ? "verified" : "unverified",
+      disposition,
+    });
+  });
+  const uncovered = controls.filter(({ disposition }) => disposition === "uncovered").map(({ control }) => control);
+  const preSignatureUncovered = controls
+    .filter(({ phase, disposition }) => phase === "pre_signature" && disposition === "uncovered")
+    .map(({ control }) => control);
+  const providerNeutralRequired = controls
+    .filter(({ disposition }) => disposition === "provider_neutral_only")
+    .map(({ control }) => control);
+  const summary = Object.freeze({
+    requiredCount: controls.length,
+    defenseInDepthCount: controls.filter(({ disposition }) => disposition === "defense_in_depth").length,
+    providerNativeOnlyCount: controls.filter(({ disposition }) => disposition === "provider_native_only").length,
+    providerNeutralOnlyCount: providerNeutralRequired.length,
+    uncoveredCount: uncovered.length,
+    nativeCoverageComplete: controls.every(({ providerNative }) => providerNative === "verified"),
+    crossLayerCoverageComplete: uncovered.length === 0,
+    signingReady: preSignatureUncovered.length === 0,
+    settlementReady: uncovered.length === 0,
+  });
+  return Object.freeze({
+    schemaVersion: SCHEMAS.controlCoverage,
+    ...identity,
+    controls: Object.freeze(controls),
+    summary,
+    providerNeutralRequired: Object.freeze(providerNeutralRequired),
+    uncovered: Object.freeze(uncovered),
+    decision: uncovered.length === 0 ? "admit_with_declared_layers" : "reject_uncovered_control",
+    boundary: "Coverage records enforcement placement. It does not prove that a provider or independent control is implemented correctly.",
+  });
+}
+
+export function assertControlCoverage(report, {
+  profileId,
+  provider,
+  network,
+  protocol,
+  required = PAYMENT_CONTROL_DIMENSIONS,
+} = {}) {
+  if (!record(report) || report.schemaVersion !== SCHEMAS.controlCoverage || !Array.isArray(report.controls)) {
+    fail("control coverage report is missing or malformed");
+  }
+  const expectedIdentity = coverageIdentity({ profileId, provider, network, protocol });
+  for (const field of Object.keys(expectedIdentity)) {
+    if (cleanString(report[field], 200)?.toLowerCase() !== expectedIdentity[field].toLowerCase()) {
+      fail(`control coverage ${field} does not match the expected profile`);
+    }
+  }
+  const requiredSet = controlSet(required, "required");
+  const observed = new Set(report.controls.map(({ control }) => control));
+  if (observed.size !== report.controls.length || observed.size !== requiredSet.size ||
+      [...requiredSet].some((control) => !observed.has(control))) {
+    fail("control coverage does not exactly cover every required control");
+  }
+  const reconstructed = createControlCoverage({
+    ...expectedIdentity,
+    required: [...requiredSet],
+    providerNativeVerified: report.controls.filter(({ providerNative }) => providerNative === "verified").map(({ control }) => control),
+    providerNativeUnsupported: report.controls.filter(({ providerNative }) => providerNative === "unsupported").map(({ control }) => control),
+    independentVerified: report.controls.filter(({ independent }) => independent === "verified").map(({ control }) => control),
+  });
+  for (const expected of reconstructed.controls) {
+    const actual = report.controls.find(({ control }) => control === expected.control);
+    if (!actual || canonicalJson(actual) !== canonicalJson(expected)) fail(`control coverage claims are inconsistent for ${expected.control}`);
+  }
+  if (reconstructed.decision !== "admit_with_declared_layers" ||
+      !reconstructed.summary.signingReady || !reconstructed.summary.settlementReady ||
+      reconstructed.uncovered.length !== 0) {
+    fail("control coverage leaves one or more required controls uncovered");
+  }
+  return reconstructed;
 }
 
 function atomic(value, label) {

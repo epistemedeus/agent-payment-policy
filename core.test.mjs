@@ -4,13 +4,16 @@ import test from "node:test";
 
 import {
   assertResolvedPublicAddresses,
+  assertControlCoverage,
   authorizePlan,
   canonicalRequestBody,
+  createControlCoverage,
   createIntent,
   createPlan,
   createReceipt,
   normalizeRequest,
   verifyAuthorization,
+  PAYMENT_CONTROL_DIMENSIONS,
 } from "./core.mjs";
 
 const NOW = Date.parse("2026-08-09T20:00:00.000Z");
@@ -90,6 +93,87 @@ test("rejects credential URLs and private or reserved destinations", () => {
   assert.throws(() => normalizeRequest("GET", "https://localhost/data"), /local or private/);
   assert.throws(() => assertResolvedPublicAddresses(["10.0.0.1"]), /private, local, reserved/);
   assert.deepEqual(assertResolvedPublicAddresses(["1.1.1.1", "2606:4700:4700::1111"]), ["1.1.1.1", "2606:4700:4700::1111"]);
+});
+
+test("admits a complete provider-neutral control profile without an opaque score", () => {
+  const coverage = createControlCoverage({
+    profileId: "tempo-pathusd",
+    provider: "example-signer",
+    network: "eip155:42431",
+    protocol: "mpp-tempo-charge",
+    providerNativeUnsupported: ["operation", "chain", "token_contract", "recipient", "amount", "function"],
+    independentVerified: [...PAYMENT_CONTROL_DIMENSIONS],
+  });
+  const verified = assertControlCoverage(coverage, {
+    profileId: "tempo-pathusd",
+    provider: "example-signer",
+    network: "eip155:42431",
+    protocol: "mpp-tempo-charge",
+  });
+  assert.equal(verified.summary.providerNeutralOnlyCount, 13);
+  assert.equal(verified.summary.signingReady, true);
+  assert.equal(verified.summary.settlementReady, true);
+  assert.equal(Object.isFrozen(coverage), true);
+  assert.equal(Object.isFrozen(coverage.controls), true);
+});
+
+test("reports defense in depth and rejects uncovered or contradictory controls", () => {
+  const mixed = createControlCoverage({
+    profileId: "base-usdc",
+    provider: "example-signer",
+    network: "eip155:8453",
+    protocol: "x402",
+    providerNativeVerified: ["operation", "chain", "token_contract", "recipient", "amount", "function"],
+    independentVerified: [...PAYMENT_CONTROL_DIMENSIONS],
+  });
+  assert.equal(mixed.summary.defenseInDepthCount, 6);
+  assert.equal(mixed.summary.providerNeutralOnlyCount, 7);
+
+  const incomplete = createControlCoverage({
+    profileId: "base-usdc",
+    provider: "example-signer",
+    network: "eip155:8453",
+    protocol: "x402",
+    independentVerified: PAYMENT_CONTROL_DIMENSIONS.filter((control) => control !== "amount"),
+  });
+  assert.throws(() => assertControlCoverage(incomplete, {
+    profileId: "base-usdc",
+    provider: "example-signer",
+    network: "eip155:8453",
+    protocol: "x402",
+  }), /uncovered/);
+  assert.throws(() => createControlCoverage({
+    profileId: "base-usdc",
+    provider: "example-signer",
+    network: "eip155:8453",
+    protocol: "x402",
+    providerNativeVerified: ["amount"],
+    providerNativeUnsupported: ["amount"],
+  }), /contradicts/);
+  assert.throws(() => createControlCoverage({
+    profileId: "empty",
+    provider: "example-signer",
+    network: "eip155:8453",
+    protocol: "x402",
+    required: [],
+  }), /at least one control/);
+});
+
+test("rejects a control report whose declared disposition was altered", () => {
+  const coverage = createControlCoverage({
+    profileId: "base-usdc",
+    provider: "example-signer",
+    network: "eip155:8453",
+    protocol: "mpp",
+    independentVerified: [...PAYMENT_CONTROL_DIMENSIONS],
+  });
+  const controls = coverage.controls.map((entry, index) => index === 0 ? { ...entry, disposition: "defense_in_depth" } : entry);
+  assert.throws(() => assertControlCoverage({ ...coverage, controls }, {
+    profileId: "base-usdc",
+    provider: "example-signer",
+    network: "eip155:8453",
+    protocol: "mpp",
+  }), /inconsistent/);
 });
 
 test("selects the cheapest policy-compliant offer and preserves every kill", () => {

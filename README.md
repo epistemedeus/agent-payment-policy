@@ -19,6 +19,12 @@ The package separates four concerns:
 4. A public-safe receipt binds settlement and output evidence without retaining
    query values, JSON request bodies, or response bodies.
 
+It also exposes a wallet-free control-coverage gate for delegated signers. A
+settlement adapter can declare where each of thirteen required controls is
+enforced, then reject the profile unless every pre-signature and
+post-settlement control is covered by the provider, the independent buyer, or
+both. The result uses explicit dispositions rather than a security score.
+
 It contains no wallet executor, payment signer, facilitator credential, seller
 key, RPC key, live project identity, or default wallet path. It cannot move
 funds.
@@ -34,6 +40,36 @@ npx agent-payment-policy inspect-json-request 'https://example.com/analyze' ./re
 
 The demo generates an ephemeral policy key and produces a plan plus a verified
 authorization. It performs no network request and no payment.
+
+## Gate a delegated signer
+
+```js
+import {
+  assertControlCoverage,
+  createControlCoverage,
+  PAYMENT_CONTROL_DIMENSIONS,
+} from "agent-payment-policy";
+
+const coverage = createControlCoverage({
+  profileId: "tempo-pathusd",
+  provider: "your-signer",
+  network: "eip155:42431",
+  protocol: "mpp-tempo-charge",
+  independentVerified: [...PAYMENT_CONTROL_DIMENSIONS],
+});
+
+assertControlCoverage(coverage, {
+  profileId: "tempo-pathusd",
+  provider: "your-signer",
+  network: "eip155:42431",
+  protocol: "mpp-tempo-charge",
+});
+```
+
+Call the assertion before account access, wallet loading, signing, or payment.
+The report is evidence about enforcement placement, not proof that a declared
+control is implemented correctly. Bind profiles in reviewed code, test each
+control against drift, and retain the underlying acceptance evidence.
 
 ## Safety boundary
 
@@ -58,4 +94,6 @@ signed request binding before sending or paying. See
 This is a reference implementation under active design review. It does not
 claim adoption, adaptive supplier selection, wallet security, or transaction
 execution. A separately reviewed adapter can use the verified authorization as
-one input to its own signing policy.
+one input to its own signing policy. A control-coverage report does not make a
+provider trustworthy by declaration; the integration remains responsible for
+proving every claimed enforcement path.
