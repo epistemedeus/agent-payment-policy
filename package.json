@@ -12,7 +12,7 @@
   "type": "module",
   "exports": "./core.mjs",
   "bin": {
-    "agent-payment-policy": "./cli.mjs"
+    "agent-payment-policy": "cli.mjs"
   },
   "files": [
     "core.mjs",
