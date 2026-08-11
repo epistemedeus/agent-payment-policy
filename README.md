@@ -5,7 +5,7 @@
 Credential-free policy and evidence primitives for machine buyers that use x402
 or MPP.
 
-This candidate package separates four concerns:
+The package separates four concerns:
 
 1. A private machine need becomes an immutable intent digest.
 2. External offers are filtered by exact request, value, capital, ownership, and
@@ -21,10 +21,10 @@ funds.
 ## Try it
 
 ```bash
-npm test
-node cli.mjs demo
-node cli.mjs inspect-url 'https://example.com/data?asset=ETH'
-node cli.mjs inspect-json-request 'https://example.com/analyze' ./request.json
+npm install agent-payment-policy
+npx agent-payment-policy demo
+npx agent-payment-policy inspect-url 'https://example.com/data?asset=ETH'
+npx agent-payment-policy inspect-json-request 'https://example.com/analyze' ./request.json
 ```
 
 The demo generates an ephemeral policy key and produces a plan plus a verified
@@ -48,7 +48,7 @@ signed request binding before sending or paying. See
 [`docs/threat-model.md`](docs/threat-model.md) and
 [`docs/data-handling.md`](docs/data-handling.md).
 
-## Candidate status
+## Status
 
 This is a reference implementation under active design review. It does not
 claim adoption, adaptive supplier selection, wallet security, or transaction

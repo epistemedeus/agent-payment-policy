@@ -1,7 +1,6 @@
 {
   "name": "agent-payment-policy",
-  "version": "0.1.0-candidate.2",
-  "private": true,
+  "version": "0.1.0",
   "description": "Credential-free policy and evidence core for x402 and MPP buyers",
   "keywords": [
     "x402",
@@ -34,6 +33,9 @@
     "url": "https://github.com/epistemedeus/agent-payment-policy/issues"
   },
   "homepage": "https://github.com/epistemedeus/agent-payment-policy#readme",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "test": "node --test core.test.mjs",
     "prepack": "npm test"
