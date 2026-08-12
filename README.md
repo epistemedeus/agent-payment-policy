@@ -140,3 +140,52 @@ execution. A separately reviewed adapter can use the verified authorization as
 one input to its own signing policy. A control-coverage report does not make a
 provider trustworthy by declaration; the integration remains responsible for
 proving every claimed enforcement path.
+
+## Standardize wallet policy observations
+
+Version 0.5.0 adds a provider-neutral observation format for the exact wallet
+policy problem this project encountered on both Tempo and Solana. Provider
+policies denied useful wrong-action cases while still signing a transaction
+that duplicated an approved action. The format therefore treats `operation`
+and `execution_shape` as separate controls.
+
+Create a safe offline draft matrix:
+
+```bash
+agent-payment-policy wallet-policy-init \
+  provider-lab "Example Wallet" eip155:8453 x402 \
+  > wallet-policy-observations.json
+```
+
+Replace each `not_tested` row with the high-level result from your bounded
+provider test. Keep only the standardized case, `allowed`, `denied`, or
+`error`, the denial class, and an optional short safe code. Do not place API
+keys, wallet IDs, signatures, transaction bodies, raw provider messages, or
+other evidence payloads in the file.
+
+Evaluate it locally with no network or wallet access:
+
+```bash
+agent-payment-policy wallet-policy-check wallet-policy-observations.json
+```
+
+The result is `conformant`, `partial`, or `unsafe`, with no opaque numerical
+score. Only `actual=denied` plus `denialClass=policy` receives provider-native
+credit. SDK validation errors and generic provider failures remain
+inconclusive. The required `duplicate_approved_action` case must be explicitly
+policy-denied for exact execution shape to pass.
+
+Print the portable JSON Schemas:
+
+```bash
+agent-payment-policy wallet-policy-schema
+```
+
+The core exports are `createWalletPolicyObservationDraft`,
+`evaluateWalletPolicyObservations`, `normalizeWalletPolicyObservations`,
+`WALLET_POLICY_OBSERVATION_CASES`, `walletPolicyObservationInputSchema`, and
+`walletPolicyObservationOutputSchema`.
+
+These APIs evaluate caller-supplied observations. They do not execute or prove
+the provider tests, access a wallet, verify a signature, sign, broadcast, or
+settle a payment.

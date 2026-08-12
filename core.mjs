@@ -16,6 +16,8 @@ export const SCHEMAS = Object.freeze({
   executionAuthorizationJws: "agent-payment-policy.execution-authorization-jws.v1",
   receipt: "agent-payment-policy.receipt.v1",
   controlCoverage: "agent-payment-policy.control-coverage.v2",
+  walletPolicyObservation: "agent-payment-policy.wallet-policy-observation.v1",
+  walletPolicyObservationReport: "agent-payment-policy.wallet-policy-observation-report.v1",
 });
 
 export const PAYMENT_CONTROL_DIMENSIONS = Object.freeze([
@@ -48,6 +50,36 @@ const PRE_SIGNATURE_CONTROLS = new Set([
   "protocol_challenge",
   "replay",
 ]);
+
+export const WALLET_POLICY_OBSERVATION_CASES = Object.freeze({
+  intended: Object.freeze({ expected: "allow", control: null, required: true }),
+  missing_authorization: Object.freeze({ expected: "deny", control: "authorization", required: true }),
+  wrong_operation: Object.freeze({ expected: "deny", control: "operation", required: true }),
+  duplicate_approved_action: Object.freeze({ expected: "deny", control: "execution_shape", required: true }),
+  wrong_chain: Object.freeze({ expected: "deny", control: "chain", required: true }),
+  wrong_token_contract_or_program: Object.freeze({ expected: "deny", control: "token_contract", required: true }),
+  wrong_recipient: Object.freeze({ expected: "deny", control: "recipient", required: true }),
+  wrong_amount: Object.freeze({ expected: "deny", control: "amount", required: true }),
+  wrong_function_or_instruction: Object.freeze({ expected: "deny", control: "function", required: true }),
+  wrong_route_or_offer: Object.freeze({ expected: "deny", control: "route_lock", required: true }),
+  changed_protocol_challenge: Object.freeze({ expected: "deny", control: "protocol_challenge", required: true }),
+  replay_or_reuse: Object.freeze({ expected: "deny", control: "replay", required: true }),
+  reordered_approved_actions: Object.freeze({ expected: "deny", control: "execution_shape", required: false }),
+  mixed_unapproved_action: Object.freeze({ expected: "deny", control: "execution_shape", required: false }),
+  wrong_fee_asset: Object.freeze({ expected: "deny", control: "execution_shape", required: false }),
+  missing_validity: Object.freeze({ expected: "deny", control: "execution_shape", required: false }),
+});
+
+export const WALLET_POLICY_OBSERVATION_CASE_NAMES = Object.freeze(Object.keys(WALLET_POLICY_OBSERVATION_CASES));
+const REQUIRED_WALLET_POLICY_CASES = Object.freeze(
+  Object.entries(WALLET_POLICY_OBSERVATION_CASES)
+    .filter(([, definition]) => definition.required)
+    .map(([name]) => name),
+);
+const WALLET_POLICY_OUTCOMES = new Set(["allowed", "denied", "error"]);
+const WALLET_POLICY_DENIAL_CLASSES = new Set(["none", "policy", "validation", "provider"]);
+const WALLET_POLICY_SAFE_ID = /^[A-Za-z0-9][A-Za-z0-9._:/+ -]{0,127}$/;
+const WALLET_POLICY_SAFE_CODE = /^[A-Za-z0-9][A-Za-z0-9._:/-]{0,63}$/;
 
 const CREDENTIAL_QUERY_KEY = /(?:^|[-_.])(api[-_.]?key|access[-_.]?token|auth|authorization|credential|password|secret|token)(?:$|[-_.])/i;
 const PURPOSE_ID = /^[A-Za-z][A-Za-z0-9._:-]{2,127}$/;
@@ -199,6 +231,237 @@ export function assertControlCoverage(report, {
     fail("control coverage leaves one or more required controls uncovered");
   }
   return reconstructed;
+}
+
+function strictWalletPolicyRecord(value, label, allowedKeys) {
+  if (!record(value)) fail(`${label} must be an object`);
+  const extras = Object.keys(value).filter((key) => !allowedKeys.has(key));
+  if (extras.length) fail(`${label} contains unsupported fields: ${extras.join(", ")}`);
+  return value;
+}
+
+function walletPolicyIdentifier(value, label) {
+  const normalized = typeof value === "string" ? value.trim() : "";
+  if (!WALLET_POLICY_SAFE_ID.test(normalized)) fail(`${label} must be 1-128 safe printable characters`);
+  return normalized;
+}
+
+function normalizeWalletPolicyObservation(value, index) {
+  const observation = strictWalletPolicyRecord(
+    value,
+    `observations[${index}]`,
+    new Set(["case", "actual", "denialClass", "code"]),
+  );
+  if (!Object.hasOwn(WALLET_POLICY_OBSERVATION_CASES, observation.case)) {
+    fail(`observations[${index}].case is unsupported`);
+  }
+  if (!WALLET_POLICY_OUTCOMES.has(observation.actual)) fail(`observations[${index}].actual is unsupported`);
+  const denialClass = observation.denialClass ?? "none";
+  if (!WALLET_POLICY_DENIAL_CLASSES.has(denialClass)) fail(`observations[${index}].denialClass is unsupported`);
+  if (observation.actual === "allowed" && denialClass !== "none") {
+    fail(`observations[${index}] allowed outcomes require denialClass none`);
+  }
+  if (observation.actual === "denied" && denialClass === "none") {
+    fail(`observations[${index}] denied outcomes require an explicit denialClass`);
+  }
+  if (observation.actual === "error" && !["validation", "provider"].includes(denialClass)) {
+    fail(`observations[${index}] error outcomes require validation or provider denialClass`);
+  }
+  if (observation.code !== undefined && (typeof observation.code !== "string" || !WALLET_POLICY_SAFE_CODE.test(observation.code))) {
+    fail(`observations[${index}].code must be 1-64 safe identifier characters`);
+  }
+  return Object.freeze({
+    case: observation.case,
+    actual: observation.actual,
+    denialClass,
+    ...(observation.code ? { code: observation.code } : {}),
+  });
+}
+
+export function normalizeWalletPolicyObservations(input) {
+  const value = strictWalletPolicyRecord(
+    input,
+    "request",
+    new Set(["schemaVersion", "profileId", "provider", "network", "protocol", "observations"]),
+  );
+  if (value.schemaVersion !== undefined && value.schemaVersion !== SCHEMAS.walletPolicyObservation) {
+    fail(`unsupported wallet policy observation schema: ${value.schemaVersion}`);
+  }
+  if (!Array.isArray(value.observations) || value.observations.length < 1 || value.observations.length > 16) {
+    fail("observations must contain 1-16 standardized cases");
+  }
+  const observations = value.observations.map(normalizeWalletPolicyObservation);
+  const seen = new Set();
+  for (const observation of observations) {
+    if (seen.has(observation.case)) fail(`observations contains duplicate case: ${observation.case}`);
+    seen.add(observation.case);
+  }
+  return Object.freeze({
+    schemaVersion: SCHEMAS.walletPolicyObservation,
+    profileId: walletPolicyIdentifier(value.profileId, "profileId"),
+    provider: walletPolicyIdentifier(value.provider, "provider"),
+    network: walletPolicyIdentifier(value.network, "network"),
+    protocol: walletPolicyIdentifier(value.protocol, "protocol"),
+    observations: Object.freeze(observations),
+  });
+}
+
+function walletPolicyCaseDisposition(observation) {
+  const definition = WALLET_POLICY_OBSERVATION_CASES[observation.case];
+  const expectationMet = definition.expected === "allow"
+    ? observation.actual === "allowed"
+    : observation.actual === "denied";
+  const providerNativeVerified = definition.control !== null
+    && observation.actual === "denied"
+    && observation.denialClass === "policy";
+  let finding = "expected_behavior";
+  if (!expectationMet) {
+    finding = observation.actual === "allowed" ? "unsafe_allowed" : "expected_behavior_not_proven";
+  } else if (definition.expected === "deny" && !providerNativeVerified) {
+    finding = "denied_outside_provider_policy";
+  }
+  return Object.freeze({
+    ...observation,
+    expected: definition.expected,
+    control: definition.control,
+    required: definition.required,
+    expectationMet,
+    providerNativeVerified,
+    finding,
+  });
+}
+
+export function evaluateWalletPolicyObservations(input, { now = Date.now() } = {}) {
+  if (!Number.isFinite(now)) fail("now must be a finite epoch millisecond value");
+  const normalized = normalizeWalletPolicyObservations(input);
+  const results = normalized.observations.map(walletPolicyCaseDisposition);
+  const byCase = new Map(results.map((result) => [result.case, result]));
+  const missingRequiredCases = REQUIRED_WALLET_POLICY_CASES.filter((name) => !byCase.has(name));
+  const unsafeCases = results
+    .filter((result) => result.finding === "unsafe_allowed" || (result.case === "intended" && result.actual === "denied"))
+    .map((result) => result.case);
+  const inconclusiveCases = results
+    .filter((result) => result.finding === "expected_behavior_not_proven" || result.finding === "denied_outside_provider_policy")
+    .map((result) => result.case);
+  const preSignatureControls = PAYMENT_CONTROL_DIMENSIONS.filter((control) => PRE_SIGNATURE_CONTROLS.has(control));
+  const providerNativeVerified = preSignatureControls.filter((control) =>
+    results.some((result) => result.control === control && result.providerNativeVerified),
+  );
+  const providerNativeUnverified = preSignatureControls.filter((control) => !providerNativeVerified.includes(control));
+  const executionShapeCases = results.filter((result) => result.control === "execution_shape");
+  const exactShapePassed = executionShapeCases.length > 0
+    && executionShapeCases.every((result) => result.providerNativeVerified)
+    && byCase.has("duplicate_approved_action");
+  const complete = missingRequiredCases.length === 0;
+  let decision = "partial";
+  if (unsafeCases.length) decision = "unsafe";
+  else if (complete && inconclusiveCases.length === 0 && exactShapePassed) decision = "conformant";
+
+  return Object.freeze({
+    schemaVersion: SCHEMAS.walletPolicyObservationReport,
+    evaluatedAt: new Date(now).toISOString(),
+    profile: Object.freeze({
+      profileId: normalized.profileId,
+      provider: normalized.provider,
+      network: normalized.network,
+      protocol: normalized.protocol,
+    }),
+    decision,
+    complete,
+    exactShapePassed,
+    results: Object.freeze(results),
+    providerNativeVerified: Object.freeze(providerNativeVerified),
+    providerNativeUnverified: Object.freeze(providerNativeUnverified),
+    notEvaluatedByWalletPolicy: Object.freeze(["output_contract", "receipt", "balance_reconciliation"]),
+    missingRequiredCases: Object.freeze(missingRequiredCases),
+    unsafeCases: Object.freeze(unsafeCases),
+    inconclusiveCases: Object.freeze(inconclusiveCases),
+    boundary: Object.freeze({
+      credentialsAccepted: false,
+      walletAccessed: false,
+      signatureVerified: false,
+      transactionBroadcast: false,
+      statement: "Evaluates caller-supplied standardized observations. It does not independently execute or verify provider policy tests.",
+    }),
+  });
+}
+
+export function createWalletPolicyObservationDraft({ profileId, provider, network, protocol } = {}) {
+  const identity = {
+    profileId: walletPolicyIdentifier(profileId, "profileId"),
+    provider: walletPolicyIdentifier(provider, "provider"),
+    network: walletPolicyIdentifier(network, "network"),
+    protocol: walletPolicyIdentifier(protocol, "protocol"),
+  };
+  return Object.freeze({
+    schemaVersion: SCHEMAS.walletPolicyObservation,
+    ...identity,
+    observations: Object.freeze(WALLET_POLICY_OBSERVATION_CASE_NAMES.map((caseName) => Object.freeze({
+      case: caseName,
+      actual: "error",
+      denialClass: "provider",
+      code: "not_tested",
+    }))),
+  });
+}
+
+export function walletPolicyObservationInputSchema() {
+  return {
+    $schema: "https://json-schema.org/draft/2020-12/schema",
+    title: "Agent payment wallet policy observations",
+    type: "object",
+    properties: {
+      schemaVersion: { type: "string", const: SCHEMAS.walletPolicyObservation },
+      profileId: { type: "string", minLength: 1, maxLength: 128 },
+      provider: { type: "string", minLength: 1, maxLength: 128 },
+      network: { type: "string", minLength: 1, maxLength: 128 },
+      protocol: { type: "string", minLength: 1, maxLength: 128 },
+      observations: {
+        type: "array",
+        minItems: 1,
+        maxItems: 16,
+        items: {
+          type: "object",
+          properties: {
+            case: { type: "string", enum: [...WALLET_POLICY_OBSERVATION_CASE_NAMES] },
+            actual: { type: "string", enum: ["allowed", "denied", "error"] },
+            denialClass: { type: "string", enum: ["none", "policy", "validation", "provider"] },
+            code: { type: "string", pattern: "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,63}$" },
+          },
+          required: ["case", "actual", "denialClass"],
+          additionalProperties: false,
+        },
+      },
+    },
+    required: ["schemaVersion", "profileId", "provider", "network", "protocol", "observations"],
+    additionalProperties: false,
+  };
+}
+
+export function walletPolicyObservationOutputSchema() {
+  return {
+    $schema: "https://json-schema.org/draft/2020-12/schema",
+    title: "Agent payment wallet policy observation report",
+    type: "object",
+    properties: {
+      schemaVersion: { type: "string", const: SCHEMAS.walletPolicyObservationReport },
+      evaluatedAt: { type: "string", format: "date-time" },
+      profile: { type: "object" },
+      decision: { type: "string", enum: ["conformant", "partial", "unsafe"] },
+      complete: { type: "boolean" },
+      exactShapePassed: { type: "boolean" },
+      results: { type: "array" },
+      providerNativeVerified: { type: "array", items: { type: "string" } },
+      providerNativeUnverified: { type: "array", items: { type: "string" } },
+      notEvaluatedByWalletPolicy: { type: "array", items: { type: "string" } },
+      missingRequiredCases: { type: "array", items: { type: "string" } },
+      unsafeCases: { type: "array", items: { type: "string" } },
+      inconclusiveCases: { type: "array", items: { type: "string" } },
+      boundary: { type: "object" },
+    },
+    required: ["schemaVersion", "evaluatedAt", "profile", "decision", "complete", "exactShapePassed", "results", "providerNativeVerified", "providerNativeUnverified", "notEvaluatedByWalletPolicy", "missingRequiredCases", "unsafeCases", "inconclusiveCases", "boundary"],
+    additionalProperties: false,
+  };
 }
 
 function atomic(value, label) {

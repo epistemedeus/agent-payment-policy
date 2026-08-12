@@ -12,10 +12,16 @@ import {
   createIntent,
   createPlan,
   createReceipt,
+  createWalletPolicyObservationDraft,
+  evaluateWalletPolicyObservations,
   normalizeRequest,
+  normalizeWalletPolicyObservations,
   verifyAuthorization,
   verifyExecutionAuthorization,
   PAYMENT_CONTROL_DIMENSIONS,
+  WALLET_POLICY_OBSERVATION_CASES,
+  walletPolicyObservationInputSchema,
+  walletPolicyObservationOutputSchema,
 } from "./core.mjs";
 
 const NOW = Date.parse("2026-08-09T20:00:00.000Z");
@@ -159,6 +165,117 @@ test("reports defense in depth and rejects uncovered or contradictory controls",
     protocol: "x402",
     required: [],
   }), /at least one control/);
+});
+
+const walletObservation = (caseName, actual, denialClass = actual === "allowed" ? "none" : "policy") => ({
+  case: caseName,
+  actual,
+  denialClass,
+  code: actual === "allowed" ? "signed" : "policy_violation",
+});
+
+const completeWalletObservationMatrix = () => Object.entries(WALLET_POLICY_OBSERVATION_CASES)
+  .filter(([, definition]) => definition.required)
+  .map(([caseName, definition]) => walletObservation(caseName, definition.expected === "allow" ? "allowed" : "denied"));
+
+const walletObservationInput = (observations = completeWalletObservationMatrix()) => ({
+  schemaVersion: "agent-payment-policy.wallet-policy-observation.v1",
+  profileId: "privy-solana-lab",
+  provider: "Privy",
+  network: "solana:mainnet",
+  protocol: "x402",
+  observations,
+});
+
+test("evaluates a complete explicit provider-policy matrix without an opaque score", () => {
+  const report = evaluateWalletPolicyObservations(walletObservationInput(), { now: NOW });
+  assert.equal(report.schemaVersion, "agent-payment-policy.wallet-policy-observation-report.v1");
+  assert.equal(report.evaluatedAt, new Date(NOW).toISOString());
+  assert.equal(report.decision, "conformant");
+  assert.equal(report.complete, true);
+  assert.equal(report.exactShapePassed, true);
+  assert.equal(report.providerNativeVerified.length, 11);
+  assert.equal("score" in report, false);
+  assert.equal(report.boundary.walletAccessed, false);
+});
+
+test("reports duplicated approved action as unsafe execution shape", () => {
+  const matrix = completeWalletObservationMatrix().map((row) =>
+    row.case === "duplicate_approved_action" ? walletObservation(row.case, "allowed") : row,
+  );
+  const report = evaluateWalletPolicyObservations(walletObservationInput(matrix), { now: NOW });
+  assert.equal(report.decision, "unsafe");
+  assert.equal(report.exactShapePassed, false);
+  assert.deepEqual(report.unsafeCases, ["duplicate_approved_action"]);
+  assert.ok(report.providerNativeUnverified.includes("execution_shape"));
+});
+
+test("distinguishes a blocked intended action from an unrun intended action", () => {
+  const denied = evaluateWalletPolicyObservations(walletObservationInput([
+    walletObservation("intended", "denied", "policy"),
+  ]), { now: NOW });
+  assert.equal(denied.decision, "unsafe");
+  assert.deepEqual(denied.unsafeCases, ["intended"]);
+
+  const unrun = evaluateWalletPolicyObservations(walletObservationInput([
+    walletObservation("intended", "error", "provider"),
+  ]), { now: NOW });
+  assert.equal(unrun.decision, "partial");
+  assert.deepEqual(unrun.unsafeCases, []);
+});
+
+test("does not credit validation or generic provider failures as native policy", () => {
+  const matrix = completeWalletObservationMatrix().map((row) => {
+    if (row.case === "wrong_chain") return walletObservation(row.case, "error", "validation");
+    if (row.case === "wrong_amount") return walletObservation(row.case, "denied", "provider");
+    return row;
+  });
+  const report = evaluateWalletPolicyObservations(walletObservationInput(matrix), { now: NOW });
+  assert.equal(report.decision, "partial");
+  assert.ok(report.providerNativeUnverified.includes("chain"));
+  assert.ok(report.providerNativeUnverified.includes("amount"));
+  assert.ok(report.inconclusiveCases.includes("wrong_chain"));
+  assert.ok(report.inconclusiveCases.includes("wrong_amount"));
+});
+
+test("normalizes only safe unique observations and rejects raw evidence fields", () => {
+  const normalized = normalizeWalletPolicyObservations(walletObservationInput());
+  assert.equal(Object.isFrozen(normalized), true);
+  assert.equal(Object.isFrozen(normalized.observations), true);
+  assert.throws(() => normalizeWalletPolicyObservations({ ...walletObservationInput(), apiKey: "secret" }), /unsupported fields/);
+  assert.throws(() => normalizeWalletPolicyObservations(walletObservationInput([
+    walletObservation("intended", "allowed"),
+    walletObservation("intended", "allowed"),
+  ])), /duplicate case/);
+  assert.throws(() => normalizeWalletPolicyObservations(walletObservationInput([{
+    ...walletObservation("wrong_amount", "denied"),
+    message: "raw provider response",
+  }])), /unsupported fields/);
+});
+
+test("creates a valid safe draft whose untested cases remain partial", () => {
+  const draft = createWalletPolicyObservationDraft({
+    profileId: "provider-lab",
+    provider: "Example Wallet",
+    network: "eip155:8453",
+    protocol: "x402",
+  });
+  assert.equal(draft.observations.length, 16);
+  assert.ok(draft.observations.every((row) => row.actual === "error" && row.denialClass === "provider" && row.code === "not_tested"));
+  const report = evaluateWalletPolicyObservations(draft, { now: NOW });
+  assert.equal(report.decision, "partial");
+  assert.equal(report.complete, true);
+  assert.equal(report.providerNativeVerified.length, 0);
+});
+
+test("publishes strict input and output schemas for portable integrations", () => {
+  const inputSchema = walletPolicyObservationInputSchema();
+  const outputSchema = walletPolicyObservationOutputSchema();
+  assert.equal(inputSchema.properties.schemaVersion.const, "agent-payment-policy.wallet-policy-observation.v1");
+  assert.equal(inputSchema.properties.observations.maxItems, 16);
+  assert.equal(inputSchema.additionalProperties, false);
+  assert.equal(outputSchema.properties.schemaVersion.const, "agent-payment-policy.wallet-policy-observation-report.v1");
+  assert.equal(outputSchema.additionalProperties, false);
 });
 
 test("rejects a control report whose declared disposition was altered", () => {

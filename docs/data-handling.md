@@ -18,3 +18,9 @@ seller secrets.
 
 Applications remain responsible for local-file permissions, ledger retention,
 transaction-reference privacy, and any logging performed outside this module.
+
+Wallet-policy observation files contain only a safe profile label, provider,
+network, protocol, standardized case names, high-level outcomes, denial class,
+and an optional bounded code. They must not contain credentials, wallet IDs,
+signatures, transaction bodies, raw provider messages, or nested evidence.
+Unknown fields are rejected. The local evaluator does not transmit the file.

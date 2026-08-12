@@ -49,3 +49,13 @@ When a signing action is built after the live challenge arrives, create a
 short-lived execution authorization over the full canonical action and verify it
 at the signer boundary. The action body remains private; the authorization and
 optional receipt retain only its digest and byte count.
+
+## Wallet-policy observation evidence
+
+The wallet-policy observation report is a classification of caller-supplied
+test outcomes, not remote attestation. A dishonest or mistaken caller can label
+a generic provider failure as a policy denial. Integrations should preserve the
+underlying bounded test evidence separately and use this format to normalize
+results, not to manufacture trust. Only explicit provider-policy denial earns
+native coverage, and unrun cases remain partial. Exact execution shape requires
+the separate duplicate-approved-action probe.
