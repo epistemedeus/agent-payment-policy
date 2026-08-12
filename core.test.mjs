@@ -39,6 +39,8 @@ import {
   serviceDeploymentStatementSchema,
   serviceDeploymentVerificationSchema,
   evaluateResponseContract,
+  inspectOutputSchema,
+  prepareOutputValidator,
   purchaseEvidenceLink,
   selectPurchaseEvidenceLink,
   verifyPurchaseEvidenceManifest,
@@ -1115,4 +1117,96 @@ test("creates public-safe receipt evidence and rejects overcharge or invalid out
   assert.throws(() => createReceipt({ plan, authorization, amountAtomic: "10000", transactionReference: "0xabc", response: { data: {} } }), /missing required/);
   assert.throws(() => createReceipt({ plan, authorization: { ...authorization }, amountAtomic: "10000", transactionReference: "0xabc", response: { data: { value: 42 } } }), /verified authorization/);
   assert.throws(() => createReceipt({ plan, authorization, amountAtomic: "10000", transactionReference: "", response: { data: { value: 42 } } }), /transactionReference/);
+});
+
+test("binds a buyer acceptance schema into the intent and validates the receipt output", () => {
+  const schema = {
+    $schema: "https://json-schema.org/draft/2020-12/schema",
+    type: "object",
+    properties: {
+      data: {
+        type: "object",
+        properties: {
+          value: { type: "number" },
+          source: { type: "string", format: "uri" },
+        },
+        required: ["value", "source"],
+        additionalProperties: false,
+      },
+    },
+    required: ["data"],
+    additionalProperties: false,
+  };
+  const inspection = inspectOutputSchema({ schema, requiredFields: ["data.value", "data.source"] });
+  assert.match(inspection.schemaDigest, /^sha256:[0-9a-f]{64}$/);
+  assert.equal(inspection.schemaRetained, false);
+  assert.deepEqual(inspection.requiredPaths, ["data", "data.source", "data.value"]);
+  const boundIntent = intent({
+    output: {
+      mediaType: "application/json",
+      requiredFields: ["data.value", "data.source"],
+      maxResponseBytes: 10_000,
+      schemaDigest: inspection.schemaDigest,
+    },
+  });
+  assert.equal(boundIntent.output.schemaDigest, inspection.schemaDigest);
+  const plan = createPlan({ intent: boundIntent, offers: [offer()], now: NOW });
+  const { privateKey, publicKey } = generateKeyPairSync("ed25519");
+  const envelope = authorizePlan(plan, { privateKey, kid: "schema-policy", now: NOW });
+  const authorization = verifyAuthorization(envelope, { publicKey, plan, now: NOW + 1_000 });
+  const validator = prepareOutputValidator({ schema, contract: boundIntent.output });
+  const receipt = createReceipt({
+    plan,
+    authorization,
+    amountAtomic: "10000",
+    transactionReference: "0xschema",
+    response: { data: { value: 42, source: "https://example.com/source" } },
+    outputSchemaValidator: validator,
+    now: NOW + 2_000,
+  });
+  assert.equal(receipt.output.schemaValidated, true);
+  assert.equal(receipt.output.schemaDigest, inspection.schemaDigest);
+  assert.throws(() => createReceipt({
+    plan,
+    authorization,
+    amountAtomic: "10000",
+    transactionReference: "0xwrongtype",
+    response: { data: { value: "42", source: "https://example.com/source" } },
+    outputSchemaValidator: validator,
+  }), /JSON Schema validation/);
+  assert.throws(() => createReceipt({
+    plan,
+    authorization,
+    amountAtomic: "10000",
+    transactionReference: "0xwrongformat",
+    response: { data: { value: 42, source: "not a uri" } },
+    outputSchemaValidator: validator,
+  }), /JSON Schema validation/);
+  assert.throws(() => createReceipt({
+    plan,
+    authorization,
+    amountAtomic: "10000",
+    transactionReference: "0xmissingvalidator",
+    response: { data: { value: 42, source: "https://example.com/source" } },
+  }), /exact prepared schema validator/);
+  assert.throws(() => prepareOutputValidator({
+    schema: { ...schema, additionalProperties: true },
+    contract: boundIntent.output,
+  }), /does not match schemaDigest/);
+});
+
+test("keeps existing field-only output contracts backward compatible", () => {
+  const plan = createPlan({ intent: intent(), offers: [offer()], now: NOW });
+  const { privateKey, publicKey } = generateKeyPairSync("ed25519");
+  const envelope = authorizePlan(plan, { privateKey, kid: "legacy-policy", now: NOW });
+  const authorization = verifyAuthorization(envelope, { publicKey, plan, now: NOW + 1_000 });
+  const receipt = createReceipt({
+    plan,
+    authorization,
+    amountAtomic: "10000",
+    transactionReference: "0xlegacy",
+    response: { data: { value: 42 } },
+  });
+  assert.equal(receipt.output.schemaValidated, false);
+  assert.equal(receipt.output.schemaDigest, null);
 });

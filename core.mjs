@@ -6,6 +6,8 @@ import {
   verify,
 } from "node:crypto";
 import { isIP } from "node:net";
+import Ajv2020 from "ajv/dist/2020.js";
+import addFormats from "ajv-formats";
 
 export const SCHEMAS = Object.freeze({
   intent: "agent-payment-policy.intent.v1",
@@ -139,6 +141,7 @@ const PROTOCOLS = new Set(["x402", "mpp"]);
 const JSON_BODY_METHODS = new Set(["POST"]);
 const VERIFIED_AUTHORIZATION = Symbol("verified-agent-payment-policy-authorization");
 const VERIFIED_EXECUTION_AUTHORIZATION = Symbol("verified-agent-payment-policy-execution-authorization");
+const PREPARED_OUTPUT_VALIDATOR = Symbol("prepared-agent-payment-policy-output-validator");
 const SERVICE_DEPLOYMENT_JWS_TYPE = "agent-payment-policy-service-deployment+jws";
 
 function fail(message) {
@@ -2135,7 +2138,13 @@ function normalizeOutput(output) {
   if (!Number.isInteger(maxResponseBytes) || maxResponseBytes < 1 || maxResponseBytes > 10_000_000) {
     fail("output maxResponseBytes is invalid");
   }
-  return { mediaType, requiredFields, maxResponseBytes };
+  const schemaDigest = output.schemaDigest === undefined || output.schemaDigest === null
+    ? null
+    : cleanString(output.schemaDigest, 100)?.toLowerCase();
+  if (schemaDigest !== null && !/^sha256:[0-9a-f]{64}$/.test(schemaDigest || "")) {
+    fail("output schemaDigest is invalid");
+  }
+  return { mediaType, requiredFields, maxResponseBytes, schemaDigest };
 }
 
 function normalizeOrigins(origins) {
@@ -2460,7 +2469,62 @@ function hasPath(value, path) {
   return true;
 }
 
-export function validateOutput(value, contract) {
+export function inspectOutputSchema({ schema, requiredFields = [] } = {}) {
+  if (!record(schema)) fail("output schema must be a JSON object");
+  const normalizedRequiredFields = [...new Set(requiredFields.map((field) => cleanString(field, 200)).filter(Boolean))].sort();
+  const report = evaluateResponseContract({
+    schemaVersion: SCHEMAS.responseContractObservation,
+    source: "buyer_acceptance_schema",
+    request: { method: "GET", url: "https://buyer-policy.invalid/authorized-output" },
+    response: { status: 200, mediaType: "application/json", schema },
+  });
+  const guaranteed = new Set(report.requiredPaths);
+  const missingRequiredFields = normalizedRequiredFields.filter((field) => !guaranteed.has(field));
+  if (report.decision !== "admissible" || missingRequiredFields.length) {
+    fail(`output schema is not admissible for required fields${missingRequiredFields.length ? `: ${missingRequiredFields.join(",")}` : ""}`);
+  }
+  try {
+    const ajv = new Ajv2020({ allErrors: true, strict: true, validateFormats: true });
+    addFormats(ajv);
+    ajv.compile(schema);
+  } catch {
+    fail("output schema could not be compiled");
+  }
+  return Object.freeze({
+    schemaDigest: report.schemaDigest,
+    canonicalBytes: Buffer.byteLength(canonicalJson(schema)),
+    requiredPaths: Object.freeze([...report.requiredPaths]),
+    decision: report.decision,
+    schemaRetained: false,
+    credentialsUsed: false,
+    walletAccessed: false,
+    paymentSigned: false,
+    paymentSent: false,
+  });
+}
+
+export function prepareOutputValidator({ schema, contract } = {}) {
+  const normalized = normalizeOutput(contract);
+  if (normalized.mediaType !== "application/json") fail("an output schema validator requires application/json");
+  if (!normalized.schemaDigest) fail("output contract schemaDigest is required");
+  const inspection = inspectOutputSchema({ schema, requiredFields: normalized.requiredFields });
+  if (inspection.schemaDigest !== normalized.schemaDigest) fail("output schema does not match schemaDigest");
+  let validate;
+  try {
+    const ajv = new Ajv2020({ allErrors: true, strict: true, validateFormats: true });
+    addFormats(ajv);
+    validate = ajv.compile(schema);
+  } catch {
+    fail("output schema could not be compiled");
+  }
+  return Object.freeze({
+    [PREPARED_OUTPUT_VALIDATOR]: true,
+    schemaDigest: inspection.schemaDigest,
+    validate(value) { return validate(value) === true; },
+  });
+}
+
+export function validateOutput(value, contract, { schemaValidator = null } = {}) {
   const normalized = normalizeOutput(contract);
   const serialized = JSON.stringify(value);
   if (serialized === undefined) fail("output is not JSON serializable");
@@ -2468,10 +2532,23 @@ export function validateOutput(value, contract) {
   if (bytes > normalized.maxResponseBytes) fail("output exceeds maxResponseBytes");
   const missingFields = normalized.requiredFields.filter((field) => !hasPath(value, field));
   if (missingFields.length) fail(`output is missing required fields: ${missingFields.join(", ")}`);
-  return Object.freeze({ valid: true, bytes, responseDigest: digest(serialized) });
+  if (normalized.schemaDigest) {
+    if (!schemaValidator || schemaValidator[PREPARED_OUTPUT_VALIDATOR] !== true ||
+        schemaValidator.schemaDigest !== normalized.schemaDigest) {
+      fail("output requires the exact prepared schema validator");
+    }
+    if (!schemaValidator.validate(value)) fail("output failed JSON Schema validation");
+  }
+  return Object.freeze({
+    valid: true,
+    bytes,
+    responseDigest: digest(serialized),
+    schemaValidated: Boolean(normalized.schemaDigest),
+    schemaDigest: normalized.schemaDigest,
+  });
 }
 
-export function createReceipt({ plan, authorization, executionAuthorization, amountAtomic, transactionReference, response, now = Date.now() } = {}) {
+export function createReceipt({ plan, authorization, executionAuthorization, amountAtomic, transactionReference, response, outputSchemaValidator, now = Date.now() } = {}) {
   if (!record(plan) || plan.schemaVersion !== SCHEMAS.plan || !plan.selected) fail("receipt plan is required");
   if (plan.planId !== digest(Object.fromEntries(Object.entries(plan).filter(([key]) => key !== "planId")))) fail("receipt plan has been modified");
   if (!record(authorization) || authorization[VERIFIED_AUTHORIZATION] !== true || authorization.planId !== plan.planId || authorization.intentId !== plan.intentId) fail("verified authorization payload is required");
@@ -2479,7 +2556,7 @@ export function createReceipt({ plan, authorization, executionAuthorization, amo
   if (amount > atomic(authorization.maxAmountAtomic, "authorized maximum")) fail("receipt amount exceeds authorization");
   const reference = cleanString(transactionReference, 500);
   if (!reference) fail("receipt transactionReference is required");
-  const output = validateOutput(response, plan.output);
+  const output = validateOutput(response, plan.output, { schemaValidator: outputSchemaValidator });
   let execution = null;
   if (executionAuthorization !== undefined) {
     if (!record(executionAuthorization) || executionAuthorization[VERIFIED_EXECUTION_AUTHORIZATION] !== true ||

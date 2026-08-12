@@ -23,6 +23,8 @@
 - A coverage report that claims a stronger disposition than its underlying
   provider-native and independent evidence supports.
 - A response that is oversized, malformed, or missing required fields.
+- A response that contains every required path but substitutes the wrong JSON
+  types or invalid formatted strings after payment.
 - A cumulative policy whose metric silently decodes an unrecognized action as
   zero, whose successful signatures race before counter updates, or whose
   signed-but-unbroadcast activity diverges from on-chain settlement.
@@ -93,6 +95,15 @@ An `admissible` result means the limited self-contained schema subset can be
 turned into an independently authorized output contract. It does not prove the
 seller will return that shape. Validate the actual paid response separately and
 record output failure without inventing a successful delivery.
+
+When an intent includes `output.schemaDigest`, obtain the acceptance schema
+through the buyer's trusted local policy channel, run `inspectOutputSchema`, and
+prepare the matching validator before account, wallet, or signing access. Pass
+that exact validator to `createReceipt`. Required-field checks alone do not
+enforce types, formats, enums, numeric bounds, or additional-property policy.
+The seller's response-schema digest may differ because a buyer can authorize a
+narrower acceptance projection, but the buyer's digest must remain exact from
+intent through receipt validation.
 
 Purchase-evidence discovery requires both the generic `describedby` relation
 and the package's exact extension relation. Ignore unrelated `describedby`

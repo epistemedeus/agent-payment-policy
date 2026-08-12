@@ -31,6 +31,13 @@ It contains no wallet executor, payment signer, facilitator credential, seller
 key, RPC key, live project identity, or default wallet path. It cannot move
 funds.
 
+Version 0.13.0 adds an optional buyer-owned acceptance-schema boundary. The
+buyer can inspect a local JSON Schema, bind its canonical SHA-256 digest into an
+intent, prepare an exact validator before wallet access, and require the actual
+paid output to satisfy that same schema when creating a receipt. The schema is
+not copied into the intent, plan, authorization, receipt, or network request.
+Contracts without `schemaDigest` retain the prior required-field behavior.
+
 ## Try it
 
 ```bash
@@ -38,10 +45,60 @@ npm install agent-payment-policy
 npx agent-payment-policy demo
 npx agent-payment-policy inspect-url 'https://example.com/data?asset=ETH'
 npx agent-payment-policy inspect-json-request 'https://example.com/analyze' ./request.json
+npx agent-payment-policy output-schema-check ./output-schema.json data.value,data.source
 ```
 
 The demo generates an ephemeral policy key and produces a plan plus a verified
 authorization. It performs no network request and no payment.
+
+## Bind the output you are willing to buy
+
+```js
+import { readFile } from "node:fs/promises";
+import {
+  createIntent,
+  createReceipt,
+  inspectOutputSchema,
+  prepareOutputValidator,
+} from "agent-payment-policy";
+
+const schema = JSON.parse(await readFile("./output-schema.json", "utf8"));
+const inspected = inspectOutputSchema({
+  schema,
+  requiredFields: ["data.value", "data.source"],
+});
+
+const intent = createIntent({
+  // other private need, economics, and policy fields
+  output: {
+    mediaType: "application/json",
+    requiredFields: ["data.value", "data.source"],
+    maxResponseBytes: 100_000,
+    schemaDigest: inspected.schemaDigest,
+  },
+});
+
+// Compile before wallet or signing work.
+const outputSchemaValidator = prepareOutputValidator({
+  schema,
+  contract: intent.output,
+});
+
+const receipt = createReceipt({
+  plan,
+  authorization,
+  amountAtomic,
+  transactionReference,
+  response,
+  outputSchemaValidator,
+});
+```
+
+`inspectOutputSchema` accepts only the same bounded, self-contained response
+schema subset used by the pre-purchase contract evaluator. It also compiles the
+schema with strict JSON Schema 2020-12 plus standard formats. The prepared
+validator is capability-like and bound to one digest; a different or missing
+validator fails closed when the intent includes `schemaDigest`.
 
 ## Gate a delegated signer
 

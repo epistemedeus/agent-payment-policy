@@ -26,12 +26,13 @@ import {
   serviceDeploymentVerificationSchema,
   verifyServiceDeploymentStatement,
   evaluateResponseContract,
+  inspectOutputSchema,
   responseContractInputSchema,
   responseContractOutputSchema,
 } from "./core.mjs";
 
 function usage() {
-  console.error("Usage: agent-payment-policy inspect-url <https-url> | inspect-json-request <https-url> <body-file> | offer-coherence-check <json-file> | offer-coherence-schema | listing-identity-check <json-file> | listing-identity-schema | service-deployment-verify <envelope-json> <public-key-pem> <observation-json> | service-deployment-schema | response-contract-check <json-file> | response-contract-schema | wallet-policy-init <profile-id> <provider> <network> <protocol> | wallet-policy-check <json-file> | wallet-policy-schema | stateful-policy-init <profile-id> <provider> <network> <protocol> | stateful-policy-check <json-file> | stateful-policy-schema | demo");
+  console.error("Usage: agent-payment-policy inspect-url <https-url> | inspect-json-request <https-url> <body-file> | output-schema-check <schema-json> <required-fields-csv> | offer-coherence-check <json-file> | offer-coherence-schema | listing-identity-check <json-file> | listing-identity-schema | service-deployment-verify <envelope-json> <public-key-pem> <observation-json> | service-deployment-schema | response-contract-check <json-file> | response-contract-schema | wallet-policy-init <profile-id> <provider> <network> <protocol> | wallet-policy-check <json-file> | wallet-policy-schema | stateful-policy-init <profile-id> <provider> <network> <protocol> | stateful-policy-check <json-file> | stateful-policy-schema | demo");
   process.exitCode = 2;
 }
 
@@ -42,6 +43,10 @@ if (command === "inspect-url" && argument) {
 } else if (command === "inspect-json-request" && argument && bodyFile) {
   const body = JSON.parse(readFileSync(bodyFile, "utf8"));
   console.log(JSON.stringify(normalizeRequest("POST", argument, { body, mediaType: "application/json" }), null, 2));
+} else if (command === "output-schema-check" && argument && bodyFile) {
+  const schema = JSON.parse(readFileSync(argument, "utf8"));
+  const requiredFields = bodyFile.split(",").map((item) => item.trim()).filter(Boolean);
+  console.log(JSON.stringify(inspectOutputSchema({ schema, requiredFields }), null, 2));
 } else if (command === "offer-coherence-check" && argument) {
   const input = JSON.parse(readFileSync(argument, "utf8"));
   console.log(JSON.stringify(evaluateOfferCoherence(input), null, 2));
