@@ -139,6 +139,74 @@ therefore require exact useful paths without retaining the seller schema or
 example. Reports carrying recursive paths use the immutable
 `agent-payment-policy.response-contract-report.v2` identifier.
 
+## Purchase evidence
+
+A payment challenge says how to pay. It does not by itself say whether the
+exact operation is read-only, which JSON paths the seller declares as
+guaranteed, how response replay is bound, or which runtime receipts the buyer
+must validate.
+
+Version 0.12.0 adds a small credential-free contract for that gap:
+
+```js
+import {
+  createPurchaseEvidenceManifest,
+  purchaseEvidenceLink,
+  selectPurchaseEvidenceLink,
+  verifyPurchaseEvidenceManifest,
+} from "agent-payment-policy";
+
+const manifest = createPurchaseEvidenceManifest({
+  service: { origin: "https://seller.example", version: "1.0.0" },
+  protocols: ["x402", "mpp"],
+  evidence: { deployment: "https://seller.example/.well-known/deployment.json" },
+  operations: [{
+    method: "GET",
+    path: "/data",
+    effect: "read_only",
+    output: {
+      mediaType: "application/json",
+      schemaDigest: "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      requiredPaths: ["data", "data.value"],
+      declaration: "seller_declared",
+    },
+    replay: { requestBinding: ["method", "canonical_url"] },
+    receipt: {
+      x402: "PAYMENT-RESPONSE",
+      mpp: "Payment-Receipt",
+      runtimeValidationRequired: true,
+    },
+  }],
+  boundary: { claims: "seller_declared_until_independently_verified" },
+});
+
+const link = purchaseEvidenceLink(
+  "https://seller.example/.well-known/agent-payment-evidence.json",
+);
+
+const manifestUrl = selectPurchaseEvidenceLink(
+  link,
+  "https://seller.example/data",
+);
+
+const binding = verifyPurchaseEvidenceManifest(manifest, {
+  target: "https://seller.example/data",
+  method: "GET",
+  requiredPaths: ["data.value"],
+});
+```
+
+The Link header carries both the registered `describedby` relation and the
+package's exact extension relation. Generic API documentation links remain
+unrelated and are ignored. The target must be same-origin, the manifest digest
+is deterministic, and selection is by exact method and path.
+
+The package performs no fetch. A network adapter still needs HTTPS, DNS and
+SSRF controls, redirect rejection, byte and time limits, and a fresh read before
+wallet access. The manifest is seller-declared planning evidence. It is not
+permission to spend and does not replace live payment terms, output validation,
+receipts, settlement, or independent trust evidence.
+
 ## Status
 
 This is a reference implementation under active design review. It does not

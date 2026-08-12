@@ -29,7 +29,11 @@ export const SCHEMAS = Object.freeze({
   serviceDeploymentVerification: "agent-payment-policy.service-deployment-verification.v1",
   responseContractObservation: "agent-payment-policy.response-contract-observation.v1",
   responseContractReport: "agent-payment-policy.response-contract-report.v2",
+  purchaseEvidenceManifest: "agent-payment-policy.purchase-evidence-manifest.v1",
+  purchaseEvidenceBinding: "agent-payment-policy.purchase-evidence-binding.v1",
 });
+
+export const PURCHASE_EVIDENCE_RELATION = "https://github.com/epistemedeus/agent-payment-policy#purchase-evidence";
 
 export const PAYMENT_CONTROL_DIMENSIONS = Object.freeze([
   "authorization",
@@ -1834,6 +1838,174 @@ export function canonicalJson(value) {
 
 export function digest(value) {
   return `sha256:${createHash("sha256").update(typeof value === "string" ? value : canonicalJson(value)).digest("hex")}`;
+}
+
+const PURCHASE_EVIDENCE_DIGEST = /^sha256:[0-9a-f]{64}$/;
+const PURCHASE_EVIDENCE_PATH = /^[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+){0,15}$/;
+
+function purchaseEvidenceUrl(value, label) {
+  let url;
+  try { url = new URL(value); } catch { fail(`${label} is invalid`); }
+  if (url.protocol !== "https:" || url.username || url.password || url.hash) fail(`${label} must be credential-free HTTPS`);
+  return url;
+}
+
+function purchaseEvidencePaths(values, label) {
+  if (!Array.isArray(values) || values.length > 256) fail(`${label} are invalid`);
+  const paths = values.map((value) => String(value || ""));
+  if (paths.some((value) => !PURCHASE_EVIDENCE_PATH.test(value)) || new Set(paths).size !== paths.length) fail(`${label} are invalid`);
+  return [...paths].sort();
+}
+
+function purchaseEvidenceOperation(operation) {
+  strictRecord(operation, "purchase evidence operation", new Set(["method", "path", "effect", "output", "replay", "receipt"]));
+  const output = strictRecord(operation.output, "purchase evidence operation output", new Set(["mediaType", "schemaDigest", "requiredPaths", "declaration"]));
+  const receipt = strictRecord(operation.receipt, "purchase evidence operation receipt", new Set(["x402", "mpp", "runtimeValidationRequired"]));
+  const method = String(operation.method || "").toUpperCase();
+  const path = String(operation.path || "");
+  if (!new Set(["GET", "POST"]).has(method) || !path.startsWith("/") || path.startsWith("//") || /[?#{}]/.test(path)) {
+    fail("purchase evidence operation method or path is invalid");
+  }
+  if (operation.effect !== "read_only" || output.declaration !== "seller_declared" ||
+      output.mediaType !== "application/json" || receipt.runtimeValidationRequired !== true) {
+    fail("purchase evidence operation is not authorization-compatible");
+  }
+  const schemaDigest = String(output.schemaDigest || "").toLowerCase();
+  if (!PURCHASE_EVIDENCE_DIGEST.test(schemaDigest)) fail("purchase evidence response schema digest is invalid");
+  return {
+    method,
+    path,
+    effect: "read_only",
+    output: {
+      mediaType: "application/json",
+      schemaDigest,
+      requiredPaths: purchaseEvidencePaths(output.requiredPaths, "seller-declared required paths"),
+      declaration: "seller_declared",
+    },
+    replay: record(operation.replay) ? structuredClone(operation.replay) : {},
+    receipt: structuredClone(receipt),
+  };
+}
+
+export function createPurchaseEvidenceManifest({ service, protocols, evidence = {}, operations, boundary } = {}) {
+  const origin = purchaseEvidenceUrl(service?.origin, "purchase evidence service origin").origin;
+  const serviceVersion = cleanString(service?.version, 100);
+  if (!serviceVersion) fail("purchase evidence service version is required");
+  if (!Array.isArray(protocols) || !protocols.length || protocols.length > 10) fail("purchase evidence protocols are invalid");
+  const normalizedProtocols = [...new Set(protocols.map((value) => cleanString(value, 40)?.toLowerCase()).filter(Boolean))].sort();
+  if (!normalizedProtocols.length || normalizedProtocols.length !== protocols.length) fail("purchase evidence protocols are invalid");
+  if (!Array.isArray(operations) || !operations.length || operations.length > 100) fail("purchase evidence operations are invalid");
+  const normalizedOperations = operations.map(purchaseEvidenceOperation)
+    .sort((left, right) => `${left.method} ${left.path}`.localeCompare(`${right.method} ${right.path}`));
+  if (new Set(normalizedOperations.map(({ method, path }) => `${method} ${path}`)).size !== normalizedOperations.length) {
+    fail("purchase evidence operations contain a duplicate exact route");
+  }
+  if (!record(evidence) || !record(boundary)) fail("purchase evidence evidence and boundary objects are required");
+  assertJsonValue(evidence);
+  assertJsonValue(boundary);
+  assertJsonValue(normalizedOperations);
+  if (Buffer.byteLength(canonicalJson({ evidence, boundary })) > 256_000) fail("purchase evidence metadata is oversized");
+  const manifest = {
+    schemaVersion: SCHEMAS.purchaseEvidenceManifest,
+    status: "experimental",
+    version: "1.0.0",
+    service: { origin, version: serviceVersion },
+    protocols: normalizedProtocols,
+    evidence: structuredClone(evidence),
+    operations: normalizedOperations,
+    boundary: structuredClone(boundary),
+  };
+  return Object.freeze({ ...manifest, manifestDigest: digest(manifest) });
+}
+
+export function purchaseEvidenceLink(target) {
+  const url = purchaseEvidenceUrl(target, "purchase evidence manifest URL");
+  return `<${url}>; rel="describedby ${PURCHASE_EVIDENCE_RELATION}"; type="application/json"`;
+}
+
+export function selectPurchaseEvidenceLink(value, context) {
+  if (typeof value !== "string" || !value.trim() || value.length > 32_768) return null;
+  const contextUrl = purchaseEvidenceUrl(context, "purchase evidence context URL");
+  const matches = [];
+  const expression = /<([^>]+)>\s*;([^,]*)/g;
+  let match;
+  while ((match = expression.exec(value)) !== null) {
+    const relation = /(?:^|;)\s*rel\s*=\s*(?:"([^"]*)"|([^;\s]+))/i.exec(match[2]);
+    const relations = String(relation?.[1] || relation?.[2] || "").split(/\s+/).filter(Boolean);
+    if (!relations.some((item) => item.toLowerCase() === "describedby") || !relations.includes(PURCHASE_EVIDENCE_RELATION)) continue;
+    const target = purchaseEvidenceUrl(new URL(match[1], contextUrl).toString(), "purchase evidence manifest URL");
+    if (target.origin !== contextUrl.origin) fail("purchase evidence manifest must be same-origin");
+    matches.push(target.toString());
+  }
+  if (matches.length > 1) fail("purchase response must advertise exactly one purchase evidence manifest");
+  return matches[0] || null;
+}
+
+export function verifyPurchaseEvidenceManifest(manifest, { target, method, requiredPaths = [] } = {}) {
+  strictRecord(manifest, "purchase evidence manifest", new Set(["schemaVersion", "status", "version", "service", "protocols", "evidence", "operations", "boundary", "manifestDigest"]));
+  if (manifest.schemaVersion !== SCHEMAS.purchaseEvidenceManifest || manifest.status !== "experimental" || manifest.version !== "1.0.0") {
+    fail("purchase evidence manifest contract is unsupported");
+  }
+  const targetUrl = purchaseEvidenceUrl(target, "purchase target");
+  if (Buffer.byteLength(canonicalJson(manifest)) > 512_000) fail("purchase evidence manifest is oversized");
+  if (!Array.isArray(manifest.operations) || !manifest.operations.length || manifest.operations.length > 100) fail("purchase evidence operations are invalid");
+  const normalized = createPurchaseEvidenceManifest({
+    service: manifest.service,
+    protocols: manifest.protocols,
+    evidence: manifest.evidence,
+    operations: manifest.operations,
+    boundary: manifest.boundary,
+  });
+  const origin = normalized.service.origin;
+  if (origin !== targetUrl.origin) fail("purchase evidence service origin changed");
+  const advertisedDigest = String(manifest.manifestDigest || "").toLowerCase();
+  if (!PURCHASE_EVIDENCE_DIGEST.test(advertisedDigest) || normalized.manifestDigest !== advertisedDigest) fail("purchase evidence manifest digest is invalid");
+  const normalizedMethod = String(method || "").toUpperCase();
+  const matches = normalized.operations
+    .filter((operation) => operation.method === normalizedMethod && operation.path === targetUrl.pathname);
+  if (matches.length !== 1) fail("purchase evidence exact operation is missing or duplicated");
+  const operation = matches[0];
+  const required = purchaseEvidencePaths(requiredPaths, "buyer-required paths");
+  const declared = new Set(operation.output.requiredPaths);
+  const missing = required.filter((path) => !declared.has(path));
+  if (missing.length) fail(`purchase evidence does not guarantee required paths: ${missing.join(",")}`);
+  return normalizePurchaseEvidenceBinding({
+    schemaVersion: SCHEMAS.purchaseEvidenceBinding,
+    status: "verified",
+    manifestDigest: advertisedDigest,
+    serviceVersion: String(manifest.service.version),
+    effect: operation.effect,
+    responseSchemaDigest: operation.output.schemaDigest,
+    requiredPaths: required,
+    declaration: "seller_declared",
+  });
+}
+
+export function normalizePurchaseEvidenceBinding(value) {
+  strictRecord(value, "purchase evidence binding", new Set([
+    "schemaVersion", "status", "manifestDigest", "serviceVersion", "effect",
+    "responseSchemaDigest", "requiredPaths", "declaration",
+  ]));
+  if (value.schemaVersion !== SCHEMAS.purchaseEvidenceBinding || value.status !== "verified" ||
+      value.effect !== "read_only" || value.declaration !== "seller_declared") {
+    fail("purchase evidence binding is invalid");
+  }
+  const manifestDigest = String(value.manifestDigest || "").toLowerCase();
+  const responseSchemaDigest = String(value.responseSchemaDigest || "").toLowerCase();
+  const serviceVersion = cleanString(value.serviceVersion, 100);
+  if (!PURCHASE_EVIDENCE_DIGEST.test(manifestDigest) || !PURCHASE_EVIDENCE_DIGEST.test(responseSchemaDigest) || !serviceVersion) {
+    fail("purchase evidence binding is incomplete");
+  }
+  return Object.freeze({
+    schemaVersion: SCHEMAS.purchaseEvidenceBinding,
+    status: "verified",
+    manifestDigest,
+    serviceVersion,
+    effect: "read_only",
+    responseSchemaDigest,
+    requiredPaths: Object.freeze(purchaseEvidencePaths(value.requiredPaths, "purchase evidence required paths")),
+    declaration: "seller_declared",
+  });
 }
 
 function assertJsonValue(value, seen = new Set()) {

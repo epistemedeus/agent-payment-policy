@@ -12,10 +12,12 @@ import {
   createIntent,
   createPlan,
   createReceipt,
+  createPurchaseEvidenceManifest,
   createServiceDeploymentStatement,
   createWalletPolicyObservationDraft,
   evaluateWalletPolicyObservations,
   normalizeRequest,
+  normalizePurchaseEvidenceBinding,
   normalizeWalletPolicyObservations,
   verifyAuthorization,
   verifyExecutionAuthorization,
@@ -37,6 +39,11 @@ import {
   serviceDeploymentStatementSchema,
   serviceDeploymentVerificationSchema,
   evaluateResponseContract,
+  purchaseEvidenceLink,
+  selectPurchaseEvidenceLink,
+  verifyPurchaseEvidenceManifest,
+  PURCHASE_EVIDENCE_RELATION,
+  SCHEMAS,
   responseContractInputSchema,
   responseContractOutputSchema,
   signServiceDeploymentStatement,
@@ -47,6 +54,87 @@ import {
 
 const NOW = Date.parse("2026-08-09T20:00:00.000Z");
 const RECIPIENT = "0x2222222222222222222222222222222222222222";
+
+function purchaseEvidenceManifest() {
+  return createPurchaseEvidenceManifest({
+    service: { origin: "https://seller.example", version: "1.2.3" },
+    protocols: ["x402", "mpp"],
+    evidence: { deployment: "https://seller.example/.well-known/deployment.json" },
+    operations: [{
+      method: "GET",
+      path: "/data",
+      effect: "read_only",
+      output: {
+        mediaType: "application/json",
+        schemaDigest: `sha256:${"a".repeat(64)}`,
+        requiredPaths: ["data.value", "data"],
+        declaration: "seller_declared",
+      },
+      replay: { requestBinding: ["method", "canonical_url"] },
+      receipt: { x402: "PAYMENT-RESPONSE", mpp: "Payment-Receipt", runtimeValidationRequired: true },
+    }],
+    boundary: { claims: "seller_declared_until_independently_verified" },
+  });
+}
+
+test("creates and verifies deterministic exact-operation purchase evidence", () => {
+  const manifest = purchaseEvidenceManifest();
+  assert.equal(manifest.schemaVersion, SCHEMAS.purchaseEvidenceManifest);
+  assert.match(manifest.manifestDigest, /^sha256:[0-9a-f]{64}$/);
+  assert.deepEqual(manifest.protocols, ["mpp", "x402"]);
+  assert.deepEqual(manifest.operations[0].output.requiredPaths, ["data", "data.value"]);
+  const binding = verifyPurchaseEvidenceManifest(manifest, {
+    target: "https://seller.example/data?asset=ETH",
+    method: "GET",
+    requiredPaths: ["data.value"],
+  });
+  assert.equal(binding.schemaVersion, SCHEMAS.purchaseEvidenceBinding);
+  assert.equal(binding.status, "verified");
+  assert.equal(binding.serviceVersion, "1.2.3");
+  assert.equal(binding.manifestDigest, manifest.manifestDigest);
+  assert.deepEqual(binding.requiredPaths, ["data.value"]);
+  assert.deepEqual(normalizePurchaseEvidenceBinding(structuredClone(binding)), binding);
+  assert.throws(() => normalizePurchaseEvidenceBinding({ ...binding, effect: "state_changing" }), /invalid/);
+});
+
+test("selects only the exact purchase-evidence extension relation", () => {
+  const target = "https://seller.example/.well-known/agent-payment-evidence.json";
+  const link = purchaseEvidenceLink(target);
+  assert.equal(link, `<${target}>; rel="describedby ${PURCHASE_EVIDENCE_RELATION}"; type="application/json"`);
+  assert.equal(selectPurchaseEvidenceLink('<https://seller.example/openapi.json>; rel="describedby"', "https://seller.example/data"), null);
+  assert.equal(selectPurchaseEvidenceLink(`${link}, <https://seller.example/openapi.json>; rel="describedby"`, "https://seller.example/data"), target);
+  assert.throws(() => selectPurchaseEvidenceLink(
+    `<https://other.example/evidence.json>; rel="describedby ${PURCHASE_EVIDENCE_RELATION}"`,
+    "https://seller.example/data",
+  ), /same-origin/);
+  assert.throws(() => selectPurchaseEvidenceLink(`${link}, ${link}`, "https://seller.example/data"), /exactly one/);
+});
+
+test("fails closed on purchase-evidence overclaim, drift, and ambiguous operations", () => {
+  const manifest = purchaseEvidenceManifest();
+  assert.throws(() => verifyPurchaseEvidenceManifest(manifest, {
+    target: "https://seller.example/data",
+    method: "GET",
+    requiredPaths: ["data.missing"],
+  }), /does not guarantee/);
+  assert.throws(() => verifyPurchaseEvidenceManifest({ ...manifest, manifestDigest: `sha256:${"f".repeat(64)}` }, {
+    target: "https://seller.example/data", method: "GET",
+  }), /digest/);
+  assert.throws(() => createPurchaseEvidenceManifest({
+    service: manifest.service,
+    protocols: manifest.protocols,
+    evidence: manifest.evidence,
+    operations: [manifest.operations[0], manifest.operations[0]],
+    boundary: manifest.boundary,
+  }), /duplicate/);
+  assert.throws(() => createPurchaseEvidenceManifest({
+    service: manifest.service,
+    protocols: manifest.protocols,
+    evidence: manifest.evidence,
+    operations: [{ ...manifest.operations[0], effect: "state_changing" }],
+    boundary: manifest.boundary,
+  }), /authorization-compatible/);
+});
 
 function intent(overrides = {}) {
   return createIntent({

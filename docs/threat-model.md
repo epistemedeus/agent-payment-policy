@@ -36,6 +36,10 @@
 - A seller that publishes payment inputs and price but no machine-verifiable
   success-response contract, causing a buyer to pay for output it cannot judge.
 - A response example that contradicts its own declared response schema.
+- A generic `describedby` link that points to unrelated API documentation and
+  is incorrectly fetched as purchase evidence.
+- A seller manifest that changes effect, output guarantees, replay terms, or
+  receipt expectations after buyer authorization while price stays constant.
 
 ## Out of scope
 
@@ -89,6 +93,15 @@ An `admissible` result means the limited self-contained schema subset can be
 turned into an independently authorized output contract. It does not prove the
 seller will return that shape. Validate the actual paid response separately and
 record output failure without inventing a successful delivery.
+
+Purchase-evidence discovery requires both the generic `describedby` relation
+and the package's exact extension relation. Ignore unrelated `describedby`
+links. Require one same-origin manifest, enforce adapter-side time and byte
+limits, verify the deterministic digest and exact method-path operation, bind
+the resulting manifest and response-schema digests into authorization, and
+refetch before wallet access. Seller-declared evidence can narrow a policy
+decision but cannot authorize spend or replace live challenge, output, receipt,
+or settlement verification.
 
 ## Wallet-policy observation evidence
 

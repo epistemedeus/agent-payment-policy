@@ -55,3 +55,12 @@ names, controlled structural findings, and the example's structural-consistency
 classification. They do not retain the schema, example, query values, response
 body, credential, wallet state, signature, or payment. The evaluator performs
 no network request and does not authenticate the seller declaration.
+
+Purchase-evidence manifests contain public service origin and version,
+protocol labels, exact method and path, read-only effect, response-schema
+digest, seller-declared required JSON paths, replay metadata, receipt metadata,
+public evidence pointers, boundary statements, and a deterministic digest.
+Verified bindings retain only the manifest digest, service version, effect,
+response-schema digest, buyer-required paths, and seller-declaration label.
+The core performs no network request and retains no query value, request body,
+payment credential, wallet state, signature, paid output, or settlement.
