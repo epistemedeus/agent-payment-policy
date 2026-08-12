@@ -136,7 +136,8 @@ Response-contract reports keep both top-level `requiredFields` and recursively
 guaranteed `requiredPaths`. A schema that requires only `data` does not promise
 `data.attributes`, even when that nested property is described. Buyer policy can
 therefore require exact useful paths without retaining the seller schema or
-example.
+example. Reports carrying recursive paths use the immutable
+`agent-payment-policy.response-contract-report.v2` identifier.
 
 ## Status
 

@@ -493,6 +493,7 @@ test("rejects unsafe response-contract shapes and publishes strict schemas", () 
   assert.equal(input.properties.request.additionalProperties, false);
   assert.equal(input.properties.response.additionalProperties, false);
   assert.equal(output.additionalProperties, false);
+  assert.equal(output.properties.schemaVersion.const, "agent-payment-policy.response-contract-report.v2");
   assert.equal(output.properties.boundary.additionalProperties, false);
   assert.equal(output.properties.boundary.properties.paymentAuthorized.const, false);
 });

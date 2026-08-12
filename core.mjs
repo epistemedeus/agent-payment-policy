@@ -28,7 +28,7 @@ export const SCHEMAS = Object.freeze({
   serviceDeploymentStatementJws: "agent-payment-policy.service-deployment-statement-jws.v1",
   serviceDeploymentVerification: "agent-payment-policy.service-deployment-verification.v1",
   responseContractObservation: "agent-payment-policy.response-contract-observation.v1",
-  responseContractReport: "agent-payment-policy.response-contract-report.v1",
+  responseContractReport: "agent-payment-policy.response-contract-report.v2",
 });
 
 export const PAYMENT_CONTROL_DIMENSIONS = Object.freeze([
