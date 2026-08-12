@@ -28,6 +28,11 @@
   signed-but-unbroadcast activity diverges from on-chain settlement.
 - A catalog that omits economic terms and is incorrectly treated as agreeing
   with the complete live unsigned offer.
+- A copied well-known file or duplicate catalog record that claims an
+  unauthorized deployment origin, route, or settlement identity.
+- An authorized alias that is permitted for one route or rail and is
+  accidentally granted a different deployment binding through a cross-product
+  policy.
 
 ## Out of scope
 
@@ -36,6 +41,10 @@
   the exported address checks and pins the validated destination.
 - Economic truth of caller-supplied expected value or risk reserve.
 - Correctness of an external x402 or MPP challenge parser.
+- The authority of a service-deployment verification key. The integrating
+  buyer must obtain the public key from a separate trusted identity channel.
+- DNS or domain control. A valid service-deployment statement proves control of
+  the supplied Ed25519 key, not control of a hostname.
 - Semantic safety of the original unsigned action. Exact execution binding
   prevents mutation after review; it does not make an unsafe original safe.
 
@@ -63,6 +72,14 @@ prove either source, so the adapter must still fetch the live challenge through
 the DNS, redirect, timeout, and byte boundaries above. For x402, derive an
 absolute runtime deadline from the observed challenge time and its bounded
 relative timeout; never invent a long-lived expiry.
+
+For a signed service-deployment statement, verify the JWS against a public key
+obtained through a separately trusted identity anchor. Require an exact
+deployment-origin entry, exact HTTP method and path, exact protocol, network,
+asset, recipient, and decimals. Each origin carries its own route and
+settlement lists so an alias does not inherit another origin's authority. Check
+the short validity window at use time and then continue through the separate
+live challenge, value, policy, authorization, and execution boundaries.
 
 ## Wallet-policy observation evidence
 

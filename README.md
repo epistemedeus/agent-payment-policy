@@ -278,3 +278,75 @@ evaluator makes no network request, accepts no credential, accesses no wallet,
 signs nothing, sends no payment, and never treats catalog duplication as
 demand. The core exports are `evaluateListingIdentity`,
 `listingIdentityInputSchema`, and `listingIdentityOutputSchema`.
+
+Version 0.9.0 adds a signed service-deployment statement for an ambiguity that
+catalog records and matching well-known files cannot resolve on their own. A
+seller can bind one canonical HTTPS origin, explicitly authorized alias
+origins, exact HTTP method and path pairs, and exact x402 or MPP settlement
+identities in a short-lived Ed25519 JWS:
+
+```js
+import {
+  createServiceDeploymentStatement,
+  signServiceDeploymentStatement,
+  verifyServiceDeploymentStatement,
+} from "agent-payment-policy";
+
+const statement = createServiceDeploymentStatement({
+  canonicalOrigin: "https://seller.example",
+  deployments: [{
+    origin: "https://seller.example",
+    routes: [{ method: "GET", path: "/data" }],
+    settlement: [{
+      protocol: "x402",
+      network: "eip155:8453",
+      asset: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      recipient: "0x2222222222222222222222222222222222222222",
+      decimals: 6,
+    }],
+  }, {
+    origin: "https://edge.example",
+    routes: [{ method: "GET", path: "/data" }],
+    settlement: [{
+      protocol: "x402",
+      network: "eip155:8453",
+      asset: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      recipient: "0x2222222222222222222222222222222222222222",
+      decimals: 6,
+    }],
+  }],
+}, { ttlMs: 86_400_000 });
+
+const envelope = signServiceDeploymentStatement(statement, {
+  privateKey,
+  kid: "seller-2026-08",
+});
+
+const verification = verifyServiceDeploymentStatement(envelope, {
+  publicKey,
+  request: { method: "GET", url: "https://edge.example/data?asset=ETH" },
+  runtimeOffer: {
+    protocol: "x402",
+    network: "eip155:8453",
+    asset: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    recipient: "0x2222222222222222222222222222222222222222",
+    decimals: 6,
+  },
+});
+```
+
+Verification fails closed on a lookalike or unlisted origin, a different HTTP
+method or path, an expired statement, a different verification key, and any
+protocol, network, asset, recipient, or decimals mismatch. The result excludes
+query values and explicitly reports that it did not authorize, sign, or send a
+payment. The caller must obtain the verification key through a separate trusted
+identity channel. A valid signature proves control of that key, not DNS or
+domain control.
+
+Private-key signing is intentionally library-only. The CLI can verify an
+envelope without accepting private keys:
+
+```bash
+agent-payment-policy service-deployment-verify envelope.json public-key.pem observation.json
+agent-payment-policy service-deployment-schema
+```

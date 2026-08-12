@@ -12,6 +12,7 @@ import {
   createIntent,
   createPlan,
   createReceipt,
+  createServiceDeploymentStatement,
   createWalletPolicyObservationDraft,
   evaluateWalletPolicyObservations,
   normalizeRequest,
@@ -32,6 +33,11 @@ import {
   offerCoherenceOutputSchema,
   listingIdentityInputSchema,
   listingIdentityOutputSchema,
+  serviceDeploymentEnvelopeSchema,
+  serviceDeploymentStatementSchema,
+  serviceDeploymentVerificationSchema,
+  signServiceDeploymentStatement,
+  verifyServiceDeploymentStatement,
   walletPolicyObservationInputSchema,
   walletPolicyObservationOutputSchema,
 } from "./core.mjs";
@@ -237,6 +243,173 @@ test("fails closed on malformed listing identity evidence and publishes strict s
   assert.equal(outputSchema.properties.sources.items.additionalProperties, false);
   assert.equal(outputSchema.properties.boundary.additionalProperties, false);
   assert.equal(outputSchema.additionalProperties, false);
+});
+
+function serviceDeployment(overrides = {}) {
+  const x402 = { protocol: "x402", network: "eip155:8453", asset: "0x3333333333333333333333333333333333333333", recipient: RECIPIENT, decimals: 6 };
+  const mpp = { protocol: "mpp", network: "tempo:mainnet", asset: "USDC", recipient: "tempo-account-1", decimals: 6 };
+  return createServiceDeploymentStatement({
+    canonicalOrigin: "https://seller.example",
+    deployments: [
+      {
+        origin: "https://seller.example",
+        routes: [{ method: "GET", path: "/data" }, { method: "POST", path: "/analyze" }],
+        settlement: [x402, mpp],
+      },
+      {
+        origin: "https://edge.example",
+        routes: [{ method: "POST", path: "/analyze" }],
+        settlement: [x402],
+      },
+    ],
+    ...overrides,
+  }, { now: NOW, ttlMs: 60_000 });
+}
+
+function verifyDeployment(envelope, publicKey, overrides = {}) {
+  return verifyServiceDeploymentStatement(envelope, {
+    publicKey,
+    request: { method: "GET", url: "https://seller.example/data?asset=ETH" },
+    runtimeOffer: {
+      protocol: "x402",
+      network: "eip155:8453",
+      asset: "0x3333333333333333333333333333333333333333",
+      recipient: RECIPIENT,
+      decimals: 6,
+    },
+    now: NOW + 1_000,
+    ...overrides,
+  });
+}
+
+test("verifies a signed canonical service, exact route, and exact settlement binding", () => {
+  const statement = serviceDeployment();
+  const { privateKey, publicKey } = generateKeyPairSync("ed25519");
+  const envelope = signServiceDeploymentStatement(statement, { privateKey, kid: "seller-2026-08" });
+  const report = verifyDeployment(envelope, publicKey);
+  assert.equal(report.decision, "verified_exact_binding");
+  assert.equal(report.canonicalOrigin, "https://seller.example");
+  assert.equal(report.observedOrigin, "https://seller.example");
+  assert.equal(report.route.method, "GET");
+  assert.equal(report.route.path, "/data");
+  assert.equal(report.settlement.recipient, RECIPIENT.toLowerCase());
+  assert.match(report.publicKeyFingerprint, /^sha256:[0-9a-f]{64}$/);
+  assert.equal(report.boundary.signatureVerified, true);
+  assert.equal(report.boundary.domainControlProven, false);
+  assert.equal(report.boundary.paymentAuthorized, false);
+  assert.equal(report.boundary.paymentSent, false);
+  assert.doesNotMatch(JSON.stringify(report), /ETH/);
+});
+
+test("verifies an explicitly authorized alias without treating it as the canonical origin", () => {
+  const { privateKey, publicKey } = generateKeyPairSync("ed25519");
+  const envelope = signServiceDeploymentStatement(serviceDeployment(), { privateKey, kid: "seller-alias" });
+  const report = verifyDeployment(envelope, publicKey, {
+    request: { method: "POST", url: "https://edge.example/analyze" },
+  });
+  assert.equal(report.observedOrigin, "https://edge.example");
+  assert.equal(report.canonicalOrigin, "https://seller.example");
+  assert.deepEqual(report.route, { method: "POST", path: "/analyze" });
+  assert.throws(() => verifyDeployment(envelope, publicKey, {
+    request: { method: "GET", url: "https://edge.example/data" },
+  }), /route is not authorized/);
+  assert.throws(() => verifyDeployment(envelope, publicKey, {
+    request: { method: "POST", url: "https://edge.example/analyze" },
+    runtimeOffer: { protocol: "mpp", network: "tempo:mainnet", asset: "USDC", recipient: "tempo-account-1", decimals: 6 },
+  }), /settlement identity is not authorized/);
+});
+
+test("rejects lookalike origins and unlisted routes before authorization", () => {
+  const { privateKey, publicKey } = generateKeyPairSync("ed25519");
+  const envelope = signServiceDeploymentStatement(serviceDeployment(), { privateKey, kid: "seller-routes" });
+  assert.throws(() => verifyDeployment(envelope, publicKey, {
+    request: { method: "GET", url: "https://seller.example.attacker.test/data" },
+  }), /origin is not authorized/);
+  assert.throws(() => verifyDeployment(envelope, publicKey, {
+    request: { method: "GET", url: "https://seller.example/private" },
+  }), /route is not authorized/);
+  assert.throws(() => verifyDeployment(envelope, publicKey, {
+    request: { method: "DELETE", url: "https://seller.example/data" },
+  }), /route is not authorized/);
+});
+
+test("rejects wrong settlement recipient, asset, network, protocol, and decimals", () => {
+  const { privateKey, publicKey } = generateKeyPairSync("ed25519");
+  const envelope = signServiceDeploymentStatement(serviceDeployment(), { privateKey, kid: "seller-settlement" });
+  const base = {
+    protocol: "x402",
+    network: "eip155:8453",
+    asset: "0x3333333333333333333333333333333333333333",
+    recipient: RECIPIENT,
+    decimals: 6,
+  };
+  for (const runtimeOffer of [
+    { ...base, recipient: "0x4444444444444444444444444444444444444444" },
+    { ...base, asset: "0x5555555555555555555555555555555555555555" },
+    { ...base, network: "eip155:1" },
+    { ...base, protocol: "mpp" },
+    { ...base, decimals: 18 },
+  ]) {
+    assert.throws(() => verifyDeployment(envelope, publicKey, { runtimeOffer }), /settlement identity is not authorized/);
+  }
+});
+
+test("rejects expired statements, wrong keys, modified payloads, and unknown fields", () => {
+  const { privateKey, publicKey } = generateKeyPairSync("ed25519");
+  const other = generateKeyPairSync("ed25519");
+  const envelope = signServiceDeploymentStatement(serviceDeployment(), { privateKey, kid: "seller-rotation" });
+  assert.throws(() => verifyDeployment(envelope, publicKey, { now: NOW + 60_000 }), /not currently valid/);
+  assert.throws(() => verifyDeployment(envelope, other.publicKey), /signature is invalid/);
+  assert.throws(() => verifyDeployment({ ...envelope, unknown: true }, publicKey), /fields are invalid/);
+  const payload = JSON.parse(Buffer.from(envelope.payload, "base64url").toString("utf8"));
+  const changedPayload = Buffer.from(JSON.stringify({ ...payload, expiresAt: new Date(NOW + 120_000).toISOString() })).toString("base64url");
+  assert.throws(() => verifyDeployment({ ...envelope, payload: changedPayload }, publicKey), /statementId is invalid|signature is invalid/);
+});
+
+test("normalizes deterministic statements and rejects malformed deployment declarations", () => {
+  const left = serviceDeployment();
+  const right = serviceDeployment({
+    deployments: [
+      {
+        origin: "https://edge.example",
+        routes: [{ method: "POST", path: "/analyze" }],
+        settlement: [{ protocol: "x402", network: "eip155:8453", asset: "0x3333333333333333333333333333333333333333", recipient: RECIPIENT, decimals: 6 }],
+      },
+      {
+        origin: "https://seller.example",
+        routes: [{ method: "POST", path: "/analyze" }, { method: "GET", path: "/data" }],
+        settlement: [
+          { protocol: "mpp", network: "tempo:mainnet", asset: "USDC", recipient: "tempo-account-1", decimals: 6 },
+          { protocol: "x402", network: "eip155:8453", asset: "0x3333333333333333333333333333333333333333", recipient: RECIPIENT, decimals: 6 },
+        ],
+      },
+    ],
+  });
+  assert.deepEqual(left, right);
+  assert.equal(Object.isFrozen(left.deployments), true);
+  assert.equal(Object.isFrozen(left.deployments[0].routes), true);
+  assert.equal(Object.isFrozen(left.deployments[0].settlement), true);
+  const x402 = { protocol: "x402", network: "eip155:8453", asset: "USDC", recipient: RECIPIENT, decimals: 6 };
+  assert.throws(() => serviceDeployment({ deployments: [{ origin: "https://seller.example/path", routes: [{ method: "GET", path: "/data" }], settlement: [x402] }] }), /HTTPS origin/);
+  assert.throws(() => serviceDeployment({ deployments: [{ origin: "https://seller.example", routes: [{ method: "GET", path: "/data?secret=x" }], settlement: [x402] }] }), /exact absolute path/);
+  assert.throws(() => serviceDeployment({ deployments: [{ origin: "https://seller.example", routes: [{ method: "GET", path: "/data" }, { method: "GET", path: "/data" }], settlement: [x402] }] }), /duplicate route/);
+  assert.throws(() => serviceDeployment({ deployments: [{ origin: "https://seller.example", routes: [{ method: "GET", path: "/data" }], settlement: [{ protocol: "stripe", network: "test", asset: "USD", recipient: "acct", decimals: 2 }] }] }), /protocol is invalid/);
+  assert.throws(() => serviceDeployment({ deployments: [{ origin: "https://edge.example", routes: [{ method: "GET", path: "/data" }], settlement: [x402] }] }), /include the canonical origin/);
+  assert.throws(() => serviceDeployment({ apiKey: "secret" }), /declaration fields are invalid/);
+});
+
+test("publishes strict service deployment schemas", () => {
+  const statement = serviceDeploymentStatementSchema();
+  const envelope = serviceDeploymentEnvelopeSchema();
+  const verification = serviceDeploymentVerificationSchema();
+  assert.equal(statement.additionalProperties, false);
+  assert.equal(statement.properties.deployments.items.additionalProperties, false);
+  assert.equal(statement.properties.deployments.items.properties.routes.items.additionalProperties, false);
+  assert.equal(statement.properties.deployments.items.properties.settlement.items.additionalProperties, false);
+  assert.equal(envelope.additionalProperties, false);
+  assert.equal(verification.additionalProperties, false);
+  assert.equal(verification.properties.boundary.additionalProperties, false);
+  assert.equal(verification.properties.boundary.properties.paymentAuthorized.const, false);
 });
 
 test("creates an immutable private-need digest without retaining the plaintext need", () => {

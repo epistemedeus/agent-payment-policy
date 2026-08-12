@@ -24,6 +24,9 @@ export const SCHEMAS = Object.freeze({
   offerCoherenceReport: "agent-payment-policy.offer-coherence-report.v1",
   listingIdentityObservation: "agent-payment-policy.listing-identity-observation.v1",
   listingIdentityReport: "agent-payment-policy.listing-identity-report.v1",
+  serviceDeploymentStatement: "agent-payment-policy.service-deployment-statement.v1",
+  serviceDeploymentStatementJws: "agent-payment-policy.service-deployment-statement-jws.v1",
+  serviceDeploymentVerification: "agent-payment-policy.service-deployment-verification.v1",
 });
 
 export const PAYMENT_CONTROL_DIMENSIONS = Object.freeze([
@@ -130,6 +133,7 @@ const PROTOCOLS = new Set(["x402", "mpp"]);
 const JSON_BODY_METHODS = new Set(["POST"]);
 const VERIFIED_AUTHORIZATION = Symbol("verified-agent-payment-policy-authorization");
 const VERIFIED_EXECUTION_AUTHORIZATION = Symbol("verified-agent-payment-policy-execution-authorization");
+const SERVICE_DEPLOYMENT_JWS_TYPE = "agent-payment-policy-service-deployment+jws";
 
 function fail(message) {
   throw new Error(message);
@@ -1226,6 +1230,332 @@ export function listingIdentityOutputSchema() {
       },
     },
     required: ["schemaVersion", "evaluatedAt", "target", "decision", "summary", "sources", "nextAction", "boundary"],
+    additionalProperties: false,
+  };
+}
+
+function exactKeys(value, expected, label) {
+  if (!record(value) || canonicalJson(Object.keys(value).sort()) !== canonicalJson([...expected].sort())) {
+    fail(`${label} fields are invalid`);
+  }
+}
+
+function onlyKeys(value, allowed, label) {
+  if (!record(value) || Object.keys(value).some((key) => !allowed.includes(key))) fail(`${label} fields are invalid`);
+}
+
+function serviceOrigin(value, label = "service origin") {
+  let url;
+  try {
+    url = new URL(value);
+  } catch {
+    fail(`${label} is not a valid URL`);
+  }
+  if (url.protocol !== "https:" || url.pathname !== "/" || url.search || url.hash || url.username || url.password || (url.port && url.port !== "443")) {
+    fail(`${label} must be a public HTTPS origin without a path, query, fragment, user information, or nonstandard port`);
+  }
+  const inspected = normalizeRequest("GET", `${url.origin}/.well-known/agent-payment-policy-service-deployment`);
+  return inspected.origin;
+}
+
+function serviceRoute(value, canonicalOrigin) {
+  exactKeys(value, ["method", "path"], "service route");
+  const method = String(value.method || "").toUpperCase();
+  const path = cleanString(value.path, 2_000);
+  if (!/^[A-Z]{3,12}$/.test(method)) fail("service route method is invalid");
+  if (!path || !path.startsWith("/") || path.startsWith("//") || path.includes("?") || path.includes("#")) {
+    fail("service route path must be one exact absolute path without query or fragment data");
+  }
+  const url = new URL(path, canonicalOrigin);
+  if (url.origin !== canonicalOrigin || url.pathname !== path) fail("service route path is not canonical");
+  return Object.freeze({ method, path });
+}
+
+function serviceSettlement(value) {
+  exactKeys(value, ["protocol", "network", "asset", "recipient", "decimals"], "service settlement");
+  const protocol = String(value.protocol || "").toLowerCase();
+  const network = cleanString(value.network, 200);
+  let asset = cleanString(value.asset, 200);
+  let recipient = cleanString(value.recipient, 200);
+  const decimals = Number(value.decimals);
+  if (!PROTOCOLS.has(protocol)) fail("service settlement protocol is invalid");
+  if (!network) fail("service settlement network is required");
+  if (!asset) fail("service settlement asset is required");
+  if (!recipient) fail("service settlement recipient is required");
+  if (!Number.isInteger(decimals) || decimals < 0 || decimals > 255) fail("service settlement decimals are invalid");
+  if (network.toLowerCase().startsWith("eip155:")) {
+    if (/^0x[0-9a-fA-F]{40}$/.test(asset)) asset = asset.toLowerCase();
+    if (/^0x[0-9a-fA-F]{40}$/.test(recipient)) recipient = recipient.toLowerCase();
+  }
+  return Object.freeze({ protocol, network, asset, recipient, decimals });
+}
+
+function deploymentBinding(value) {
+  exactKeys(value, ["origin", "routes", "settlement"], "service deployment binding");
+  const origin = serviceOrigin(value.origin, "deployment origin");
+  if (!Array.isArray(value.routes) || value.routes.length < 1 || value.routes.length > 100) {
+    fail("service deployment binding must contain between 1 and 100 routes");
+  }
+  const routes = value.routes.map((route) => serviceRoute(route, origin));
+  const routeKeys = routes.map((value) => `${value.method} ${value.path}`);
+  if (new Set(routeKeys).size !== routeKeys.length) fail("service deployment binding contains a duplicate route");
+  routes.sort((left, right) => `${left.method} ${left.path}`.localeCompare(`${right.method} ${right.path}`));
+  if (!Array.isArray(value.settlement) || value.settlement.length < 1 || value.settlement.length > 50) {
+    fail("service deployment binding must contain between 1 and 50 settlement identities");
+  }
+  const settlement = value.settlement.map(serviceSettlement);
+  const settlementKeys = settlement.map((value) => canonicalJson(value));
+  if (new Set(settlementKeys).size !== settlementKeys.length) fail("service deployment binding contains a duplicate settlement identity");
+  settlement.sort((left, right) => canonicalJson(left).localeCompare(canonicalJson(right)));
+  return Object.freeze({ origin, routes: Object.freeze(routes), settlement: Object.freeze(settlement) });
+}
+
+function serviceDeploymentContent(input) {
+  if (!record(input)) fail("service deployment statement input is required");
+  const canonicalOrigin = serviceOrigin(input.canonicalOrigin, "canonical origin");
+  if (!Array.isArray(input.deployments) || input.deployments.length < 1 || input.deployments.length > 20) {
+    fail("service deployment statement must contain between 1 and 20 deployment bindings");
+  }
+  const deployments = input.deployments.map(deploymentBinding);
+  const origins = deployments.map((value) => value.origin);
+  if (new Set(origins).size !== origins.length) fail("service deployment statement contains a duplicate deployment origin");
+  if (!origins.includes(canonicalOrigin)) fail("service deployment statement must include the canonical origin as a deployment binding");
+  deployments.sort((left, right) => left.origin.localeCompare(right.origin));
+  return Object.freeze({ canonicalOrigin, deployments: Object.freeze(deployments) });
+}
+
+function isoTime(value, label) {
+  const parsed = Date.parse(value || "");
+  if (!Number.isFinite(parsed) || new Date(parsed).toISOString() !== value) fail(`${label} is invalid`);
+  return parsed;
+}
+
+function validateServiceDeploymentStatement(value) {
+  exactKeys(value, ["schemaVersion", "statementId", "canonicalOrigin", "deployments", "issuedAt", "expiresAt"], "service deployment statement");
+  if (value.schemaVersion !== SCHEMAS.serviceDeploymentStatement) fail("service deployment statement schema is invalid");
+  const content = serviceDeploymentContent(value);
+  const issuedAtMs = isoTime(value.issuedAt, "service deployment issuedAt");
+  const expiresAtMs = isoTime(value.expiresAt, "service deployment expiresAt");
+  if (expiresAtMs <= issuedAtMs || expiresAtMs - issuedAtMs > 30 * 86_400_000) fail("service deployment validity window is invalid");
+  const unsigned = {
+    schemaVersion: SCHEMAS.serviceDeploymentStatement,
+    ...content,
+    issuedAt: value.issuedAt,
+    expiresAt: value.expiresAt,
+  };
+  if (value.statementId !== digest(unsigned)) fail("service deployment statementId is invalid");
+  const normalized = Object.freeze({ ...unsigned, statementId: value.statementId });
+  if (canonicalJson(normalized) !== canonicalJson(value)) fail("service deployment statement is not canonical");
+  return normalized;
+}
+
+export function createServiceDeploymentStatement(input, { now = Date.now(), ttlMs = 86_400_000 } = {}) {
+  if (!Number.isInteger(now)) fail("service deployment now is invalid");
+  if (!Number.isInteger(ttlMs) || ttlMs < 60_000 || ttlMs > 30 * 86_400_000) fail("service deployment ttlMs is invalid");
+  onlyKeys(input, ["canonicalOrigin", "deployments"], "service deployment declaration");
+  const content = serviceDeploymentContent(input);
+  const unsigned = {
+    schemaVersion: SCHEMAS.serviceDeploymentStatement,
+    ...content,
+    issuedAt: new Date(now).toISOString(),
+    expiresAt: new Date(now + ttlMs).toISOString(),
+  };
+  return Object.freeze({ ...unsigned, statementId: digest(unsigned) });
+}
+
+export function signServiceDeploymentStatement(statement, { privateKey, kid } = {}) {
+  const payload = validateServiceDeploymentStatement(statement);
+  const normalizedKid = cleanString(kid, 200);
+  if (!normalizedKid) fail("service deployment kid is required");
+  const header = { alg: "EdDSA", kid: normalizedKid, typ: SERVICE_DEPLOYMENT_JWS_TYPE };
+  const protectedSegment = base64url(canonicalJson(header));
+  const payloadSegment = base64url(canonicalJson(payload));
+  const key = privateKey?.type === "private" ? privateKey : createPrivateKey(privateKey);
+  if (key.asymmetricKeyType !== "ed25519") fail("service deployment key must be Ed25519");
+  const signature = sign(null, Buffer.from(`${protectedSegment}.${payloadSegment}`), key).toString("base64url");
+  return Object.freeze({
+    schemaVersion: SCHEMAS.serviceDeploymentStatementJws,
+    protected: protectedSegment,
+    payload: payloadSegment,
+    signature,
+  });
+}
+
+function observedServiceRequest(value) {
+  if (!record(value)) fail("service deployment request observation is required");
+  const method = String(value.method || "").toUpperCase();
+  if (!/^[A-Z]{3,12}$/.test(method)) fail("service deployment request method is invalid");
+  const inspected = normalizeRequest("GET", value.url);
+  return Object.freeze({ method, origin: inspected.origin, path: inspected.pathname });
+}
+
+function observedServiceSettlement(value) {
+  if (!record(value)) fail("service deployment runtime offer is required");
+  return serviceSettlement({
+    protocol: value.protocol,
+    network: value.network,
+    asset: value.asset,
+    recipient: value.recipient,
+    decimals: value.decimals,
+  });
+}
+
+export function verifyServiceDeploymentStatement(envelope, { publicKey, request, runtimeOffer, now = Date.now() } = {}) {
+  exactKeys(envelope, ["schemaVersion", "protected", "payload", "signature"], "service deployment envelope");
+  if (envelope.schemaVersion !== SCHEMAS.serviceDeploymentStatementJws) fail("service deployment envelope schema is invalid");
+  const headerText = parseBase64url(envelope.protected).toString("utf8");
+  const header = JSON.parse(headerText);
+  exactKeys(header, ["alg", "kid", "typ"], "service deployment header");
+  if (canonicalJson(header) !== headerText || header.alg !== "EdDSA" || header.typ !== SERVICE_DEPLOYMENT_JWS_TYPE || !cleanString(header.kid, 200)) {
+    fail("service deployment header is invalid");
+  }
+  const payloadText = parseBase64url(envelope.payload).toString("utf8");
+  const payload = validateServiceDeploymentStatement(JSON.parse(payloadText));
+  if (canonicalJson(payload) !== payloadText) fail("service deployment payload is not canonical");
+  const key = publicKey?.type === "public" ? publicKey : createPublicKey(publicKey);
+  if (key.asymmetricKeyType !== "ed25519") fail("service deployment public key must be Ed25519");
+  if (!verify(null, Buffer.from(`${envelope.protected}.${envelope.payload}`), key, parseBase64url(envelope.signature))) {
+    fail("service deployment signature is invalid");
+  }
+  if (!Number.isInteger(now)) fail("service deployment verification time is invalid");
+  if (Date.parse(payload.issuedAt) > now || Date.parse(payload.expiresAt) <= now) fail("service deployment statement is not currently valid");
+  const normalizedRequest = observedServiceRequest(request);
+  const deployment = payload.deployments.find((candidate) => candidate.origin === normalizedRequest.origin);
+  if (!deployment) fail("request origin is not authorized by the service deployment statement");
+  if (!deployment.routes.some((route) => route.method === normalizedRequest.method && route.path === normalizedRequest.path)) {
+    fail("request route is not authorized by the service deployment statement");
+  }
+  const normalizedSettlement = observedServiceSettlement(runtimeOffer);
+  if (!deployment.settlement.some((candidate) => canonicalJson(candidate) === canonicalJson(normalizedSettlement))) {
+    fail("runtime settlement identity is not authorized by the service deployment statement");
+  }
+  return Object.freeze({
+    schemaVersion: SCHEMAS.serviceDeploymentVerification,
+    decision: "verified_exact_binding",
+    statementId: payload.statementId,
+    kid: header.kid,
+    publicKeyFingerprint: `sha256:${createHash("sha256").update(key.export({ format: "der", type: "spki" })).digest("hex")}`,
+    canonicalOrigin: payload.canonicalOrigin,
+    observedOrigin: normalizedRequest.origin,
+    route: Object.freeze({ method: normalizedRequest.method, path: normalizedRequest.path }),
+    settlement: normalizedSettlement,
+    expiresAt: payload.expiresAt,
+    verifiedAt: new Date(now).toISOString(),
+    boundary: Object.freeze({
+      signatureVerified: true,
+      keyAuthoritySuppliedExternally: true,
+      domainControlProven: false,
+      walletAccessed: false,
+      paymentAuthorized: false,
+      paymentSigned: false,
+      paymentSent: false,
+    }),
+  });
+}
+
+function serviceSettlementSchema() {
+  return {
+    type: "object",
+    properties: {
+      protocol: { type: "string", enum: [...PROTOCOLS] },
+      network: { type: "string", minLength: 1, maxLength: 200 },
+      asset: { type: "string", minLength: 1, maxLength: 200 },
+      recipient: { type: "string", minLength: 1, maxLength: 200 },
+      decimals: { type: "integer", minimum: 0, maximum: 255 },
+    },
+    required: ["protocol", "network", "asset", "recipient", "decimals"],
+    additionalProperties: false,
+  };
+}
+
+export function serviceDeploymentStatementSchema() {
+  const deployment = {
+    type: "object",
+    properties: {
+      origin: { type: "string", format: "uri" },
+      routes: {
+        type: "array", minItems: 1, maxItems: 100,
+        items: {
+          type: "object",
+          properties: { method: { type: "string", pattern: "^[A-Z]{3,12}$" }, path: { type: "string", pattern: "^/[^?#]*$", maxLength: 2_000 } },
+          required: ["method", "path"],
+          additionalProperties: false,
+        },
+      },
+      settlement: { type: "array", minItems: 1, maxItems: 50, items: serviceSettlementSchema() },
+    },
+    required: ["origin", "routes", "settlement"],
+    additionalProperties: false,
+  };
+  return {
+    $schema: "https://json-schema.org/draft/2020-12/schema",
+    type: "object",
+    properties: {
+      schemaVersion: { type: "string", const: SCHEMAS.serviceDeploymentStatement },
+      statementId: { type: "string", pattern: "^sha256:[0-9a-f]{64}$" },
+      canonicalOrigin: { type: "string", format: "uri" },
+      deployments: { type: "array", minItems: 1, maxItems: 20, items: deployment },
+      issuedAt: { type: "string", format: "date-time" },
+      expiresAt: { type: "string", format: "date-time" },
+    },
+    required: ["schemaVersion", "statementId", "canonicalOrigin", "deployments", "issuedAt", "expiresAt"],
+    additionalProperties: false,
+  };
+}
+
+export function serviceDeploymentEnvelopeSchema() {
+  return {
+    $schema: "https://json-schema.org/draft/2020-12/schema",
+    type: "object",
+    properties: {
+      schemaVersion: { type: "string", const: SCHEMAS.serviceDeploymentStatementJws },
+      protected: { type: "string", pattern: "^[A-Za-z0-9_-]+$" },
+      payload: { type: "string", pattern: "^[A-Za-z0-9_-]+$" },
+      signature: { type: "string", pattern: "^[A-Za-z0-9_-]+$" },
+    },
+    required: ["schemaVersion", "protected", "payload", "signature"],
+    additionalProperties: false,
+  };
+}
+
+export function serviceDeploymentVerificationSchema() {
+  const boundary = {
+    type: "object",
+    properties: {
+      signatureVerified: { type: "boolean", const: true },
+      keyAuthoritySuppliedExternally: { type: "boolean", const: true },
+      domainControlProven: { type: "boolean", const: false },
+      walletAccessed: { type: "boolean", const: false },
+      paymentAuthorized: { type: "boolean", const: false },
+      paymentSigned: { type: "boolean", const: false },
+      paymentSent: { type: "boolean", const: false },
+    },
+    required: ["signatureVerified", "keyAuthoritySuppliedExternally", "domainControlProven", "walletAccessed", "paymentAuthorized", "paymentSigned", "paymentSent"],
+    additionalProperties: false,
+  };
+  return {
+    $schema: "https://json-schema.org/draft/2020-12/schema",
+    type: "object",
+    properties: {
+      schemaVersion: { type: "string", const: SCHEMAS.serviceDeploymentVerification },
+      decision: { type: "string", const: "verified_exact_binding" },
+      statementId: { type: "string", pattern: "^sha256:[0-9a-f]{64}$" },
+      kid: { type: "string", minLength: 1, maxLength: 200 },
+      publicKeyFingerprint: { type: "string", pattern: "^sha256:[0-9a-f]{64}$" },
+      canonicalOrigin: { type: "string", format: "uri" },
+      observedOrigin: { type: "string", format: "uri" },
+      route: {
+        type: "object",
+        properties: { method: { type: "string" }, path: { type: "string" } },
+        required: ["method", "path"],
+        additionalProperties: false,
+      },
+      settlement: serviceSettlementSchema(),
+      expiresAt: { type: "string", format: "date-time" },
+      verifiedAt: { type: "string", format: "date-time" },
+      boundary,
+    },
+    required: ["schemaVersion", "decision", "statementId", "kid", "publicKeyFingerprint", "canonicalOrigin", "observedOrigin", "route", "settlement", "expiresAt", "verifiedAt", "boundary"],
     additionalProperties: false,
   };
 }

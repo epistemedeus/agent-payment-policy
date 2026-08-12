@@ -38,3 +38,13 @@ expiry, and per-dimension matched, unknown, or drifted disposition. They do not
 retain query values, JSON body values, raw challenge headers, credentials,
 cookies, signatures, wallet state, or response bodies. The caller remains
 responsible for acquiring and authenticating the catalog and runtime evidence.
+
+Service-deployment statements contain public service origins, exact HTTP
+methods and paths, public settlement protocol, network, asset, recipient and
+decimals, key ID, issue and expiry timestamps, and a signature. Verification
+reports retain only those public bindings plus the verification time. Query
+values are excluded. The library does not fetch a public key, access DNS,
+accept a credential, access a wallet, authorize a payment, sign a payment, or
+send a payment. Applications are responsible for establishing the public
+key's authority through a separate identity channel and protecting the
+statement-signing private key outside this package.
