@@ -1,0 +1,140 @@
+---
+name: agent-payment-policy
+description: Bind a buyer-owned response contract to an agent payment decision and validate the settled output before accepting delivery. Use when an agent is evaluating, authorizing, executing, or reviewing an x402, MPP, HTTP 402, paid API, paid MCP, or other machine-commerce request; when required JSON fields, types, formats, bounds, or freshness must survive from intent through receipt; or when wallet and budget controls exist but paid-output integrity is still missing.
+---
+
+# Agent payment policy
+
+Treat payment success and delivery validity as separate decisions. Use this
+workflow before an agent accepts a paid JSON response.
+
+## Keep the trust boundary explicit
+
+- Let the seller's OpenAPI or marketplace schema establish what it claims to
+  return and whether the request is constructible.
+- Define a separate buyer-owned JSON Schema for the minimum acceptable result.
+- Compile and inspect that schema before network, credential, balance, signer,
+  or wallet work.
+- Bind the canonical schema digest into the immutable intent and signed
+  authorization. Never authorize from a mutable file path alone.
+- Validate the exact settled response body against the bound schema before
+  treating delivery as successful.
+- Preserve payment settlement and output validation as independent receipt
+  fields. A paid response can still be invalid.
+
+This skill complements wallet, budget, x402, and MPP execution tools. It does
+not create a wallet, sign a payment, choose a facilitator, or authorize spend.
+
+## Build the buyer contract
+
+Write a bounded JSON Schema 2020-12 document that expresses only the fields the
+buyer's decision actually needs. Require types and formats, not only field
+presence. Prefer `additionalProperties: false` where the response contract is
+closed. Avoid remote `$ref`, executable extensions, and unbounded recursion.
+
+Example:
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["data"],
+  "properties": {
+    "data": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "value", "observedAt"],
+      "properties": {
+        "source": { "type": "string", "format": "uri" },
+        "value": { "type": "number", "minimum": 0 },
+        "observedAt": { "type": "string", "format": "date-time" }
+      }
+    }
+  }
+}
+```
+
+Inspect the schema locally with an exact package version:
+
+```bash
+npm install --save-exact agent-payment-policy@0.13.1
+npx agent-payment-policy output-schema-check \
+  ./output-schema.json \
+  data.source,data.value,data.observedAt
+```
+
+Record the returned `schemaDigest`, canonical byte count, and required paths.
+Stop before wallet access if inspection or compilation fails.
+
+## Carry the contract through authorization
+
+Build the immutable purchase intent with:
+
+- exact method and normalized target;
+- maximum atomic amount, asset, network, and protocol constraints;
+- required media type and response byte ceiling;
+- required JSON paths;
+- the inspected `schemaDigest`;
+- freshness or content-hash constraints when the decision needs them.
+
+Select one exact offer, freeze it in a route lock, and authorize the plan with a
+separate policy identity. Reinspect the local schema immediately before
+execution and require its digest to equal the authorized digest. A changed
+schema requires a new authorization.
+
+## Validate delivery
+
+After the paid response is received:
+
+1. enforce the authorized media type and byte ceiling;
+2. parse JSON without coercion;
+3. validate the whole body against the prepared buyer schema;
+4. enforce freshness or content-hash constraints;
+5. create a receipt that reports payment settlement and output validation
+   separately;
+6. release the body to downstream reasoning only when validation passes.
+
+For library use:
+
+```js
+import {
+  inspectOutputSchema,
+  prepareOutputValidator,
+  validateOutput,
+} from "agent-payment-policy";
+
+const inspected = inspectOutputSchema({
+  schema,
+  requiredFields: ["data.source", "data.value", "data.observedAt"],
+});
+
+const schemaValidator = prepareOutputValidator({
+  schema,
+  contract: {
+    mediaType: "application/json",
+    maxBytes: 65536,
+    requiredFields: inspected.requiredFields,
+    schemaDigest: inspected.schemaDigest,
+  },
+});
+
+const result = validateOutput(responseBytes, contract, { schemaValidator });
+```
+
+Use the package README for the complete intent, planning, authorization, and
+receipt APIs.
+
+## Fail closed at the right stage
+
+- Missing or invalid buyer schema: stop before network and wallet work.
+- Seller schema cannot guarantee required paths: reject during procurement.
+- Authorized schema digest differs from local schema: require reauthorization.
+- Paid body fails schema validation: record settlement accurately, mark
+  delivery invalid, and do not pass the body downstream.
+- Binary or streaming response: use a separate bounded contract or leave this
+  JSON workflow rather than silently weakening it.
+
+Do not claim that seller conformance proves truth, freshness, or business
+quality. The schema proves only that the delivered bytes satisfy the buyer's
+declared structural acceptance contract.

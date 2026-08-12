@@ -38,6 +38,10 @@ paid output to satisfy that same schema when creating a receipt. The schema is
 not copied into the intent, plan, authorization, receipt, or network request.
 Contracts without `schemaDigest` retain the prior required-field behavior.
 
+Version 0.13.1 adds a neutral installable agent skill for applying that boundary
+to x402, MPP, HTTP 402, paid API, and paid MCP workflows. The skill complements
+wallet and payment-execution tools. It does not authorize spend or move funds.
+
 ## Try it
 
 ```bash
@@ -50,6 +54,17 @@ npx agent-payment-policy output-schema-check ./output-schema.json data.value,dat
 
 The demo generates an ephemeral policy key and produces a plan plus a verified
 authorization. It performs no network request and no payment.
+
+## Install the agent skill
+
+```bash
+npx skills add epistemedeus/agent-payment-policy@agent-payment-policy
+```
+
+The skill teaches an agent to define a buyer-owned JSON Schema, bind its exact
+digest through intent and authorization, and validate the settled body before
+accepting delivery. It is also included in the npm package at
+`skills/agent-payment-policy/SKILL.md`.
 
 ## Bind the output you are willing to buy
 
