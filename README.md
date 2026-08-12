@@ -22,7 +22,7 @@ The package separates five concerns:
    query values, JSON request bodies, or response bodies.
 
 It also exposes a wallet-free control-coverage gate for delegated signers. A
-settlement adapter can declare where each of thirteen required controls is
+settlement adapter can declare where each of fourteen required controls is
 enforced, then reject the profile unless every pre-signature and
 post-settlement control is covered by the provider, the independent buyer, or
 both. The result uses explicit dispositions rather than a security score.
@@ -72,6 +72,11 @@ Call the assertion before account access, wallet loading, signing, or payment.
 The report is evidence about enforcement placement, not proof that a declared
 control is implemented correctly. Bind profiles in reviewed code, test each
 control against drift, and retain the underlying acceptance evidence.
+
+`operation` answers which RPC or signing method may run. `execution_shape`
+separately answers whether the complete action, including batch cardinality and
+ordering, is fixed. Do not credit method allowlisting as execution-shape
+coverage.
 
 ## Bind the exact execution batch
 

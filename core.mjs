@@ -15,12 +15,13 @@ export const SCHEMAS = Object.freeze({
   executionAuthorization: "agent-payment-policy.execution-authorization.v1",
   executionAuthorizationJws: "agent-payment-policy.execution-authorization-jws.v1",
   receipt: "agent-payment-policy.receipt.v1",
-  controlCoverage: "agent-payment-policy.control-coverage.v1",
+  controlCoverage: "agent-payment-policy.control-coverage.v2",
 });
 
 export const PAYMENT_CONTROL_DIMENSIONS = Object.freeze([
   "authorization",
   "operation",
+  "execution_shape",
   "chain",
   "token_contract",
   "recipient",
@@ -37,6 +38,7 @@ export const PAYMENT_CONTROL_DIMENSIONS = Object.freeze([
 const PRE_SIGNATURE_CONTROLS = new Set([
   "authorization",
   "operation",
+  "execution_shape",
   "chain",
   "token_contract",
   "recipient",

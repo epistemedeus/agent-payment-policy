@@ -112,7 +112,7 @@ test("admits a complete provider-neutral control profile without an opaque score
     network: "eip155:42431",
     protocol: "mpp-tempo-charge",
   });
-  assert.equal(verified.summary.providerNeutralOnlyCount, 13);
+  assert.equal(verified.summary.providerNeutralOnlyCount, 14);
   assert.equal(verified.summary.signingReady, true);
   assert.equal(verified.summary.settlementReady, true);
   assert.equal(Object.isFrozen(coverage), true);
@@ -129,7 +129,7 @@ test("reports defense in depth and rejects uncovered or contradictory controls",
     independentVerified: [...PAYMENT_CONTROL_DIMENSIONS],
   });
   assert.equal(mixed.summary.defenseInDepthCount, 6);
-  assert.equal(mixed.summary.providerNeutralOnlyCount, 7);
+  assert.equal(mixed.summary.providerNeutralOnlyCount, 8);
 
   const incomplete = createControlCoverage({
     profileId: "base-usdc",
