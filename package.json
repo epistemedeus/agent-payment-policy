@@ -1,6 +1,6 @@
 {
   "name": "agent-payment-policy",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "Policy, authorization, and receipt evidence for AI agents buying APIs through x402 or MPP",
   "keywords": [
     "x402",

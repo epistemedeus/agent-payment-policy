@@ -48,3 +48,10 @@ accept a credential, access a wallet, authorize a payment, sign a payment, or
 send a payment. Applications are responsible for establishing the public
 key's authority through a separate identity channel and protecting the
 statement-signing private key outside this package.
+
+Response-contract reports retain the public request method, origin and path,
+successful status, JSON media type, schema digest, top-level required field
+names, controlled structural findings, and the example's structural-consistency
+classification. They do not retain the schema, example, query values, response
+body, credential, wallet state, signature, or payment. The evaluator performs
+no network request and does not authenticate the seller declaration.

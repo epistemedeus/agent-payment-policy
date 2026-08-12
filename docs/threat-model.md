@@ -33,6 +33,9 @@
 - An authorized alias that is permitted for one route or rail and is
   accidentally granted a different deployment binding through a cross-product
   policy.
+- A seller that publishes payment inputs and price but no machine-verifiable
+  success-response contract, causing a buyer to pay for output it cannot judge.
+- A response example that contradicts its own declared response schema.
 
 ## Out of scope
 
@@ -80,6 +83,12 @@ asset, recipient, and decimals. Each origin carries its own route and
 settlement lists so an alias does not inherit another origin's authority. Check
 the short validity window at use time and then continue through the separate
 live challenge, value, policy, authorization, and execution boundaries.
+
+Treat `evaluateResponseContract` as seller-declared pre-purchase evidence only.
+An `admissible` result means the limited self-contained schema subset can be
+turned into an independently authorized output contract. It does not prove the
+seller will return that shape. Validate the actual paid response separately and
+record output failure without inventing a successful delivery.
 
 ## Wallet-policy observation evidence
 

@@ -350,3 +350,25 @@ envelope without accepting private keys:
 agent-payment-policy service-deployment-verify envelope.json public-key.pem observation.json
 agent-payment-policy service-deployment-schema
 ```
+
+Version 0.10.0 adds a credential-free response-contract readiness boundary for
+machine buyers. It classifies one seller-declared successful JSON response as
+`admissible`, `partial`, `absent`, or `invalid` before value authorization:
+
+```bash
+agent-payment-policy response-contract-check response-observation.json
+agent-payment-policy response-contract-schema
+```
+
+An admissible declaration is a bounded, self-contained top-level object schema
+with typed required fields and no unsupported composition or external-reference
+keywords. An optional example is checked only for structural consistency with
+that limited subset. The report retains the schema digest and top-level
+required field names, but not the schema, example, or query values. It makes no
+network request and accesses no credential or wallet.
+
+This is pre-purchase evidence, not runtime attestation. Seller declarations are
+unauthenticated unless the integrating caller supplies a separate trust layer.
+The paid response must still be validated against the independently authorized
+output contract after settlement. Complex JSON Schema composition remains
+`partial` instead of receiving invented coverage.

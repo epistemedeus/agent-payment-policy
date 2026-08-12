@@ -36,6 +36,9 @@ import {
   serviceDeploymentEnvelopeSchema,
   serviceDeploymentStatementSchema,
   serviceDeploymentVerificationSchema,
+  evaluateResponseContract,
+  responseContractInputSchema,
+  responseContractOutputSchema,
   signServiceDeploymentStatement,
   verifyServiceDeploymentStatement,
   walletPolicyObservationInputSchema,
@@ -410,6 +413,74 @@ test("publishes strict service deployment schemas", () => {
   assert.equal(verification.additionalProperties, false);
   assert.equal(verification.properties.boundary.additionalProperties, false);
   assert.equal(verification.properties.boundary.properties.paymentAuthorized.const, false);
+});
+
+function responseObservation(response) {
+  return {
+    schemaVersion: "agent-payment-policy.response-contract-observation.v1",
+    source: "seller-openapi",
+    request: { method: "GET", url: "https://seller.example/data?private=value" },
+    response: { status: 200, mediaType: "application/json", ...response },
+  };
+}
+
+test("admits a self-contained typed object response contract without retaining its schema or example", () => {
+  const report = evaluateResponseContract(responseObservation({
+    schema: {
+      type: "object",
+      properties: {
+        ok: { type: "boolean" },
+        data: { type: "object", properties: { value: { type: "number" } }, required: ["value"], additionalProperties: false },
+      },
+      required: ["ok", "data"],
+      additionalProperties: false,
+    },
+    example: { ok: true, data: { value: 42 } },
+  }), { now: NOW });
+  assert.equal(report.decision, "admissible");
+  assert.equal(report.exampleStatus, "structurally_consistent");
+  assert.deepEqual(report.requiredFields, ["data", "ok"]);
+  assert.match(report.schemaDigest, /^sha256:/);
+  assert.equal(report.boundary.schemaRetained, false);
+  assert.equal(report.boundary.exampleRetained, false);
+  assert.equal(report.boundary.paymentAuthorized, false);
+  assert.doesNotMatch(JSON.stringify(report), /private=value|"value":42/);
+});
+
+test("classifies absent, partial, and structurally inconsistent response declarations", () => {
+  const absent = evaluateResponseContract(responseObservation({}), { now: NOW });
+  assert.equal(absent.decision, "absent");
+  assert.equal(absent.schemaDigest, null);
+  assert.deepEqual(absent.structuralProblems, ["response_schema_absent"]);
+
+  const partial = evaluateResponseContract(responseObservation({
+    schema: { type: "object", properties: { data: { $ref: "#/components/schemas/Data" } }, required: ["data"] },
+  }), { now: NOW });
+  assert.equal(partial.decision, "partial");
+  assert.equal(partial.unsupportedKeywords.includes("$.properties.data.$ref"), true);
+
+  const inconsistent = evaluateResponseContract(responseObservation({
+    schema: { type: "object", properties: { ok: { type: "boolean" }, count: { type: "integer" } }, required: ["ok", "count"], additionalProperties: false },
+    example: { ok: true, count: "not-an-integer" },
+  }), { now: NOW });
+  assert.equal(inconsistent.decision, "invalid");
+  assert.equal(inconsistent.exampleStatus, "structurally_inconsistent");
+});
+
+test("rejects unsafe response-contract shapes and publishes strict schemas", () => {
+  assert.throws(() => evaluateResponseContract({ ...responseObservation({}), apiKey: "secret" }), /observation fields are invalid/);
+  assert.throws(() => evaluateResponseContract(responseObservation({ status: 402 })), /successful HTTP status/);
+  assert.throws(() => evaluateResponseContract(responseObservation({ mediaType: "text/plain" })), /application\/json/);
+  assert.throws(() => evaluateResponseContract(responseObservation({ schema: { type: "object", properties: {}, required: ["x", "x"] } })), /invalid or duplicated/);
+  assert.throws(() => evaluateResponseContract(responseObservation({ schema: { type: "object", properties: {} }, example: Number.NaN })), /non-finite/);
+  const input = responseContractInputSchema();
+  const output = responseContractOutputSchema();
+  assert.equal(input.additionalProperties, false);
+  assert.equal(input.properties.request.additionalProperties, false);
+  assert.equal(input.properties.response.additionalProperties, false);
+  assert.equal(output.additionalProperties, false);
+  assert.equal(output.properties.boundary.additionalProperties, false);
+  assert.equal(output.properties.boundary.properties.paymentAuthorized.const, false);
 });
 
 test("creates an immutable private-need digest without retaining the plaintext need", () => {

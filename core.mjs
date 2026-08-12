@@ -27,6 +27,8 @@ export const SCHEMAS = Object.freeze({
   serviceDeploymentStatement: "agent-payment-policy.service-deployment-statement.v1",
   serviceDeploymentStatementJws: "agent-payment-policy.service-deployment-statement-jws.v1",
   serviceDeploymentVerification: "agent-payment-policy.service-deployment-verification.v1",
+  responseContractObservation: "agent-payment-policy.response-contract-observation.v1",
+  responseContractReport: "agent-payment-policy.response-contract-report.v1",
 });
 
 export const PAYMENT_CONTROL_DIMENSIONS = Object.freeze([
@@ -1556,6 +1558,244 @@ export function serviceDeploymentVerificationSchema() {
       boundary,
     },
     required: ["schemaVersion", "decision", "statementId", "kid", "publicKeyFingerprint", "canonicalOrigin", "observedOrigin", "route", "settlement", "expiresAt", "verifiedAt", "boundary"],
+    additionalProperties: false,
+  };
+}
+
+const RESPONSE_SCHEMA_UNSUPPORTED = new Set([
+  "$ref", "$dynamicRef", "allOf", "anyOf", "oneOf", "not", "if", "then", "else",
+  "dependentSchemas", "patternProperties", "unevaluatedProperties",
+]);
+const JSON_SCHEMA_TYPES = new Set(["object", "array", "string", "number", "integer", "boolean", "null"]);
+
+function unsupportedSchemaKeywords(value, path = "$", found = []) {
+  if (Array.isArray(value)) {
+    value.forEach((item, index) => unsupportedSchemaKeywords(item, `${path}[${index}]`, found));
+    return found;
+  }
+  if (!record(value)) return found;
+  for (const [key, item] of Object.entries(value)) {
+    if (RESPONSE_SCHEMA_UNSUPPORTED.has(key)) found.push(`${path}.${key}`);
+    unsupportedSchemaKeywords(item, `${path}.${key}`, found);
+  }
+  return found;
+}
+
+function schemaTypes(schema) {
+  const raw = schema?.type;
+  const values = Array.isArray(raw) ? raw : raw === undefined ? [] : [raw];
+  return [...new Set(values.map(String))];
+}
+
+function valueMatchesSchema(value, schema, depth = 0) {
+  if (!record(schema) || depth > 20) return false;
+  const types = schemaTypes(schema);
+  if (!types.length || types.some((type) => !JSON_SCHEMA_TYPES.has(type))) return false;
+  const matchesType = (type) => {
+    if (type === "null") return value === null;
+    if (type === "array") return Array.isArray(value);
+    if (type === "object") return record(value) !== null;
+    if (type === "integer") return Number.isInteger(value);
+    if (type === "number") return typeof value === "number" && Number.isFinite(value);
+    return typeof value === type;
+  };
+  if (!types.some(matchesType)) return false;
+  if (value === null) return true;
+  if (Array.isArray(value)) {
+    return schema.items === undefined || value.every((item) => valueMatchesSchema(item, schema.items, depth + 1));
+  }
+  if (record(value)) {
+    const properties = record(schema.properties) || {};
+    const required = Array.isArray(schema.required) ? schema.required : [];
+    if (required.some((key) => !Object.prototype.hasOwnProperty.call(value, key))) return false;
+    for (const [key, item] of Object.entries(value)) {
+      if (properties[key] && !valueMatchesSchema(item, properties[key], depth + 1)) return false;
+      if (!properties[key] && schema.additionalProperties === false) return false;
+    }
+  }
+  return true;
+}
+
+function responseContractBoundary(statement) {
+  return Object.freeze({
+    sellerDeclarationAuthenticated: false,
+    runtimeResponseVerified: false,
+    schemaRetained: false,
+    exampleRetained: false,
+    queryValuesRetained: false,
+    credentialsAccepted: false,
+    networkAccessed: false,
+    walletAccessed: false,
+    paymentAuthorized: false,
+    paymentSigned: false,
+    paymentSent: false,
+    statement,
+  });
+}
+
+export function evaluateResponseContract(input, { now = Date.now() } = {}) {
+  onlyKeys(input, ["schemaVersion", "source", "request", "response"], "response contract observation");
+  if (input.schemaVersion !== SCHEMAS.responseContractObservation) fail("response contract observation schema is invalid");
+  const source = cleanString(input.source, 128) || "seller_declaration";
+  exactKeys(input.request, ["method", "url"], "response contract request");
+  const request = observedServiceRequest(input.request);
+  if (!record(input.response)) fail("response contract declaration is required");
+  onlyKeys(input.response, ["status", "mediaType", "schema", "example"], "response contract declaration");
+  const status = Number(input.response.status);
+  const mediaType = cleanString(input.response.mediaType, 200)?.toLowerCase().split(";", 1)[0].trim();
+  if (!Number.isInteger(status) || status < 200 || status > 299) fail("response contract status must be a successful HTTP status");
+  if (mediaType !== "application/json") fail("response contract mediaType must be application/json");
+  const evaluatedAt = new Date(now).toISOString();
+  if (input.response.schema === undefined || input.response.schema === null) {
+    return Object.freeze({
+      schemaVersion: SCHEMAS.responseContractReport,
+      evaluatedAt,
+      source,
+      request,
+      response: Object.freeze({ status, mediaType }),
+      decision: "absent",
+      schemaDigest: null,
+      requiredFields: Object.freeze([]),
+      exampleStatus: input.response.example === undefined ? "absent" : "unverifiable",
+      unsupportedKeywords: Object.freeze([]),
+      structuralProblems: Object.freeze(["response_schema_absent"]),
+      nextAction: "seller_must_publish_a_machine_verifiable_success_response_schema",
+      boundary: responseContractBoundary("No response schema was supplied; payment and output validation remain unauthorized."),
+    });
+  }
+  if (!record(input.response.schema)) fail("response contract schema must be a JSON object");
+  assertJsonValue(input.response.schema);
+  const serialized = canonicalJson(input.response.schema);
+  if (Buffer.byteLength(serialized) > 100_000) fail("response contract schema exceeds 100000 bytes");
+  const schemaDigest = digest(serialized);
+  const schema = input.response.schema;
+  const properties = record(schema.properties) || {};
+  const required = Array.isArray(schema.required) ? schema.required.map((value) => cleanString(value, 200)) : [];
+  if (required.some((value) => !value) || new Set(required).size !== required.length) fail("response contract required fields are invalid or duplicated");
+  const requiredFields = [...required].sort();
+  const unsupportedKeywords = unsupportedSchemaKeywords(schema).slice(0, 100).sort();
+  const topTypes = schemaTypes(schema);
+  const structuralProblems = [];
+  if (!topTypes.includes("object")) structuralProblems.push("top_level_type_not_object");
+  if (!Object.keys(properties).length) structuralProblems.push("properties_missing");
+  if (!requiredFields.length) structuralProblems.push("required_fields_missing");
+  for (const field of requiredFields) {
+    if (!record(properties[field])) structuralProblems.push(`required_property_missing:${field}`);
+    else {
+      const types = schemaTypes(properties[field]);
+      if (!types.length || types.some((type) => !JSON_SCHEMA_TYPES.has(type))) structuralProblems.push(`required_property_type_missing:${field}`);
+    }
+  }
+  let exampleStatus = "absent";
+  if (input.response.example !== undefined) {
+    assertJsonValue(input.response.example);
+    const exampleBytes = Buffer.byteLength(canonicalJson(input.response.example));
+    if (exampleBytes > 100_000) fail("response contract example exceeds 100000 bytes");
+    exampleStatus = unsupportedKeywords.length || structuralProblems.length
+      ? "unverifiable"
+      : valueMatchesSchema(input.response.example, schema) ? "structurally_consistent" : "structurally_inconsistent";
+  }
+  const decision = exampleStatus === "structurally_inconsistent"
+    ? "invalid"
+    : structuralProblems.length || unsupportedKeywords.length ? "partial" : "admissible";
+  const nextAction = decision === "admissible"
+    ? "eligible_for_separate_value_authorization_and_live_post_payment_validation"
+    : decision === "invalid"
+      ? "seller_must_fix_the_declared_example_or_response_schema"
+      : "seller_must_publish_a_self_contained_object_schema_with_typed_required_fields";
+  return Object.freeze({
+    schemaVersion: SCHEMAS.responseContractReport,
+    evaluatedAt,
+    source,
+    request,
+    response: Object.freeze({ status, mediaType }),
+    decision,
+    schemaDigest,
+    requiredFields: Object.freeze(requiredFields),
+    exampleStatus,
+    unsupportedKeywords: Object.freeze(unsupportedKeywords),
+    structuralProblems: Object.freeze(structuralProblems.sort()),
+    nextAction,
+    boundary: responseContractBoundary("Seller-declared schema evidence is advisory until the paid runtime response is validated against the independently authorized output contract."),
+  });
+}
+
+export function responseContractInputSchema() {
+  return {
+    $schema: "https://json-schema.org/draft/2020-12/schema",
+    type: "object",
+    properties: {
+      schemaVersion: { type: "string", const: SCHEMAS.responseContractObservation },
+      source: { type: "string", minLength: 1, maxLength: 128 },
+      request: {
+        type: "object",
+        properties: { method: { type: "string" }, url: { type: "string", format: "uri" } },
+        required: ["method", "url"],
+        additionalProperties: false,
+      },
+      response: {
+        type: "object",
+        properties: {
+          status: { type: "integer", minimum: 200, maximum: 299 },
+          mediaType: { type: "string", const: "application/json" },
+          schema: { type: ["object", "null"] },
+          example: {},
+        },
+        required: ["status", "mediaType"],
+        additionalProperties: false,
+      },
+    },
+    required: ["schemaVersion", "request", "response"],
+    additionalProperties: false,
+  };
+}
+
+export function responseContractOutputSchema() {
+  return {
+    $schema: "https://json-schema.org/draft/2020-12/schema",
+    type: "object",
+    properties: {
+      schemaVersion: { type: "string", const: SCHEMAS.responseContractReport },
+      evaluatedAt: { type: "string", format: "date-time" },
+      source: { type: "string" },
+      request: {
+        type: "object",
+        properties: { method: { type: "string" }, origin: { type: "string" }, path: { type: "string" } },
+        required: ["method", "origin", "path"], additionalProperties: false,
+      },
+      response: {
+        type: "object",
+        properties: { status: { type: "integer" }, mediaType: { type: "string" } },
+        required: ["status", "mediaType"], additionalProperties: false,
+      },
+      decision: { type: "string", enum: ["admissible", "partial", "absent", "invalid"] },
+      schemaDigest: { type: ["string", "null"] },
+      requiredFields: { type: "array", uniqueItems: true, items: { type: "string" } },
+      exampleStatus: { type: "string", enum: ["structurally_consistent", "structurally_inconsistent", "absent", "unverifiable"] },
+      unsupportedKeywords: { type: "array", items: { type: "string" } },
+      structuralProblems: { type: "array", items: { type: "string" } },
+      nextAction: { type: "string" },
+      boundary: {
+        type: "object",
+        properties: {
+          sellerDeclarationAuthenticated: { type: "boolean", const: false },
+          runtimeResponseVerified: { type: "boolean", const: false },
+          schemaRetained: { type: "boolean", const: false },
+          exampleRetained: { type: "boolean", const: false },
+          queryValuesRetained: { type: "boolean", const: false },
+          credentialsAccepted: { type: "boolean", const: false },
+          networkAccessed: { type: "boolean", const: false },
+          walletAccessed: { type: "boolean", const: false },
+          paymentAuthorized: { type: "boolean", const: false },
+          paymentSigned: { type: "boolean", const: false },
+          paymentSent: { type: "boolean", const: false },
+          statement: { type: "string" },
+        },
+        required: ["sellerDeclarationAuthenticated", "runtimeResponseVerified", "schemaRetained", "exampleRetained", "queryValuesRetained", "credentialsAccepted", "networkAccessed", "walletAccessed", "paymentAuthorized", "paymentSigned", "paymentSent", "statement"],
+        additionalProperties: false,
+      },
+    },
+    required: ["schemaVersion", "evaluatedAt", "source", "request", "response", "decision", "schemaDigest", "requiredFields", "exampleStatus", "unsupportedKeywords", "structuralProblems", "nextAction", "boundary"],
     additionalProperties: false,
   };
 }
