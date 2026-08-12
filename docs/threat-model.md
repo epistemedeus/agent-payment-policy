@@ -23,6 +23,9 @@
 - A coverage report that claims a stronger disposition than its underlying
   provider-native and independent evidence supports.
 - A response that is oversized, malformed, or missing required fields.
+- A cumulative policy whose metric silently decodes an unrecognized action as
+  zero, whose successful signatures race before counter updates, or whose
+  signed-but-unbroadcast activity diverges from on-chain settlement.
 
 ## Out of scope
 
@@ -59,3 +62,13 @@ underlying bounded test evidence separately and use this format to normalize
 results, not to manufacture trust. Only explicit provider-policy denial earns
 native coverage, and unrun cases remain partial. Exact execution shape requires
 the separate duplicate-approved-action probe.
+
+## Stateful wallet-policy observation evidence
+
+The stateful report also classifies caller-supplied evidence. It distinguishes
+provider-policy denial from an application queue or mutex, validation failure,
+and generic provider failure. A passing sequential cap does not prove strict
+concurrency safety, and a provider-native counter does not replace exact
+function and calldata constraints. A production integration should combine a
+per-request cap, exact action binding, application serialization, provider-
+native aggregation where useful, and post-settlement reconciliation.

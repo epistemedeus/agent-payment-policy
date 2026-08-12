@@ -143,7 +143,7 @@ proving every claimed enforcement path.
 
 ## Standardize wallet policy observations
 
-Version 0.5.0 adds a provider-neutral observation format for the exact wallet
+Version 0.5.0 added a provider-neutral observation format for the exact wallet
 policy problem this project encountered on both Tempo and Solana. Provider
 policies denied useful wrong-action cases while still signing a transaction
 that duplicated an approved action. The format therefore treats `operation`
@@ -189,3 +189,34 @@ The core exports are `createWalletPolicyObservationDraft`,
 These APIs evaluate caller-supplied observations. They do not execute or prove
 the provider tests, access a wallet, verify a signature, sign, broadcast, or
 settle a payment.
+
+## Standardize stateful budget observations
+
+Version 0.6.0 adds a separate seven-case format for wallet policies that depend
+on prior or concurrent requests. It does not fold stateful behavior into exact-
+action conformance because they answer different questions.
+
+Create and evaluate a safe offline draft:
+
+```bash
+agent-payment-policy stateful-policy-init \
+  provider-budget-lab "Example Wallet" eip155:8453 x402 \
+  > stateful-policy-observations.json
+
+agent-payment-policy stateful-policy-check stateful-policy-observations.json
+agent-payment-policy stateful-policy-schema
+```
+
+The required cases are one request inside the cap, a sequential request that
+exceeds the cumulative cap, signed-but-unbroadcast accounting, unrecognized
+calldata, concurrent oversubscription, and a missing counter reference. An
+optional case records application-side serialization separately. A local mutex,
+queue, or rate limiter can be useful but never receives provider-native credit.
+The output is `conformant`, `partial`, or `unsafe` and has no opaque score.
+
+The core exports are `createStatefulWalletPolicyObservationDraft`,
+`evaluateStatefulWalletPolicyObservations`,
+`normalizeStatefulWalletPolicyObservations`,
+`STATEFUL_WALLET_POLICY_OBSERVATION_CASES`,
+`statefulWalletPolicyObservationInputSchema`, and
+`statefulWalletPolicyObservationOutputSchema`.

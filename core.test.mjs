@@ -20,6 +20,12 @@ import {
   verifyExecutionAuthorization,
   PAYMENT_CONTROL_DIMENSIONS,
   WALLET_POLICY_OBSERVATION_CASES,
+  STATEFUL_WALLET_POLICY_OBSERVATION_CASES,
+  createStatefulWalletPolicyObservationDraft,
+  evaluateStatefulWalletPolicyObservations,
+  normalizeStatefulWalletPolicyObservations,
+  statefulWalletPolicyObservationInputSchema,
+  statefulWalletPolicyObservationOutputSchema,
   walletPolicyObservationInputSchema,
   walletPolicyObservationOutputSchema,
 } from "./core.mjs";
@@ -287,6 +293,98 @@ test("publishes strict input and output schemas for portable integrations", () =
   assert.equal(inputSchema.properties.observations.maxItems, 16);
   assert.equal(inputSchema.additionalProperties, false);
   assert.equal(outputSchema.properties.schemaVersion.const, "agent-payment-policy.wallet-policy-observation-report.v1");
+  assert.equal(outputSchema.additionalProperties, false);
+});
+
+const statefulObservation = (caseName, actual, enforcementClass = actual === "allowed" ? "none" : "policy") => ({
+  case: caseName,
+  actual,
+  enforcementClass,
+  code: actual === "allowed" ? "signed" : "policy_violation",
+});
+
+const completeStatefulMatrix = () => Object.entries(STATEFUL_WALLET_POLICY_OBSERVATION_CASES)
+  .filter(([, definition]) => definition.required)
+  .map(([caseName, definition]) => statefulObservation(caseName, definition.expected === "allow" ? "allowed" : "denied"));
+
+const statefulInput = (observations = completeStatefulMatrix()) => ({
+  schemaVersion: "agent-payment-policy.stateful-wallet-policy-observation.v1",
+  profileId: "privy-base-sepolia-stateful",
+  provider: "Privy",
+  network: "eip155:11155111",
+  protocol: "x402",
+  observations,
+});
+
+test("evaluates a complete strict stateful budget matrix without an opaque score", () => {
+  const report = evaluateStatefulWalletPolicyObservations(statefulInput(), { now: NOW });
+  assert.equal(report.schemaVersion, "agent-payment-policy.stateful-wallet-policy-observation-report.v1");
+  assert.equal(report.decision, "conformant");
+  assert.equal(report.complete, true);
+  assert.equal(report.strictBudgetPassed, true);
+  assert.deepEqual(report.providerNativeVerified, [
+    "cumulative_limit",
+    "post_sign_accounting",
+    "extraction_integrity",
+    "concurrency",
+    "reference_integrity",
+  ]);
+  assert.equal("score" in report, false);
+});
+
+test("reports extraction and concurrency allows as distinct unsafe cases", () => {
+  const matrix = completeStatefulMatrix().map((row) => {
+    if (["unrecognized_calldata", "concurrent_exceeds_cap"].includes(row.case)) {
+      return statefulObservation(row.case, "allowed");
+    }
+    return row;
+  });
+  const report = evaluateStatefulWalletPolicyObservations(statefulInput(matrix), { now: NOW });
+  assert.equal(report.decision, "unsafe");
+  assert.equal(report.strictBudgetPassed, false);
+  assert.deepEqual(report.unsafeCases, ["unrecognized_calldata", "concurrent_exceeds_cap"]);
+  assert.ok(report.providerNativeUnverified.includes("extraction_integrity"));
+  assert.ok(report.providerNativeUnverified.includes("concurrency"));
+});
+
+test("keeps application serialization separate from provider-native enforcement", () => {
+  const matrix = completeStatefulMatrix();
+  matrix.push(statefulObservation("application_serialized_concurrent_exceeds_cap", "denied", "application"));
+  const report = evaluateStatefulWalletPolicyObservations(statefulInput(matrix), { now: NOW });
+  assert.deepEqual(report.applicationVerified, ["application_serialization"]);
+  assert.ok(!report.providerNativeVerified.includes("application_serialization"));
+});
+
+test("normalizes safe stateful observations and rejects raw or duplicate evidence", () => {
+  const normalized = normalizeStatefulWalletPolicyObservations(statefulInput());
+  assert.equal(Object.isFrozen(normalized), true);
+  assert.equal(Object.isFrozen(normalized.observations), true);
+  assert.throws(() => normalizeStatefulWalletPolicyObservations({ ...statefulInput(), secret: "value" }), /unsupported fields/);
+  assert.throws(() => normalizeStatefulWalletPolicyObservations(statefulInput([
+    statefulObservation("first_within_cap", "allowed"),
+    statefulObservation("first_within_cap", "allowed"),
+  ])), /duplicate case/);
+  assert.throws(() => normalizeStatefulWalletPolicyObservations(statefulInput([{
+    ...statefulObservation("sequential_exceeds_cap", "denied"),
+    rawResponse: "provider body",
+  }])), /unsupported fields/);
+});
+
+test("creates and publishes the strict stateful draft and schemas", () => {
+  const draft = createStatefulWalletPolicyObservationDraft({
+    profileId: "stateful-lab",
+    provider: "Example Wallet",
+    network: "eip155:8453",
+    protocol: "mpp",
+  });
+  assert.equal(draft.observations.length, 7);
+  assert.ok(draft.observations.every((row) => row.actual === "error" && row.enforcementClass === "provider"));
+  assert.equal(evaluateStatefulWalletPolicyObservations(draft, { now: NOW }).decision, "partial");
+  const inputSchema = statefulWalletPolicyObservationInputSchema();
+  const outputSchema = statefulWalletPolicyObservationOutputSchema();
+  assert.equal(inputSchema.properties.observations.maxItems, 7);
+  assert.equal(inputSchema.additionalProperties, false);
+  assert.equal(outputSchema.properties.schemaVersion.const, "agent-payment-policy.stateful-wallet-policy-observation-report.v1");
   assert.equal(outputSchema.additionalProperties, false);
 });
 

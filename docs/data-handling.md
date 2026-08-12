@@ -24,3 +24,9 @@ network, protocol, standardized case names, high-level outcomes, denial class,
 and an optional bounded code. They must not contain credentials, wallet IDs,
 signatures, transaction bodies, raw provider messages, or nested evidence.
 Unknown fields are rejected. The local evaluator does not transmit the file.
+
+Stateful wallet-policy observation files use the same secret-free profile
+labels and controlled outcomes. They add only a standardized stateful case and
+an enforcement class: `policy`, `application`, `validation`, `provider`, or
+`none`. They do not retain counter values, provider IDs, wallet identities,
+signed payloads, raw concurrency traces, credentials, or response bodies.

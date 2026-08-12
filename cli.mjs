@@ -3,18 +3,22 @@ import { generateKeyPairSync } from "node:crypto";
 import { readFileSync } from "node:fs";
 import {
   authorizePlan,
+  createStatefulWalletPolicyObservationDraft,
   createWalletPolicyObservationDraft,
   createIntent,
   createPlan,
   evaluateWalletPolicyObservations,
+  evaluateStatefulWalletPolicyObservations,
   normalizeRequest,
   verifyAuthorization,
   walletPolicyObservationInputSchema,
   walletPolicyObservationOutputSchema,
+  statefulWalletPolicyObservationInputSchema,
+  statefulWalletPolicyObservationOutputSchema,
 } from "./core.mjs";
 
 function usage() {
-  console.error("Usage: agent-payment-policy inspect-url <https-url> | inspect-json-request <https-url> <body-file> | wallet-policy-init <profile-id> <provider> <network> <protocol> | wallet-policy-check <json-file> | wallet-policy-schema | demo");
+  console.error("Usage: agent-payment-policy inspect-url <https-url> | inspect-json-request <https-url> <body-file> | wallet-policy-init <profile-id> <provider> <network> <protocol> | wallet-policy-check <json-file> | wallet-policy-schema | stateful-policy-init <profile-id> <provider> <network> <protocol> | stateful-policy-check <json-file> | stateful-policy-schema | demo");
   process.exitCode = 2;
 }
 
@@ -39,6 +43,21 @@ if (command === "inspect-url" && argument) {
   console.log(JSON.stringify({
     input: walletPolicyObservationInputSchema(),
     output: walletPolicyObservationOutputSchema(),
+  }, null, 2));
+} else if (command === "stateful-policy-init" && argument && bodyFile && thirdArgument && fourthArgument) {
+  console.log(JSON.stringify(createStatefulWalletPolicyObservationDraft({
+    profileId: argument,
+    provider: bodyFile,
+    network: thirdArgument,
+    protocol: fourthArgument,
+  }), null, 2));
+} else if (command === "stateful-policy-check" && argument) {
+  const input = JSON.parse(readFileSync(argument, "utf8"));
+  console.log(JSON.stringify(evaluateStatefulWalletPolicyObservations(input), null, 2));
+} else if (command === "stateful-policy-schema") {
+  console.log(JSON.stringify({
+    input: statefulWalletPolicyObservationInputSchema(),
+    output: statefulWalletPolicyObservationOutputSchema(),
   }, null, 2));
 } else if (command === "demo") {
   const now = Date.now();
