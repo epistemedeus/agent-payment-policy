@@ -220,3 +220,36 @@ The core exports are `createStatefulWalletPolicyObservationDraft`,
 `STATEFUL_WALLET_POLICY_OBSERVATION_CASES`,
 `statefulWalletPolicyObservationInputSchema`, and
 `statefulWalletPolicyObservationOutputSchema`.
+
+## Compare catalog metadata with the live unsigned offer
+
+Version 0.7.0 adds the missing boundary between machine discovery and value
+authorization. A registry can advertise a stale route, protocol, amount,
+network, asset, recipient, or expiry even when the seller's current unsigned
+x402 or MPP challenge is correct.
+
+Create a secret-free observation file with one catalog record and one live
+unsigned runtime offer, then evaluate it locally:
+
+```bash
+agent-payment-policy offer-coherence-check offer-observation.json
+agent-payment-policy offer-coherence-schema
+```
+
+The runtime record must include a complete request, protocol, atomic amount,
+network, asset, recipient, and unexpired absolute deadline. An x402 adapter can
+derive that deadline from the challenge observation time plus
+`maxTimeoutSeconds`; MPP normally supplies it directly. Catalog economics may
+be missing. Missing catalog fields remain `unknown`, explicit disagreements
+are `drifted`, and only complete agreement is `coherent`.
+
+The evaluator returns `eligible_for_separate_value_and_policy_authorization`
+only after every dimension agrees. It does not authorize the purchase. Feed the
+coherent runtime offer into `createPlan`, then use the existing independent plan
+and execution authorization layers.
+
+Full query values and JSON request-body values remain digest-bound and absent
+from the report. The evaluator makes no network request, accepts no credential,
+accesses no wallet, signs nothing, and sends no payment. The core exports are
+`evaluateOfferCoherence`, `offerCoherenceInputSchema`, and
+`offerCoherenceOutputSchema`.

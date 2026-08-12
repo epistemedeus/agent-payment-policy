@@ -30,3 +30,11 @@ labels and controlled outcomes. They add only a standardized stateful case and
 an enforcement class: `policy`, `application`, `validation`, `provider`, or
 `none`. They do not retain counter values, provider IDs, wallet identities,
 signed payloads, raw concurrency traces, credentials, or response bodies.
+
+Offer-coherence reports contain the catalog source label, public HTTP method,
+origin, path, query-key names, request binding digest, optional request-body
+digest and byte count, protocol, atomic amount, network, asset, recipient,
+expiry, and per-dimension matched, unknown, or drifted disposition. They do not
+retain query values, JSON body values, raw challenge headers, credentials,
+cookies, signatures, wallet state, or response bodies. The caller remains
+responsible for acquiring and authenticating the catalog and runtime evidence.

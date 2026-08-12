@@ -7,6 +7,7 @@ import {
   createWalletPolicyObservationDraft,
   createIntent,
   createPlan,
+  evaluateOfferCoherence,
   evaluateWalletPolicyObservations,
   evaluateStatefulWalletPolicyObservations,
   normalizeRequest,
@@ -15,10 +16,12 @@ import {
   walletPolicyObservationOutputSchema,
   statefulWalletPolicyObservationInputSchema,
   statefulWalletPolicyObservationOutputSchema,
+  offerCoherenceInputSchema,
+  offerCoherenceOutputSchema,
 } from "./core.mjs";
 
 function usage() {
-  console.error("Usage: agent-payment-policy inspect-url <https-url> | inspect-json-request <https-url> <body-file> | wallet-policy-init <profile-id> <provider> <network> <protocol> | wallet-policy-check <json-file> | wallet-policy-schema | stateful-policy-init <profile-id> <provider> <network> <protocol> | stateful-policy-check <json-file> | stateful-policy-schema | demo");
+  console.error("Usage: agent-payment-policy inspect-url <https-url> | inspect-json-request <https-url> <body-file> | offer-coherence-check <json-file> | offer-coherence-schema | wallet-policy-init <profile-id> <provider> <network> <protocol> | wallet-policy-check <json-file> | wallet-policy-schema | stateful-policy-init <profile-id> <provider> <network> <protocol> | stateful-policy-check <json-file> | stateful-policy-schema | demo");
   process.exitCode = 2;
 }
 
@@ -29,6 +32,14 @@ if (command === "inspect-url" && argument) {
 } else if (command === "inspect-json-request" && argument && bodyFile) {
   const body = JSON.parse(readFileSync(bodyFile, "utf8"));
   console.log(JSON.stringify(normalizeRequest("POST", argument, { body, mediaType: "application/json" }), null, 2));
+} else if (command === "offer-coherence-check" && argument) {
+  const input = JSON.parse(readFileSync(argument, "utf8"));
+  console.log(JSON.stringify(evaluateOfferCoherence(input), null, 2));
+} else if (command === "offer-coherence-schema") {
+  console.log(JSON.stringify({
+    input: offerCoherenceInputSchema(),
+    output: offerCoherenceOutputSchema(),
+  }, null, 2));
 } else if (command === "wallet-policy-init" && argument && bodyFile && thirdArgument && fourthArgument) {
   console.log(JSON.stringify(createWalletPolicyObservationDraft({
     profileId: argument,

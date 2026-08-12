@@ -23,9 +23,12 @@ import {
   STATEFUL_WALLET_POLICY_OBSERVATION_CASES,
   createStatefulWalletPolicyObservationDraft,
   evaluateStatefulWalletPolicyObservations,
+  evaluateOfferCoherence,
   normalizeStatefulWalletPolicyObservations,
   statefulWalletPolicyObservationInputSchema,
   statefulWalletPolicyObservationOutputSchema,
+  offerCoherenceInputSchema,
+  offerCoherenceOutputSchema,
   walletPolicyObservationInputSchema,
   walletPolicyObservationOutputSchema,
 } from "./core.mjs";
@@ -57,6 +60,93 @@ function offer(overrides = {}) {
     ...overrides,
   };
 }
+
+function coherenceInput({ catalog = {}, runtime = {} } = {}) {
+  return {
+    schemaVersion: "agent-payment-policy.offer-coherence-observation.v1",
+    catalog: {
+      source: "coinbase-bazaar",
+      protocol: "x402",
+      method: "GET",
+      url: "https://seller.example/data?asset=ETH",
+      amountAtomic: "10000",
+      network: "eip155:8453",
+      asset: "USDC",
+      recipient: RECIPIENT,
+      expiresAt: new Date(NOW + 120_000).toISOString(),
+      ...catalog,
+    },
+    runtime: {
+      protocol: "x402",
+      method: "GET",
+      url: "https://seller.example/data?asset=ETH",
+      amountAtomic: "10000",
+      network: "eip155:8453",
+      asset: "USDC",
+      recipient: RECIPIENT,
+      expiresAt: new Date(NOW + 120_000).toISOString(),
+      ...runtime,
+    },
+  };
+}
+
+test("establishes complete catalog to live unsigned offer coherence without retaining query values", () => {
+  const report = evaluateOfferCoherence(coherenceInput(), { now: NOW });
+  assert.equal(report.schemaVersion, "agent-payment-policy.offer-coherence-report.v1");
+  assert.equal(report.decision, "coherent");
+  assert.equal(report.catalogCoherenceEstablished, true);
+  assert.deepEqual(report.unknown, []);
+  assert.deepEqual(report.drifted, []);
+  assert.equal(report.dimensions.length, 7);
+  assert.equal(report.nextAction, "eligible_for_separate_value_and_policy_authorization");
+  assert.doesNotMatch(JSON.stringify(report), /ETH/);
+  assert.equal(report.boundary.networkAccessed, false);
+  assert.equal(report.boundary.paymentSent, false);
+});
+
+test("keeps absent catalog economics unknown rather than inventing agreement", () => {
+  const input = coherenceInput();
+  for (const field of ["protocol", "amountAtomic", "network", "asset", "recipient", "expiresAt"]) delete input.catalog[field];
+  const report = evaluateOfferCoherence(input, { now: NOW });
+  assert.equal(report.decision, "partial");
+  assert.equal(report.catalogCoherenceEstablished, false);
+  assert.deepEqual(report.matched, ["request"]);
+  assert.deepEqual(report.unknown, ["protocol", "amount", "network", "asset", "recipient", "expiry"]);
+  assert.equal(report.nextAction, "review_missing_catalog_terms_before_authorization");
+});
+
+test("reports every explicit catalog drift and requires a complete current runtime offer", () => {
+  const report = evaluateOfferCoherence(coherenceInput({
+    catalog: {
+      url: "https://seller.example/data?asset=BTC",
+      protocol: "mpp",
+      amountAtomic: "50000",
+      network: "eip155:1",
+      asset: "OTHER",
+      recipient: "0x3333333333333333333333333333333333333333",
+      expiresAt: new Date(NOW + 60_000).toISOString(),
+    },
+  }), { now: NOW });
+  assert.equal(report.decision, "drifted");
+  assert.deepEqual(report.drifted, ["request", "protocol", "amount", "network", "asset", "recipient", "expiry"]);
+  assert.equal(report.nextAction, "reject_or_refresh_stale_catalog_candidate");
+  const incomplete = coherenceInput();
+  delete incomplete.runtime.recipient;
+  assert.throws(() => evaluateOfferCoherence(incomplete, { now: NOW }), /runtime recipient is required/);
+  assert.throws(() => evaluateOfferCoherence(coherenceInput({ runtime: { expiresAt: new Date(NOW - 1).toISOString() } }), { now: NOW }), /expired/);
+});
+
+test("rejects unknown evidence fields and publishes strict coherence schemas", () => {
+  assert.throws(() => evaluateOfferCoherence({ ...coherenceInput(), apiKey: "secret" }, { now: NOW }), /unsupported fields/);
+  assert.throws(() => evaluateOfferCoherence(coherenceInput({ runtime: { source: "runtime" } }), { now: NOW }), /unsupported fields/);
+  const inputSchema = offerCoherenceInputSchema();
+  const outputSchema = offerCoherenceOutputSchema();
+  assert.equal(inputSchema.properties.runtime.required.includes("recipient"), true);
+  assert.equal(inputSchema.properties.catalog.required.includes("amountAtomic"), false);
+  assert.equal(inputSchema.additionalProperties, false);
+  assert.equal(outputSchema.properties.decision.enum.includes("drifted"), true);
+  assert.equal(outputSchema.additionalProperties, false);
+});
 
 test("creates an immutable private-need digest without retaining the plaintext need", () => {
   const value = intent();

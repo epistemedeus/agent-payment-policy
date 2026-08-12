@@ -20,6 +20,8 @@ export const SCHEMAS = Object.freeze({
   walletPolicyObservationReport: "agent-payment-policy.wallet-policy-observation-report.v1",
   statefulWalletPolicyObservation: "agent-payment-policy.stateful-wallet-policy-observation.v1",
   statefulWalletPolicyObservationReport: "agent-payment-policy.stateful-wallet-policy-observation-report.v1",
+  offerCoherenceObservation: "agent-payment-policy.offer-coherence-observation.v1",
+  offerCoherenceReport: "agent-payment-policy.offer-coherence-report.v1",
 });
 
 export const PAYMENT_CONTROL_DIMENSIONS = Object.freeze([
@@ -109,6 +111,16 @@ const REQUIRED_STATEFUL_WALLET_POLICY_CASES = Object.freeze(
     .map(([name]) => name),
 );
 const STATEFUL_ENFORCEMENT_CLASSES = new Set(["none", "policy", "application", "validation", "provider"]);
+const OFFER_COHERENCE_DIMENSIONS = Object.freeze([
+  "request",
+  "protocol",
+  "amount",
+  "network",
+  "asset",
+  "recipient",
+  "expiry",
+]);
+const OFFER_COHERENCE_SAFE_SOURCE = /^[A-Za-z0-9][A-Za-z0-9._:/+ -]{0,127}$/;
 
 const CREDENTIAL_QUERY_KEY = /(?:^|[-_.])(api[-_.]?key|access[-_.]?token|auth|authorization|credential|password|secret|token)(?:$|[-_.])/i;
 const PURPOSE_ID = /^[A-Za-z][A-Za-z0-9._:-]{2,127}$/;
@@ -724,6 +736,224 @@ function atomic(value, label) {
   const text = String(value ?? "");
   if (!/^(?:0|[1-9][0-9]{0,77})$/.test(text)) fail(`${label} must be a non-negative atomic integer`);
   return BigInt(text);
+}
+
+function strictRecord(value, label, allowedKeys) {
+  if (!record(value)) fail(`${label} must be an object`);
+  const extras = Object.keys(value).filter((key) => !allowedKeys.has(key));
+  if (extras.length) fail(`${label} contains unsupported fields: ${extras.join(", ")}`);
+  return value;
+}
+
+function normalizedComparable(value) {
+  return String(value).toLowerCase();
+}
+
+function normalizeObservedOffer(value, { label, runtime, now }) {
+  const allowedKeys = new Set(["protocol", "method", "url", "body", "mediaType", "amountAtomic", "network", "asset", "recipient", "expiresAt"]);
+  if (!runtime) allowedKeys.add("source");
+  const offer = strictRecord(
+    value,
+    label,
+    allowedKeys,
+  );
+  const source = runtime ? "runtime" : cleanString(offer.source, 128);
+  if (!runtime && (!source || !OFFER_COHERENCE_SAFE_SOURCE.test(source))) {
+    fail("catalog source must be 1-128 safe printable characters");
+  }
+  const target = cleanString(offer.url, 2_048);
+  if (!target) fail(`${label} url must be 1-2048 characters`);
+  const request = normalizeRequest(
+    offer.method,
+    target,
+    Object.prototype.hasOwnProperty.call(offer, "body")
+      ? { body: offer.body, mediaType: offer.mediaType }
+      : {},
+  );
+  const normalized = { source, request };
+  const optionalFields = ["protocol", "amountAtomic", "network", "asset", "recipient", "expiresAt"];
+  for (const field of optionalFields) {
+    if (!runtime && (offer[field] === undefined || offer[field] === null || offer[field] === "")) continue;
+    if (field === "protocol") {
+      const protocol = String(offer.protocol || "").toLowerCase();
+      if (!PROTOCOLS.has(protocol)) fail(`${label} protocol must be x402 or mpp`);
+      normalized.protocol = protocol;
+    } else if (field === "amountAtomic") {
+      normalized.amountAtomic = String(atomic(offer.amountAtomic, `${label} amountAtomic`));
+    } else if (field === "expiresAt") {
+      const expiresAtMs = Date.parse(offer.expiresAt || "");
+      if (!Number.isFinite(expiresAtMs)) fail(`${label} expiresAt must be a valid timestamp`);
+      if (runtime && expiresAtMs <= now) fail("runtime offer is expired");
+      normalized.expiresAt = new Date(expiresAtMs).toISOString();
+    } else {
+      const item = cleanString(offer[field], 200);
+      if (!item) fail(`${label} ${field} is required`);
+      normalized[field] = item;
+    }
+  }
+  if (runtime) {
+    for (const field of optionalFields) {
+      if (!Object.prototype.hasOwnProperty.call(normalized, field)) fail(`runtime ${field} is required`);
+    }
+  }
+  return Object.freeze(normalized);
+}
+
+function offerDimension(dimension, catalog, runtime) {
+  let catalogValue;
+  let runtimeValue;
+  if (dimension === "request") {
+    catalogValue = catalog.request.bindingDigest;
+    runtimeValue = runtime.request.bindingDigest;
+  } else if (dimension === "amount") {
+    catalogValue = catalog.amountAtomic;
+    runtimeValue = runtime.amountAtomic;
+  } else if (dimension === "expiry") {
+    catalogValue = catalog.expiresAt;
+    runtimeValue = runtime.expiresAt;
+  } else {
+    catalogValue = catalog[dimension];
+    runtimeValue = runtime[dimension];
+  }
+  const disposition = catalogValue === undefined
+    ? "unknown"
+    : normalizedComparable(catalogValue) === normalizedComparable(runtimeValue)
+      ? "matched"
+      : "drifted";
+  return Object.freeze({
+    dimension,
+    disposition,
+    catalog: catalogValue ?? null,
+    runtime: runtimeValue,
+  });
+}
+
+function publicObservedOffer(offer) {
+  return Object.freeze({
+    ...(offer.source ? { source: offer.source } : {}),
+    request: Object.freeze({
+      method: offer.request.method,
+      origin: offer.request.origin,
+      pathname: offer.request.pathname,
+      queryKeys: Object.freeze([...offer.request.queryKeys]),
+      publicRoute: offer.request.publicRoute,
+      bodyBinding: offer.request.bodyBinding,
+      bindingDigest: offer.request.bindingDigest,
+    }),
+    ...(offer.protocol ? { protocol: offer.protocol } : {}),
+    ...(offer.amountAtomic ? { amountAtomic: offer.amountAtomic } : {}),
+    ...(offer.network ? { network: offer.network } : {}),
+    ...(offer.asset ? { asset: offer.asset } : {}),
+    ...(offer.recipient ? { recipient: offer.recipient } : {}),
+    ...(offer.expiresAt ? { expiresAt: offer.expiresAt } : {}),
+  });
+}
+
+export function evaluateOfferCoherence(input, { now = Date.now() } = {}) {
+  if (!Number.isFinite(now)) fail("now must be a finite epoch millisecond value");
+  const value = strictRecord(input, "request", new Set(["schemaVersion", "catalog", "runtime"]));
+  if (value.schemaVersion !== undefined && value.schemaVersion !== SCHEMAS.offerCoherenceObservation) {
+    fail(`unsupported offer coherence schema: ${value.schemaVersion}`);
+  }
+  const catalog = normalizeObservedOffer(value.catalog, { label: "catalog", runtime: false, now });
+  const runtime = normalizeObservedOffer(value.runtime, { label: "runtime", runtime: true, now });
+  const dimensions = OFFER_COHERENCE_DIMENSIONS.map((dimension) => offerDimension(dimension, catalog, runtime));
+  const drifted = dimensions.filter(({ disposition }) => disposition === "drifted").map(({ dimension }) => dimension);
+  const unknown = dimensions.filter(({ disposition }) => disposition === "unknown").map(({ dimension }) => dimension);
+  const matched = dimensions.filter(({ disposition }) => disposition === "matched").map(({ dimension }) => dimension);
+  const decision = drifted.length ? "drifted" : unknown.length ? "partial" : "coherent";
+  return Object.freeze({
+    schemaVersion: SCHEMAS.offerCoherenceReport,
+    evaluatedAt: new Date(now).toISOString(),
+    source: catalog.source,
+    decision,
+    catalogCoherenceEstablished: decision === "coherent",
+    runtimeOfferComplete: true,
+    catalog: publicObservedOffer(catalog),
+    runtime: publicObservedOffer(runtime),
+    dimensions: Object.freeze(dimensions),
+    matched: Object.freeze(matched),
+    unknown: Object.freeze(unknown),
+    drifted: Object.freeze(drifted),
+    nextAction: decision === "coherent"
+      ? "eligible_for_separate_value_and_policy_authorization"
+      : decision === "partial"
+        ? "review_missing_catalog_terms_before_authorization"
+        : "reject_or_refresh_stale_catalog_candidate",
+    boundary: Object.freeze({
+      credentialsAccepted: false,
+      networkAccessed: false,
+      walletAccessed: false,
+      paymentSigned: false,
+      paymentSent: false,
+      statement: "Compares caller-supplied catalog metadata with a caller-supplied live unsigned offer. It does not fetch, authenticate, authorize, sign, settle, or prove either source.",
+    }),
+  });
+}
+
+function offerObservationSchema({ runtime }) {
+  const properties = {
+    ...(runtime ? {} : { source: { type: "string", minLength: 1, maxLength: 128 } }),
+    protocol: { type: "string", enum: ["x402", "mpp"] },
+    method: { type: "string", pattern: "^[A-Za-z]{3,12}$" },
+    url: { type: "string", format: "uri", maxLength: 2048 },
+    body: { oneOf: [{ type: "object" }, { type: "array" }] },
+    mediaType: { type: "string", const: "application/json" },
+    amountAtomic: { type: "string", pattern: "^(?:0|[1-9][0-9]{0,77})$" },
+    network: { type: "string", minLength: 1, maxLength: 200 },
+    asset: { type: "string", minLength: 1, maxLength: 200 },
+    recipient: { type: "string", minLength: 1, maxLength: 200 },
+    expiresAt: { type: "string", format: "date-time" },
+  };
+  return {
+    type: "object",
+    properties,
+    required: runtime
+      ? ["protocol", "method", "url", "amountAtomic", "network", "asset", "recipient", "expiresAt"]
+      : ["source", "method", "url"],
+    additionalProperties: false,
+  };
+}
+
+export function offerCoherenceInputSchema() {
+  return {
+    $schema: "https://json-schema.org/draft/2020-12/schema",
+    title: "Agent payment catalog to runtime offer coherence observation",
+    type: "object",
+    properties: {
+      schemaVersion: { type: "string", const: SCHEMAS.offerCoherenceObservation },
+      catalog: offerObservationSchema({ runtime: false }),
+      runtime: offerObservationSchema({ runtime: true }),
+    },
+    required: ["schemaVersion", "catalog", "runtime"],
+    additionalProperties: false,
+  };
+}
+
+export function offerCoherenceOutputSchema() {
+  return {
+    $schema: "https://json-schema.org/draft/2020-12/schema",
+    title: "Agent payment catalog to runtime offer coherence report",
+    type: "object",
+    properties: {
+      schemaVersion: { type: "string", const: SCHEMAS.offerCoherenceReport },
+      evaluatedAt: { type: "string", format: "date-time" },
+      source: { type: "string" },
+      decision: { type: "string", enum: ["coherent", "partial", "drifted"] },
+      catalogCoherenceEstablished: { type: "boolean" },
+      runtimeOfferComplete: { type: "boolean", const: true },
+      catalog: { type: "object" },
+      runtime: { type: "object" },
+      dimensions: { type: "array" },
+      matched: { type: "array", items: { type: "string", enum: [...OFFER_COHERENCE_DIMENSIONS] } },
+      unknown: { type: "array", items: { type: "string", enum: [...OFFER_COHERENCE_DIMENSIONS] } },
+      drifted: { type: "array", items: { type: "string", enum: [...OFFER_COHERENCE_DIMENSIONS] } },
+      nextAction: { type: "string" },
+      boundary: { type: "object" },
+    },
+    required: ["schemaVersion", "evaluatedAt", "source", "decision", "catalogCoherenceEstablished", "runtimeOfferComplete", "catalog", "runtime", "dimensions", "matched", "unknown", "drifted", "nextAction", "boundary"],
+    additionalProperties: false,
+  };
 }
 
 function stableValue(value) {

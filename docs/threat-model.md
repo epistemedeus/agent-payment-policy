@@ -26,6 +26,8 @@
 - A cumulative policy whose metric silently decodes an unrecognized action as
   zero, whose successful signatures race before counter updates, or whose
   signed-but-unbroadcast activity diverges from on-chain settlement.
+- A catalog that omits economic terms and is incorrectly treated as agreeing
+  with the complete live unsigned offer.
 
 ## Out of scope
 
@@ -52,6 +54,15 @@ When a signing action is built after the live challenge arrives, create a
 short-lived execution authorization over the full canonical action and verify it
 at the signer boundary. The action body remains private; the authorization and
 optional receipt retain only its digest and byte count.
+
+Before `createPlan`, normalize the catalog candidate and the live unsigned
+offer through `evaluateOfferCoherence`. Treat `partial` as missing evidence and
+`drifted` as a rejected or refresh-required candidate. Only `coherent` is
+eligible for separate value and policy authorization. The evaluator does not
+prove either source, so the adapter must still fetch the live challenge through
+the DNS, redirect, timeout, and byte boundaries above. For x402, derive an
+absolute runtime deadline from the observed challenge time and its bounded
+relative timeout; never invent a long-lived expiry.
 
 ## Wallet-policy observation evidence
 
