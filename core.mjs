@@ -344,14 +344,16 @@ export function evaluateWalletPolicyObservations(input, { now = Date.now() } = {
     .filter((result) => result.finding === "expected_behavior_not_proven" || result.finding === "denied_outside_provider_policy")
     .map((result) => result.case);
   const preSignatureControls = PAYMENT_CONTROL_DIMENSIONS.filter((control) => PRE_SIGNATURE_CONTROLS.has(control));
-  const providerNativeVerified = preSignatureControls.filter((control) =>
-    results.some((result) => result.control === control && result.providerNativeVerified),
-  );
-  const providerNativeUnverified = preSignatureControls.filter((control) => !providerNativeVerified.includes(control));
   const executionShapeCases = results.filter((result) => result.control === "execution_shape");
   const exactShapePassed = executionShapeCases.length > 0
     && executionShapeCases.every((result) => result.providerNativeVerified)
     && byCase.has("duplicate_approved_action");
+  const providerNativeVerified = preSignatureControls.filter((control) => {
+    const controlResults = results.filter((result) => result.control === control);
+    if (!controlResults.length || !controlResults.every((result) => result.providerNativeVerified)) return false;
+    return control !== "execution_shape" || exactShapePassed;
+  });
+  const providerNativeUnverified = preSignatureControls.filter((control) => !providerNativeVerified.includes(control));
   const complete = missingRequiredCases.length === 0;
   let decision = "partial";
   if (unsafeCases.length) decision = "unsafe";

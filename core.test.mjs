@@ -208,6 +208,18 @@ test("reports duplicated approved action as unsafe execution shape", () => {
   assert.equal(report.exactShapePassed, false);
   assert.deepEqual(report.unsafeCases, ["duplicate_approved_action"]);
   assert.ok(report.providerNativeUnverified.includes("execution_shape"));
+  assert.ok(!report.providerNativeVerified.includes("execution_shape"));
+});
+
+test("does not credit one passing shape probe when another observed shape probe fails", () => {
+  const matrix = completeWalletObservationMatrix().map((row) =>
+    row.case === "duplicate_approved_action" ? walletObservation(row.case, "allowed") : row,
+  );
+  matrix.push(walletObservation("missing_validity", "denied", "policy"));
+  const report = evaluateWalletPolicyObservations(walletObservationInput(matrix), { now: NOW });
+  assert.equal(report.exactShapePassed, false);
+  assert.ok(!report.providerNativeVerified.includes("execution_shape"));
+  assert.ok(report.providerNativeUnverified.includes("execution_shape"));
 });
 
 test("distinguishes a blocked intended action from an unrun intended action", () => {
