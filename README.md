@@ -132,6 +132,12 @@ signed request binding before sending or paying. See
 [`docs/threat-model.md`](docs/threat-model.md) and
 [`docs/data-handling.md`](docs/data-handling.md).
 
+Response-contract reports keep both top-level `requiredFields` and recursively
+guaranteed `requiredPaths`. A schema that requires only `data` does not promise
+`data.attributes`, even when that nested property is described. Buyer policy can
+therefore require exact useful paths without retaining the seller schema or
+example.
+
 ## Status
 
 This is a reference implementation under active design review. It does not

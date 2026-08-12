@@ -1633,6 +1633,22 @@ function responseContractBoundary(statement) {
   });
 }
 
+function guaranteedRequiredPaths(schema, prefix = "", depth = 0, paths = []) {
+  if (!record(schema) || depth > 20 || paths.length >= 1_000) return paths;
+  const properties = record(schema.properties) || {};
+  const required = Array.isArray(schema.required) ? schema.required : [];
+  for (const field of required) {
+    const clean = cleanString(field, 200);
+    if (!clean || !record(properties[clean])) continue;
+    const path = prefix ? `${prefix}.${clean}` : clean;
+    paths.push(path);
+    if (schemaTypes(properties[clean]).includes("object")) {
+      guaranteedRequiredPaths(properties[clean], path, depth + 1, paths);
+    }
+  }
+  return paths;
+}
+
 export function evaluateResponseContract(input, { now = Date.now() } = {}) {
   onlyKeys(input, ["schemaVersion", "source", "request", "response"], "response contract observation");
   if (input.schemaVersion !== SCHEMAS.responseContractObservation) fail("response contract observation schema is invalid");
@@ -1656,6 +1672,7 @@ export function evaluateResponseContract(input, { now = Date.now() } = {}) {
       decision: "absent",
       schemaDigest: null,
       requiredFields: Object.freeze([]),
+      requiredPaths: Object.freeze([]),
       exampleStatus: input.response.example === undefined ? "absent" : "unverifiable",
       unsupportedKeywords: Object.freeze([]),
       structuralProblems: Object.freeze(["response_schema_absent"]),
@@ -1673,6 +1690,7 @@ export function evaluateResponseContract(input, { now = Date.now() } = {}) {
   const required = Array.isArray(schema.required) ? schema.required.map((value) => cleanString(value, 200)) : [];
   if (required.some((value) => !value) || new Set(required).size !== required.length) fail("response contract required fields are invalid or duplicated");
   const requiredFields = [...required].sort();
+  const requiredPaths = [...new Set(guaranteedRequiredPaths(schema))].sort();
   const unsupportedKeywords = unsupportedSchemaKeywords(schema).slice(0, 100).sort();
   const topTypes = schemaTypes(schema);
   const structuralProblems = [];
@@ -1712,6 +1730,7 @@ export function evaluateResponseContract(input, { now = Date.now() } = {}) {
     decision,
     schemaDigest,
     requiredFields: Object.freeze(requiredFields),
+    requiredPaths: Object.freeze(requiredPaths),
     exampleStatus,
     unsupportedKeywords: Object.freeze(unsupportedKeywords),
     structuralProblems: Object.freeze(structuralProblems.sort()),
@@ -1771,6 +1790,7 @@ export function responseContractOutputSchema() {
       decision: { type: "string", enum: ["admissible", "partial", "absent", "invalid"] },
       schemaDigest: { type: ["string", "null"] },
       requiredFields: { type: "array", uniqueItems: true, items: { type: "string" } },
+      requiredPaths: { type: "array", uniqueItems: true, items: { type: "string" } },
       exampleStatus: { type: "string", enum: ["structurally_consistent", "structurally_inconsistent", "absent", "unverifiable"] },
       unsupportedKeywords: { type: "array", items: { type: "string" } },
       structuralProblems: { type: "array", items: { type: "string" } },
@@ -1795,7 +1815,7 @@ export function responseContractOutputSchema() {
         additionalProperties: false,
       },
     },
-    required: ["schemaVersion", "evaluatedAt", "source", "request", "response", "decision", "schemaDigest", "requiredFields", "exampleStatus", "unsupportedKeywords", "structuralProblems", "nextAction", "boundary"],
+    required: ["schemaVersion", "evaluatedAt", "source", "request", "response", "decision", "schemaDigest", "requiredFields", "requiredPaths", "exampleStatus", "unsupportedKeywords", "structuralProblems", "nextAction", "boundary"],
     additionalProperties: false,
   };
 }

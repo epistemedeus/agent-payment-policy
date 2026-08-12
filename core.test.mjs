@@ -440,6 +440,7 @@ test("admits a self-contained typed object response contract without retaining i
   assert.equal(report.decision, "admissible");
   assert.equal(report.exampleStatus, "structurally_consistent");
   assert.deepEqual(report.requiredFields, ["data", "ok"]);
+  assert.deepEqual(report.requiredPaths, ["data", "data.value", "ok"]);
   assert.match(report.schemaDigest, /^sha256:/);
   assert.equal(report.boundary.schemaRetained, false);
   assert.equal(report.boundary.exampleRetained, false);
@@ -452,6 +453,19 @@ test("classifies absent, partial, and structurally inconsistent response declara
   assert.equal(absent.decision, "absent");
   assert.equal(absent.schemaDigest, null);
   assert.deepEqual(absent.structuralProblems, ["response_schema_absent"]);
+  assert.deepEqual(absent.requiredPaths, []);
+
+  const envelopeOnly = evaluateResponseContract(responseObservation({
+    schema: {
+      type: "object",
+      required: ["data"],
+      properties: {
+        data: { type: "object", properties: { attributes: { type: "object" } } },
+      },
+    },
+  }), { now: NOW });
+  assert.equal(envelopeOnly.decision, "admissible");
+  assert.deepEqual(envelopeOnly.requiredPaths, ["data"]);
 
   const partial = evaluateResponseContract(responseObservation({
     schema: { type: "object", properties: { data: { $ref: "#/components/schemas/Data" } }, required: ["data"] },
