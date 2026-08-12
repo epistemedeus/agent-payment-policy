@@ -12,6 +12,8 @@ export const SCHEMAS = Object.freeze({
   plan: "agent-payment-policy.plan.v1",
   authorization: "agent-payment-policy.authorization.v1",
   authorizationJws: "agent-payment-policy.authorization-jws.v1",
+  executionAuthorization: "agent-payment-policy.execution-authorization.v1",
+  executionAuthorizationJws: "agent-payment-policy.execution-authorization-jws.v1",
   receipt: "agent-payment-policy.receipt.v1",
   controlCoverage: "agent-payment-policy.control-coverage.v1",
 });
@@ -50,6 +52,7 @@ const PURPOSE_ID = /^[A-Za-z][A-Za-z0-9._:-]{2,127}$/;
 const PROTOCOLS = new Set(["x402", "mpp"]);
 const JSON_BODY_METHODS = new Set(["POST"]);
 const VERIFIED_AUTHORIZATION = Symbol("verified-agent-payment-policy-authorization");
+const VERIFIED_EXECUTION_AUTHORIZATION = Symbol("verified-agent-payment-policy-execution-authorization");
 
 function fail(message) {
   throw new Error(message);
@@ -423,12 +426,16 @@ function normalizeOffer(offer, intent, now) {
   if (amountAtomic > atomic(intent.policy.maxAtomic, "policy maxAtomic")) fail("offer exceeds the per-call cap");
   const expiresAtMs = Date.parse(offer.expiresAt || "");
   if (!Number.isFinite(expiresAtMs) || expiresAtMs <= now) fail("offer is stale or has no expiry");
+  const network = cleanString(offer.network, 200);
+  const asset = cleanString(offer.asset, 200);
+  if (!network) fail("offer network is required");
+  if (!asset) fail("offer asset is required");
   return {
     protocol,
     request,
     amountAtomic: String(amountAtomic),
-    network: cleanString(offer.network, 200),
-    asset: cleanString(offer.asset, 200),
+    network,
+    asset,
     recipient,
     expiresAt: new Date(expiresAtMs).toISOString(),
   };
@@ -535,6 +542,128 @@ export function verifyAuthorization(envelope, { publicKey, plan, now = Date.now(
   return Object.freeze(payload);
 }
 
+function executionBinding(method, network, action) {
+  const normalizedMethod = cleanString(method, 128);
+  const normalizedNetwork = cleanString(network, 200);
+  if (!normalizedMethod || !/^[A-Za-z][A-Za-z0-9_.:-]{2,127}$/.test(normalizedMethod)) {
+    fail("execution method is invalid");
+  }
+  if (!normalizedNetwork) fail("execution network is required");
+  const serialized = canonicalRequestBody(action);
+  return Object.freeze({
+    method: normalizedMethod,
+    network: normalizedNetwork,
+    actionBinding: Object.freeze({
+      mediaType: "application/json",
+      bytes: Buffer.byteLength(serialized),
+      digest: digest(canonicalJson({ method: normalizedMethod, network: normalizedNetwork, action })),
+    }),
+  });
+}
+
+export function authorizeExecution({ authorization, method, network, action } = {}, {
+  privateKey,
+  kid,
+  now = Date.now(),
+  ttlMs = 120_000,
+} = {}) {
+  if (!record(authorization) || authorization[VERIFIED_AUTHORIZATION] !== true) {
+    fail("verified plan authorization is required");
+  }
+  if (!cleanString(kid, 200)) fail("execution authorization kid is required");
+  if (!Number.isInteger(ttlMs) || ttlMs < 1_000 || ttlMs > 600_000) {
+    fail("execution authorization ttlMs is invalid");
+  }
+  const binding = executionBinding(method, network, action);
+  if (!cleanString(authorization.network, 200) || authorization.network.toLowerCase() !== binding.network.toLowerCase()) {
+    fail("execution network does not match the authorized plan");
+  }
+  const payload = {
+    schemaVersion: SCHEMAS.executionAuthorization,
+    executionAuthorizationId: digest({
+      authorizationId: authorization.authorizationId,
+      actionBindingDigest: binding.actionBinding.digest,
+      issuedAt: now,
+      kid,
+    }),
+    authorizationId: authorization.authorizationId,
+    planId: authorization.planId,
+    intentId: authorization.intentId,
+    method: binding.method,
+    network: binding.network,
+    actionBinding: binding.actionBinding,
+    issuedAt: new Date(now).toISOString(),
+    expiresAt: new Date(now + ttlMs).toISOString(),
+  };
+  const header = { alg: "EdDSA", kid, typ: "agent-payment-policy-execution+jws" };
+  const protectedSegment = base64url(canonicalJson(header));
+  const payloadSegment = base64url(canonicalJson(payload));
+  const key = privateKey?.type === "private" ? privateKey : createPrivateKey(privateKey);
+  if (key.asymmetricKeyType !== "ed25519") fail("execution authorization key must be Ed25519");
+  const signature = sign(null, Buffer.from(`${protectedSegment}.${payloadSegment}`), key).toString("base64url");
+  return Object.freeze({
+    schemaVersion: SCHEMAS.executionAuthorizationJws,
+    protected: protectedSegment,
+    payload: payloadSegment,
+    signature,
+  });
+}
+
+export function verifyExecutionAuthorization(envelope, {
+  publicKey,
+  authorization,
+  method,
+  network,
+  action,
+  now = Date.now(),
+} = {}) {
+  if (!record(authorization) || authorization[VERIFIED_AUTHORIZATION] !== true) {
+    fail("verified plan authorization is required");
+  }
+  if (!record(envelope) || envelope.schemaVersion !== SCHEMAS.executionAuthorizationJws) {
+    fail("execution authorization envelope is invalid");
+  }
+  const headerText = parseBase64url(envelope.protected).toString("utf8");
+  const header = JSON.parse(headerText);
+  if (canonicalJson(header) !== headerText || header.alg !== "EdDSA" ||
+      header.typ !== "agent-payment-policy-execution+jws" || !cleanString(header.kid, 200)) {
+    fail("execution authorization header is invalid");
+  }
+  const payloadText = parseBase64url(envelope.payload).toString("utf8");
+  const payload = JSON.parse(payloadText);
+  if (canonicalJson(payload) !== payloadText || payload.schemaVersion !== SCHEMAS.executionAuthorization) {
+    fail("execution authorization payload is invalid");
+  }
+  const key = publicKey?.type === "public" ? publicKey : createPublicKey(publicKey);
+  if (key.asymmetricKeyType !== "ed25519") fail("execution authorization public key must be Ed25519");
+  if (!verify(null, Buffer.from(`${envelope.protected}.${envelope.payload}`), key, parseBase64url(envelope.signature))) {
+    fail("execution authorization signature is invalid");
+  }
+  if (Date.parse(payload.issuedAt) > now || Date.parse(payload.expiresAt) <= now) {
+    fail("execution authorization is not currently valid");
+  }
+  if (payload.authorizationId !== authorization.authorizationId || payload.planId !== authorization.planId ||
+      payload.intentId !== authorization.intentId) {
+    fail("execution authorization does not match the verified plan authorization");
+  }
+  const expected = executionBinding(method, network, action);
+  if (payload.method !== expected.method || payload.network.toLowerCase() !== expected.network.toLowerCase() ||
+      canonicalJson(payload.actionBinding) !== canonicalJson(expected.actionBinding)) {
+    fail("execution request does not match the exact authorized action");
+  }
+  const expectedId = digest({
+    authorizationId: payload.authorizationId,
+    actionBindingDigest: payload.actionBinding.digest,
+    issuedAt: Date.parse(payload.issuedAt),
+    kid: header.kid,
+  });
+  if (payload.executionAuthorizationId !== expectedId) {
+    fail("execution authorization identifier is inconsistent");
+  }
+  Object.defineProperty(payload, VERIFIED_EXECUTION_AUTHORIZATION, { value: true, enumerable: false });
+  return Object.freeze(payload);
+}
+
 function hasPath(value, path) {
   let current = value;
   for (const part of path.split(".")) {
@@ -555,7 +684,7 @@ export function validateOutput(value, contract) {
   return Object.freeze({ valid: true, bytes, responseDigest: digest(serialized) });
 }
 
-export function createReceipt({ plan, authorization, amountAtomic, transactionReference, response, now = Date.now() } = {}) {
+export function createReceipt({ plan, authorization, executionAuthorization, amountAtomic, transactionReference, response, now = Date.now() } = {}) {
   if (!record(plan) || plan.schemaVersion !== SCHEMAS.plan || !plan.selected) fail("receipt plan is required");
   if (plan.planId !== digest(Object.fromEntries(Object.entries(plan).filter(([key]) => key !== "planId")))) fail("receipt plan has been modified");
   if (!record(authorization) || authorization[VERIFIED_AUTHORIZATION] !== true || authorization.planId !== plan.planId || authorization.intentId !== plan.intentId) fail("verified authorization payload is required");
@@ -564,12 +693,27 @@ export function createReceipt({ plan, authorization, amountAtomic, transactionRe
   const reference = cleanString(transactionReference, 500);
   if (!reference) fail("receipt transactionReference is required");
   const output = validateOutput(response, plan.output);
+  let execution = null;
+  if (executionAuthorization !== undefined) {
+    if (!record(executionAuthorization) || executionAuthorization[VERIFIED_EXECUTION_AUTHORIZATION] !== true ||
+        executionAuthorization.authorizationId !== authorization.authorizationId ||
+        executionAuthorization.planId !== plan.planId || executionAuthorization.intentId !== plan.intentId) {
+      fail("verified execution authorization does not match the receipt");
+    }
+    execution = {
+      executionAuthorizationId: executionAuthorization.executionAuthorizationId,
+      method: executionAuthorization.method,
+      network: executionAuthorization.network,
+      actionBinding: executionAuthorization.actionBinding,
+    };
+  }
   const receipt = {
     schemaVersion: SCHEMAS.receipt,
     receiptId: digest({ planId: plan.planId, authorizationId: authorization.authorizationId, transactionReference, responseDigest: output.responseDigest }),
     planId: plan.planId,
     intentId: plan.intentId,
     authorizationId: authorization.authorizationId,
+    ...(execution ? { execution } : {}),
     protocol: plan.selected.protocol,
     request: {
       publicRoute: plan.selected.request.publicRoute,

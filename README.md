@@ -10,13 +10,15 @@ payment plan, reject incompatible x402 or MPP offers, authorize one exact
 request separately from execution, and produce a public-safe payment receipt.
 It is a buyer policy layer, not a wallet, facilitator, or seller proxy.
 
-The package separates four concerns:
+The package separates five concerns:
 
 1. A private machine need becomes an immutable intent digest.
 2. External offers are filtered by exact request, value, capital, ownership, and
    expiry constraints.
 3. A separate Ed25519 policy identity authorizes one exact plan.
-4. A public-safe receipt binds settlement and output evidence without retaining
+4. A second short-lived authorization can bind the complete signing action,
+   including every call in a batch, after runtime payment terms are known.
+5. A public-safe receipt binds settlement and output evidence without retaining
    query values, JSON request bodies, or response bodies.
 
 It also exposes a wallet-free control-coverage gate for delegated signers. A
@@ -70,6 +72,42 @@ Call the assertion before account access, wallet loading, signing, or payment.
 The report is evidence about enforcement placement, not proof that a declared
 control is implemented correctly. Bind profiles in reviewed code, test each
 control against drift, and retain the underlying acceptance evidence.
+
+## Bind the exact execution batch
+
+Provider policies often constrain a signing method, contract, function, and
+arguments without constraining how many calls appear in a batched transaction.
+Use a second short-lived execution authorization after the transaction has been
+built and independently reviewed:
+
+```js
+import {
+  authorizeExecution,
+  verifyExecutionAuthorization,
+} from "agent-payment-policy";
+
+const executionEnvelope = authorizeExecution({
+  authorization, // output of verifyAuthorization
+  method: "eth_signTransaction",
+  network: "eip155:42431",
+  action: unsignedTransaction,
+}, { privateKey: policyPrivateKey, kid: "policy-execution-1" });
+
+const executionAuthorization = verifyExecutionAuthorization(executionEnvelope, {
+  publicKey: policyPublicKey,
+  authorization,
+  method: "eth_signTransaction",
+  network: "eip155:42431",
+  action: unsignedTransaction,
+});
+```
+
+Changing the method, network, any call, call order, call count, fee field, nonce,
+validity field, calldata byte, or other JSON field invalidates the binding. The
+authorization records only a canonical digest and byte count, not the action
+body. This is an exact transport and signer-boundary lock. The trusted buyer
+still must independently determine that the original action is safe and matches
+the payment challenge.
 
 ## Safety boundary
 

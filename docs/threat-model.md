@@ -15,6 +15,8 @@
 - A seller that changes economics between discovery and execution.
 - A caller that supplies a private-network URL or credential-bearing query.
 - A caller or executor that substitutes a JSON body after authorization.
+- A caller or signer bridge that adds, removes, reorders, or modifies a call in
+  a reviewed batched signing action.
 - A compromised executor that attempts to spend beyond one signed plan.
 - A delegated signer whose native policy cannot represent the selected chain,
   token, method, or protocol lifecycle.
@@ -29,6 +31,8 @@
   the exported address checks and pins the validated destination.
 - Economic truth of caller-supplied expected value or risk reserve.
 - Correctness of an external x402 or MPP challenge parser.
+- Semantic safety of the original unsigned action. Exact execution binding
+  prevents mutation after review; it does not make an unsafe original safe.
 
 ## Fail-closed integration requirements
 
@@ -40,3 +44,8 @@ successful receipt. For a delegated signer, define a code-backed control profile
 verify the provider-native and independent enforcement paths separately, call
 `assertControlCoverage` before any account or signer access, and fail closed when
 one required control is uncovered.
+
+When a signing action is built after the live challenge arrives, create a
+short-lived execution authorization over the full canonical action and verify it
+at the signer boundary. The action body remains private; the authorization and
+optional receipt retain only its digest and byte count.

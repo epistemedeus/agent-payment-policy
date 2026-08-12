@@ -5,6 +5,7 @@ import test from "node:test";
 import {
   assertResolvedPublicAddresses,
   assertControlCoverage,
+  authorizeExecution,
   authorizePlan,
   canonicalRequestBody,
   createControlCoverage,
@@ -13,6 +14,7 @@ import {
   createReceipt,
   normalizeRequest,
   verifyAuthorization,
+  verifyExecutionAuthorization,
   PAYMENT_CONTROL_DIMENSIONS,
 } from "./core.mjs";
 
@@ -196,6 +198,15 @@ test("selects the cheapest policy-compliant offer and preserves every kill", () 
   assert.match(plan.killed[1].reason, /per-call cap/);
 });
 
+test("rejects offers without an explicit settlement network or asset", () => {
+  const noNetwork = createPlan({ intent: intent(), offers: [offer({ network: "" })], now: NOW });
+  const noAsset = createPlan({ intent: intent(), offers: [offer({ asset: "" })], now: NOW });
+  assert.equal(noNetwork.decision, "no_viable_offer");
+  assert.match(noNetwork.killed[0].reason, /network is required/);
+  assert.equal(noAsset.decision, "no_viable_offer");
+  assert.match(noAsset.killed[0].reason, /asset is required/);
+});
+
 test("keeps approval separate from execution and verifies exact plan binding", () => {
   const plan = createPlan({ intent: intent(), offers: [offer()], now: NOW });
   const { privateKey, publicKey } = generateKeyPairSync("ed25519");
@@ -205,6 +216,116 @@ test("keeps approval separate from execution and verifies exact plan binding", (
   assert.equal(authorization.requestBindingDigest, plan.selected.request.bindingDigest);
   const tamperedSignature = `${envelope.signature[0] === "A" ? "B" : "A"}${envelope.signature.slice(1)}`;
   assert.throws(() => verifyAuthorization({ ...envelope, signature: tamperedSignature }, { publicKey, plan, now: NOW + 1_000 }), /signature/);
+});
+
+test("binds a second signed authorization to the exact execution batch", () => {
+  const plan = createPlan({ intent: intent(), offers: [offer()], now: NOW });
+  const { privateKey, publicKey } = generateKeyPairSync("ed25519");
+  const planEnvelope = authorizePlan(plan, { privateKey, kid: "policy-plan", now: NOW });
+  const authorization = verifyAuthorization(planEnvelope, { publicKey, plan, now: NOW + 1_000 });
+  const action = {
+    type: 118,
+    calls: [{ to: RECIPIENT, value: "0x0", data: "0xa9059cbb00" }],
+    fee_token: "0x3333333333333333333333333333333333333333",
+  };
+  const envelope = authorizeExecution({
+    authorization,
+    method: "eth_signTransaction",
+    network: "eip155:8453",
+    action,
+  }, { privateKey, kid: "policy-execution", now: NOW, ttlMs: 60_000 });
+  const execution = verifyExecutionAuthorization(envelope, {
+    publicKey,
+    authorization,
+    method: "eth_signTransaction",
+    network: "eip155:8453",
+    action,
+    now: NOW + 1_000,
+  });
+  assert.match(execution.actionBinding.digest, /^sha256:[0-9a-f]{64}$/);
+  assert.doesNotMatch(JSON.stringify(execution), /a9059cbb/);
+  const duplicateCall = { ...action, calls: [...action.calls, { ...action.calls[0] }] };
+  assert.throws(() => verifyExecutionAuthorization(envelope, {
+    publicKey,
+    authorization,
+    method: "eth_signTransaction",
+    network: "eip155:8453",
+    action: duplicateCall,
+    now: NOW + 1_000,
+  }), /exact authorized action/);
+});
+
+test("rejects execution method, network, payload, expiry, and unverified parent drift", () => {
+  const plan = createPlan({ intent: intent(), offers: [offer()], now: NOW });
+  const { privateKey, publicKey } = generateKeyPairSync("ed25519");
+  const planEnvelope = authorizePlan(plan, { privateKey, kid: "policy-plan", now: NOW });
+  const authorization = verifyAuthorization(planEnvelope, { publicKey, plan, now: NOW + 1_000 });
+  const action = { calls: [{ to: RECIPIENT, value: "0x0", data: "0x01" }] };
+  const envelope = authorizeExecution({ authorization, method: "eth_signTransaction", network: "eip155:8453", action }, {
+    privateKey,
+    kid: "policy-execution",
+    now: NOW,
+    ttlMs: 60_000,
+  });
+  const verify = (overrides = {}) => verifyExecutionAuthorization(envelope, {
+    publicKey,
+    authorization,
+    method: "eth_signTransaction",
+    network: "eip155:8453",
+    action,
+    now: NOW + 1_000,
+    ...overrides,
+  });
+  assert.throws(() => verify({ method: "personal_sign" }), /exact authorized action/);
+  assert.throws(() => verify({ network: "eip155:1" }), /exact authorized action/);
+  assert.throws(() => verify({ action: { ...action, calls: [{ ...action.calls[0], value: "0x1" }] } }), /exact authorized action/);
+  assert.throws(() => verify({ now: NOW + 60_000 }), /not currently valid/);
+  assert.throws(() => authorizeExecution({ authorization: { ...authorization }, method: "eth_signTransaction", network: "eip155:8453", action }, {
+    privateKey,
+    kid: "policy-execution",
+    now: NOW,
+  }), /verified plan authorization/);
+});
+
+test("carries public-safe exact execution evidence into the receipt", () => {
+  const plan = createPlan({ intent: intent(), offers: [offer()], now: NOW });
+  const { privateKey, publicKey } = generateKeyPairSync("ed25519");
+  const planEnvelope = authorizePlan(plan, { privateKey, kid: "policy-plan", now: NOW });
+  const authorization = verifyAuthorization(planEnvelope, { publicKey, plan, now: NOW + 1_000 });
+  const action = { calls: [{ to: RECIPIENT, value: "0x0", data: "0x01" }] };
+  const executionEnvelope = authorizeExecution({ authorization, method: "eth_signTransaction", network: "eip155:8453", action }, {
+    privateKey,
+    kid: "policy-execution",
+    now: NOW,
+  });
+  const executionAuthorization = verifyExecutionAuthorization(executionEnvelope, {
+    publicKey,
+    authorization,
+    method: "eth_signTransaction",
+    network: "eip155:8453",
+    action,
+    now: NOW + 1_000,
+  });
+  const receipt = createReceipt({
+    plan,
+    authorization,
+    executionAuthorization,
+    amountAtomic: "10000",
+    transactionReference: "0xexecution",
+    response: { data: { value: 42 } },
+    now: NOW + 2_000,
+  });
+  assert.equal(receipt.execution.method, "eth_signTransaction");
+  assert.equal(receipt.execution.network, "eip155:8453");
+  assert.doesNotMatch(JSON.stringify(receipt), /0x01/);
+  assert.throws(() => createReceipt({
+    plan,
+    authorization,
+    executionAuthorization: { ...executionAuthorization },
+    amountAtomic: "10000",
+    transactionReference: "0xexecution",
+    response: { data: { value: 42 } },
+  }), /verified execution authorization/);
 });
 
 test("carries a JSON POST body digest through plan, authorization, and receipt", () => {
