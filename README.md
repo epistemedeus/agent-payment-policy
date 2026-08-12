@@ -253,3 +253,28 @@ from the report. The evaluator makes no network request, accepts no credential,
 accesses no wallet, signs nothing, and sends no payment. The core exports are
 `evaluateOfferCoherence`, `offerCoherenceInputSchema`, and
 `offerCoherenceOutputSchema`.
+
+Version 0.8.0 adds a second credential-free boundary for catalog listing
+identity. A buyer or seller can supply one canonical origin, exact route,
+optional settlement identity, an optional list of catalogs checked, and up to
+100 catalog records:
+
+```bash
+agent-payment-policy listing-identity-check listing-observation.json
+agent-payment-policy listing-identity-schema
+```
+
+The evaluator classifies each catalog as `canonical`, `duplicate_records`,
+`alias_only`, `alias_collision`, or `route_absent`. A non-canonical record is
+an alias candidate only when it shares the exact route and caller-supplied
+settlement identity. That still does not prove hostname ownership. Conflicts
+return `review_required`; only a canonical result advances to a separate live
+runtime-offer preflight. Declaring a checked catalog in `sources` also lets an
+empty response produce an explicit `route_absent` result instead of looking
+like a catalog that was never checked.
+
+Query values and settlement-identity values are absent from the report. The
+evaluator makes no network request, accepts no credential, accesses no wallet,
+signs nothing, sends no payment, and never treats catalog duplication as
+demand. The core exports are `evaluateListingIdentity`,
+`listingIdentityInputSchema`, and `listingIdentityOutputSchema`.

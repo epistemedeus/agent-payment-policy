@@ -22,6 +22,8 @@ export const SCHEMAS = Object.freeze({
   statefulWalletPolicyObservationReport: "agent-payment-policy.stateful-wallet-policy-observation-report.v1",
   offerCoherenceObservation: "agent-payment-policy.offer-coherence-observation.v1",
   offerCoherenceReport: "agent-payment-policy.offer-coherence-report.v1",
+  listingIdentityObservation: "agent-payment-policy.listing-identity-observation.v1",
+  listingIdentityReport: "agent-payment-policy.listing-identity-report.v1",
 });
 
 export const PAYMENT_CONTROL_DIMENSIONS = Object.freeze([
@@ -952,6 +954,278 @@ export function offerCoherenceOutputSchema() {
       boundary: { type: "object" },
     },
     required: ["schemaVersion", "evaluatedAt", "source", "decision", "catalogCoherenceEstablished", "runtimeOfferComplete", "catalog", "runtime", "dimensions", "matched", "unknown", "drifted", "nextAction", "boundary"],
+    additionalProperties: false,
+  };
+}
+
+function normalizeListingTarget(value) {
+  const target = strictRecord(value, "target", new Set(["canonicalOrigin", "route", "settlementIdentity"]));
+  const originText = cleanString(target.canonicalOrigin, 253);
+  let origin;
+  try {
+    origin = new URL(originText);
+  } catch {
+    fail("target canonicalOrigin must be a valid HTTPS origin");
+  }
+  if (origin.protocol !== "https:" || origin.username || origin.password || origin.pathname !== "/" || origin.search || origin.hash) {
+    fail("target canonicalOrigin must be an HTTPS origin without path, query, fragment, or credentials");
+  }
+  const route = cleanString(target.route, 200);
+  if (!route || !/^\/[^?#]*$/.test(route) || route.startsWith("//") || route.includes("..")) {
+    fail("target route must be an exact absolute path without query, fragment, or traversal");
+  }
+  const settlementIdentity = target.settlementIdentity === undefined
+    ? null
+    : cleanString(target.settlementIdentity, 200);
+  if (target.settlementIdentity !== undefined && !settlementIdentity) {
+    fail("target settlementIdentity must be 1-200 characters when supplied");
+  }
+  return Object.freeze({ canonicalOrigin: origin.origin, route, settlementIdentity });
+}
+
+function normalizeListingRecord(value, index) {
+  const item = strictRecord(value, `record ${index}`, new Set(["source", "url", "settlementIdentity", "rank"]));
+  const source = cleanString(item.source, 128);
+  if (!source || !OFFER_COHERENCE_SAFE_SOURCE.test(source)) {
+    fail(`record ${index} source must be 1-128 safe printable characters`);
+  }
+  const request = normalizeRequest("GET", item.url);
+  const settlementIdentity = item.settlementIdentity === undefined
+    ? null
+    : cleanString(item.settlementIdentity, 200);
+  if (item.settlementIdentity !== undefined && !settlementIdentity) {
+    fail(`record ${index} settlementIdentity must be 1-200 characters when supplied`);
+  }
+  const rank = item.rank === undefined ? index + 1 : Number(item.rank);
+  if (!Number.isInteger(rank) || rank < 1 || rank > 1_000_000) {
+    fail(`record ${index} rank must be an integer from 1 through 1000000`);
+  }
+  return Object.freeze({ source, request, settlementIdentity, rank });
+}
+
+function listingIdentitySourceReport(source, records, target) {
+  const sameRoute = records.filter((record) => record.request.pathname === target.route);
+  const relevant = sameRoute.filter((record) => record.request.origin === target.canonicalOrigin
+    || (target.settlementIdentity !== null && record.settlementIdentity === target.settlementIdentity));
+  const canonical = relevant.filter((record) => record.request.origin === target.canonicalOrigin);
+  const aliases = relevant.filter((record) => record.request.origin !== target.canonicalOrigin);
+  const aliasOrigins = [...new Set(aliases.map((record) => record.request.origin))].sort();
+  let status = "canonical";
+  if (!relevant.length) status = "route_absent";
+  else if (relevant.length > 1) status = aliasOrigins.length ? "alias_collision" : "duplicate_records";
+  else if (!canonical.length && aliasOrigins.length) status = "alias_only";
+  const publicRecords = relevant
+    .map((record) => Object.freeze({
+      rank: record.rank,
+      origin: record.request.origin,
+      pathname: record.request.pathname,
+      matchBasis: record.request.origin === target.canonicalOrigin ? "canonical_origin" : "settlement_identity",
+    }))
+    .sort((left, right) => left.rank - right.rank || left.origin.localeCompare(right.origin));
+  return Object.freeze({
+    source,
+    status,
+    exactRouteRecordCount: relevant.length,
+    canonicalRecordCount: canonical.length,
+    canonicalOriginMatched: canonical.length > 0,
+    aliasCandidateCount: aliases.length,
+    aliasOrigins: Object.freeze(aliasOrigins),
+    records: Object.freeze(publicRecords),
+    ownershipProven: false,
+    evidenceBoundary: aliasOrigins.length
+      ? "A non-canonical record matched the caller-supplied settlement identity and exact route. This links advertised settlement identity but does not prove hostname ownership."
+      : "An observed record uses the caller-supplied canonical origin. This does not prove marketplace ownership or control.",
+  });
+}
+
+export function evaluateListingIdentity(input, { now = Date.now() } = {}) {
+  if (!Number.isFinite(now)) fail("now must be a finite epoch millisecond value");
+  const value = strictRecord(input, "request", new Set(["schemaVersion", "target", "sources", "records"]));
+  if (value.schemaVersion !== undefined && value.schemaVersion !== SCHEMAS.listingIdentityObservation) {
+    fail(`unsupported listing identity schema: ${value.schemaVersion}`);
+  }
+  const target = normalizeListingTarget(value.target);
+  if (!Array.isArray(value.records) || value.records.length > 100) {
+    fail("records must be an array with at most 100 entries");
+  }
+  if (value.sources !== undefined && (!Array.isArray(value.sources) || value.sources.length > 100)) {
+    fail("sources must be an array with at most 100 entries when supplied");
+  }
+  const records = value.records.map((record, index) => normalizeListingRecord(record, index));
+  const declaredSources = (value.sources ?? []).map((source, index) => {
+    const normalized = cleanString(source, 128);
+    if (!normalized || !OFFER_COHERENCE_SAFE_SOURCE.test(normalized)) {
+      fail(`source ${index} must be 1-128 safe printable characters`);
+    }
+    return normalized;
+  });
+  if (new Set(declaredSources).size !== declaredSources.length) {
+    fail("sources must not contain duplicates");
+  }
+  const sources = [...new Set([...declaredSources, ...records.map((record) => record.source)])].sort();
+  const reports = sources.map((source) => listingIdentitySourceReport(
+    source,
+    records.filter((record) => record.source === source),
+    target,
+  ));
+  const conflicts = reports.filter((report) => ["duplicate_records", "alias_only", "alias_collision"].includes(report.status));
+  const found = reports.filter((report) => report.status !== "route_absent");
+  const decision = conflicts.length ? "review_required" : found.length ? "canonical" : "absent";
+  return Object.freeze({
+    schemaVersion: SCHEMAS.listingIdentityReport,
+    evaluatedAt: new Date(now).toISOString(),
+    target: Object.freeze({
+      canonicalOrigin: target.canonicalOrigin,
+      route: target.route,
+      settlementIdentitySupplied: target.settlementIdentity !== null,
+    }),
+    decision,
+    summary: Object.freeze({
+      sourceCount: reports.length,
+      foundSourceCount: found.length,
+      conflictSourceCount: conflicts.length,
+      conflictSources: Object.freeze(conflicts.map((report) => report.source)),
+    }),
+    sources: Object.freeze(reports),
+    nextAction: decision === "review_required"
+      ? "preserve_canonical_record_and_verify_alias_ownership_before_change"
+      : decision === "canonical"
+        ? "eligible_for_separate_runtime_offer_preflight"
+        : "verify_listing_or_choose_another_supplier",
+    boundary: Object.freeze({
+      credentialsAccepted: false,
+      networkAccessed: false,
+      walletAccessed: false,
+      paymentSigned: false,
+      paymentSent: false,
+      queryValuesRetained: false,
+      settlementIdentityRetained: false,
+      statement: "Evaluates caller-supplied catalog listing identity. Shared settlement identity links records but does not prove hostname ownership, seller control, demand, or runtime payment terms.",
+    }),
+  });
+}
+
+function listingIdentityRecordSchema() {
+  return {
+    type: "object",
+    properties: {
+      source: { type: "string", minLength: 1, maxLength: 128 },
+      url: { type: "string", format: "uri", maxLength: 2048 },
+      settlementIdentity: { type: "string", minLength: 1, maxLength: 200 },
+      rank: { type: "integer", minimum: 1, maximum: 1_000_000 },
+    },
+    required: ["source", "url"],
+    additionalProperties: false,
+  };
+}
+
+export function listingIdentityInputSchema() {
+  return {
+    $schema: "https://json-schema.org/draft/2020-12/schema",
+    title: "Agent payment catalog listing identity observation",
+    type: "object",
+    properties: {
+      schemaVersion: { type: "string", const: SCHEMAS.listingIdentityObservation },
+      target: {
+        type: "object",
+        properties: {
+          canonicalOrigin: { type: "string", format: "uri", maxLength: 253 },
+          route: { type: "string", pattern: "^/[^?#]*$", maxLength: 200 },
+          settlementIdentity: { type: "string", minLength: 1, maxLength: 200 },
+        },
+        required: ["canonicalOrigin", "route"],
+        additionalProperties: false,
+      },
+      sources: {
+        type: "array",
+        maxItems: 100,
+        uniqueItems: true,
+        items: { type: "string", minLength: 1, maxLength: 128 },
+      },
+      records: { type: "array", maxItems: 100, items: listingIdentityRecordSchema() },
+    },
+    required: ["schemaVersion", "target", "records"],
+    additionalProperties: false,
+  };
+}
+
+export function listingIdentityOutputSchema() {
+  const publicRecord = {
+    type: "object",
+    properties: {
+      rank: { type: "integer", minimum: 1, maximum: 1_000_000 },
+      origin: { type: "string", format: "uri" },
+      pathname: { type: "string" },
+      matchBasis: { type: "string", enum: ["canonical_origin", "settlement_identity"] },
+    },
+    required: ["rank", "origin", "pathname", "matchBasis"],
+    additionalProperties: false,
+  };
+  const sourceReport = {
+    type: "object",
+    properties: {
+      source: { type: "string" },
+      status: { type: "string", enum: ["canonical", "duplicate_records", "alias_only", "alias_collision", "route_absent"] },
+      exactRouteRecordCount: { type: "integer", minimum: 0 },
+      canonicalRecordCount: { type: "integer", minimum: 0 },
+      canonicalOriginMatched: { type: "boolean" },
+      aliasCandidateCount: { type: "integer", minimum: 0 },
+      aliasOrigins: { type: "array", uniqueItems: true, items: { type: "string", format: "uri" } },
+      records: { type: "array", items: publicRecord },
+      ownershipProven: { type: "boolean", const: false },
+      evidenceBoundary: { type: "string" },
+    },
+    required: ["source", "status", "exactRouteRecordCount", "canonicalRecordCount", "canonicalOriginMatched", "aliasCandidateCount", "aliasOrigins", "records", "ownershipProven", "evidenceBoundary"],
+    additionalProperties: false,
+  };
+  return {
+    $schema: "https://json-schema.org/draft/2020-12/schema",
+    title: "Agent payment catalog listing identity report",
+    type: "object",
+    properties: {
+      schemaVersion: { type: "string", const: SCHEMAS.listingIdentityReport },
+      evaluatedAt: { type: "string", format: "date-time" },
+      target: {
+        type: "object",
+        properties: {
+          canonicalOrigin: { type: "string", format: "uri" },
+          route: { type: "string" },
+          settlementIdentitySupplied: { type: "boolean" },
+        },
+        required: ["canonicalOrigin", "route", "settlementIdentitySupplied"],
+        additionalProperties: false,
+      },
+      decision: { type: "string", enum: ["canonical", "review_required", "absent"] },
+      summary: {
+        type: "object",
+        properties: {
+          sourceCount: { type: "integer", minimum: 0 },
+          foundSourceCount: { type: "integer", minimum: 0 },
+          conflictSourceCount: { type: "integer", minimum: 0 },
+          conflictSources: { type: "array", uniqueItems: true, items: { type: "string" } },
+        },
+        required: ["sourceCount", "foundSourceCount", "conflictSourceCount", "conflictSources"],
+        additionalProperties: false,
+      },
+      sources: { type: "array", items: sourceReport },
+      nextAction: { type: "string" },
+      boundary: {
+        type: "object",
+        properties: {
+          credentialsAccepted: { type: "boolean", const: false },
+          networkAccessed: { type: "boolean", const: false },
+          walletAccessed: { type: "boolean", const: false },
+          paymentSigned: { type: "boolean", const: false },
+          paymentSent: { type: "boolean", const: false },
+          queryValuesRetained: { type: "boolean", const: false },
+          settlementIdentityRetained: { type: "boolean", const: false },
+          statement: { type: "string" },
+        },
+        required: ["credentialsAccepted", "networkAccessed", "walletAccessed", "paymentSigned", "paymentSent", "queryValuesRetained", "settlementIdentityRetained", "statement"],
+        additionalProperties: false,
+      },
+    },
+    required: ["schemaVersion", "evaluatedAt", "target", "decision", "summary", "sources", "nextAction", "boundary"],
     additionalProperties: false,
   };
 }

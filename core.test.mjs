@@ -24,11 +24,14 @@ import {
   createStatefulWalletPolicyObservationDraft,
   evaluateStatefulWalletPolicyObservations,
   evaluateOfferCoherence,
+  evaluateListingIdentity,
   normalizeStatefulWalletPolicyObservations,
   statefulWalletPolicyObservationInputSchema,
   statefulWalletPolicyObservationOutputSchema,
   offerCoherenceInputSchema,
   offerCoherenceOutputSchema,
+  listingIdentityInputSchema,
+  listingIdentityOutputSchema,
   walletPolicyObservationInputSchema,
   walletPolicyObservationOutputSchema,
 } from "./core.mjs";
@@ -145,6 +148,94 @@ test("rejects unknown evidence fields and publishes strict coherence schemas", (
   assert.equal(inputSchema.properties.catalog.required.includes("amountAtomic"), false);
   assert.equal(inputSchema.additionalProperties, false);
   assert.equal(outputSchema.properties.decision.enum.includes("drifted"), true);
+  assert.equal(outputSchema.additionalProperties, false);
+});
+
+test("classifies canonical, duplicate, and settlement-linked alias records without retaining private identity values", () => {
+  const secretSettlementIdentity = "0x2222222222222222222222222222222222222222";
+  const report = evaluateListingIdentity({
+    schemaVersion: "agent-payment-policy.listing-identity-observation.v1",
+    target: {
+      canonicalOrigin: "https://seller.example",
+      route: "/data",
+      settlementIdentity: secretSettlementIdentity,
+    },
+    records: [
+      { source: "catalog-a", url: "https://seller.example/data?asset=PRIVATE_CANONICAL_VALUE", settlementIdentity: secretSettlementIdentity, rank: 1 },
+      { source: "catalog-a", url: "https://legacy.example/data?asset=PRIVATE_ALIAS_VALUE", settlementIdentity: secretSettlementIdentity, rank: 2 },
+      { source: "catalog-b", url: "https://seller.example/data", rank: 1 },
+      { source: "catalog-b", url: "https://seller.example/data?copy=2", rank: 2 },
+      { source: "catalog-c", url: "https://legacy.example/data", settlementIdentity: secretSettlementIdentity, rank: 1 },
+    ],
+  }, { now: NOW });
+  assert.equal(report.schemaVersion, "agent-payment-policy.listing-identity-report.v1");
+  assert.equal(report.decision, "review_required");
+  assert.deepEqual(report.summary.conflictSources, ["catalog-a", "catalog-b", "catalog-c"]);
+  assert.equal(report.sources.find(({ source }) => source === "catalog-a").status, "alias_collision");
+  assert.equal(report.sources.find(({ source }) => source === "catalog-b").status, "duplicate_records");
+  assert.equal(report.sources.find(({ source }) => source === "catalog-c").status, "alias_only");
+  assert.equal(report.sources.find(({ source }) => source === "catalog-a").ownershipProven, false);
+  assert.match(report.sources.find(({ source }) => source === "catalog-a").evidenceBoundary, /does not prove hostname ownership/);
+  assert.doesNotMatch(JSON.stringify(report), /PRIVATE_CANONICAL_VALUE|PRIVATE_ALIAS_VALUE|copy=2|0x2222222222222222222222222222222222222222/);
+  assert.equal(report.boundary.networkAccessed, false);
+  assert.equal(report.boundary.paymentSent, false);
+});
+
+test("permits canonical listing identity to advance only to separate runtime preflight", () => {
+  const report = evaluateListingIdentity({
+    schemaVersion: "agent-payment-policy.listing-identity-observation.v1",
+    target: { canonicalOrigin: "https://seller.example", route: "/data" },
+    records: [{ source: "catalog-a", url: "https://seller.example/data?asset=ETH", rank: 3 }],
+  }, { now: NOW });
+  assert.equal(report.decision, "canonical");
+  assert.equal(report.nextAction, "eligible_for_separate_runtime_offer_preflight");
+  assert.equal(report.sources[0].records[0].matchBasis, "canonical_origin");
+  assert.equal(report.sources[0].canonicalOriginMatched, true);
+  assert.equal(report.sources[0].ownershipProven, false);
+  assert.match(report.sources[0].evidenceBoundary, /does not prove marketplace ownership/);
+  assert.doesNotMatch(JSON.stringify(report), /ETH/);
+});
+
+test("distinguishes a declared empty catalog from a catalog that was not checked", () => {
+  const report = evaluateListingIdentity({
+    schemaVersion: "agent-payment-policy.listing-identity-observation.v1",
+    target: { canonicalOrigin: "https://seller.example", route: "/data" },
+    sources: ["empty-catalog"],
+    records: [],
+  }, { now: NOW });
+  assert.equal(report.decision, "absent");
+  assert.equal(report.summary.sourceCount, 1);
+  assert.equal(report.sources[0].source, "empty-catalog");
+  assert.equal(report.sources[0].status, "route_absent");
+  assert.equal(report.sources[0].canonicalOriginMatched, false);
+  assert.equal(report.sources[0].ownershipProven, false);
+  assert.throws(() => evaluateListingIdentity({
+    schemaVersion: "agent-payment-policy.listing-identity-observation.v1",
+    target: { canonicalOrigin: "https://seller.example", route: "/data" },
+    sources: ["duplicate", "duplicate"],
+    records: [],
+  }, { now: NOW }), /must not contain duplicates/);
+});
+
+test("fails closed on malformed listing identity evidence and publishes strict schemas", () => {
+  const input = {
+    schemaVersion: "agent-payment-policy.listing-identity-observation.v1",
+    target: { canonicalOrigin: "https://seller.example", route: "/data" },
+    records: [],
+  };
+  assert.throws(() => evaluateListingIdentity({ ...input, apiKey: "secret" }, { now: NOW }), /unsupported fields/);
+  assert.throws(() => evaluateListingIdentity({ ...input, target: { canonicalOrigin: "https://seller.example/path", route: "/data" } }, { now: NOW }), /HTTPS origin/);
+  assert.throws(() => evaluateListingIdentity({ ...input, target: { canonicalOrigin: "https://seller.example", route: "/data?x=1" } }, { now: NOW }), /exact absolute path/);
+  assert.throws(() => evaluateListingIdentity({ ...input, records: [{ source: "catalog-a", url: "http://seller.example/data" }] }, { now: NOW }), /HTTPS/);
+  const inputSchema = listingIdentityInputSchema();
+  const outputSchema = listingIdentityOutputSchema();
+  assert.equal(inputSchema.additionalProperties, false);
+  assert.equal(inputSchema.properties.sources.uniqueItems, true);
+  assert.equal(inputSchema.properties.records.maxItems, 100);
+  assert.equal(outputSchema.properties.decision.enum.includes("review_required"), true);
+  assert.equal(outputSchema.properties.target.additionalProperties, false);
+  assert.equal(outputSchema.properties.sources.items.additionalProperties, false);
+  assert.equal(outputSchema.properties.boundary.additionalProperties, false);
   assert.equal(outputSchema.additionalProperties, false);
 });
 
