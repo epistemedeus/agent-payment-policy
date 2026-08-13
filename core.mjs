@@ -33,6 +33,8 @@ export const SCHEMAS = Object.freeze({
   responseContractReport: "agent-payment-policy.response-contract-report.v2",
   purchaseEvidenceManifest: "agent-payment-policy.purchase-evidence-manifest.v1",
   purchaseEvidenceBinding: "agent-payment-policy.purchase-evidence-binding.v1",
+  receiptCompletenessObservation: "agent-payment-policy.receipt-completeness-observation.v1",
+  receiptCompletenessReport: "agent-payment-policy.receipt-completeness-report.v1",
 });
 
 export const PURCHASE_EVIDENCE_RELATION = "https://github.com/epistemedeus/agent-payment-policy#purchase-evidence";
@@ -2546,6 +2548,235 @@ export function validateOutput(value, contract, { schemaValidator = null } = {})
     schemaValidated: Boolean(normalized.schemaDigest),
     schemaDigest: normalized.schemaDigest,
   });
+}
+
+const RECEIPT_MATCH_STATES = new Set(["match", "mismatch", "missing", "not_checked"]);
+const RECEIPT_SUCCESS_STATES = new Set(["confirmed", "rejected", "unknown"]);
+const RECEIPT_PROTOCOLS = new Set(["x402", "mpp", "other"]);
+const SETTLEMENT_DIMENSIONS = Object.freeze(["amount", "network", "asset", "recipient", "payer"]);
+
+function receiptMatchState(value, label) {
+  const normalized = cleanString(value, 20)?.toLowerCase();
+  if (!RECEIPT_MATCH_STATES.has(normalized)) fail(`${label} is invalid`);
+  return normalized;
+}
+
+function receiptSuccessState(value, label) {
+  const normalized = cleanString(value, 20)?.toLowerCase();
+  if (!RECEIPT_SUCCESS_STATES.has(normalized)) fail(`${label} is invalid`);
+  return normalized;
+}
+
+function normalizeReceiptEvidence(value) {
+  const input = strictRecord(value, "receipt evidence", new Set([
+    "present", "success", "transactionReference", ...SETTLEMENT_DIMENSIONS,
+  ]));
+  if (typeof input.present !== "boolean") fail("receipt evidence present must be boolean");
+  const normalized = {
+    present: input.present,
+    success: receiptSuccessState(input.success, "receipt evidence success"),
+    transactionReference: receiptMatchState(input.transactionReference, "receipt evidence transactionReference"),
+  };
+  for (const dimension of SETTLEMENT_DIMENSIONS) {
+    normalized[dimension] = receiptMatchState(input[dimension], `receipt evidence ${dimension}`);
+  }
+  if (!normalized.present && (normalized.success !== "unknown" || normalized.transactionReference !== "missing" ||
+      SETTLEMENT_DIMENSIONS.some((dimension) => !["missing", "not_checked"].includes(normalized[dimension])))) {
+    fail("absent receipt evidence cannot claim settlement facts");
+  }
+  return Object.freeze(normalized);
+}
+
+function normalizeTransactionEvidence(value) {
+  const input = strictRecord(value, "transaction evidence", new Set([
+    "checked", "success", "transactionReference", ...SETTLEMENT_DIMENSIONS,
+  ]));
+  if (typeof input.checked !== "boolean") fail("transaction evidence checked must be boolean");
+  const normalized = {
+    checked: input.checked,
+    success: receiptSuccessState(input.success, "transaction evidence success"),
+    transactionReference: receiptMatchState(input.transactionReference, "transaction evidence transactionReference"),
+  };
+  for (const dimension of SETTLEMENT_DIMENSIONS) {
+    normalized[dimension] = receiptMatchState(input[dimension], `transaction evidence ${dimension}`);
+  }
+  if (!normalized.checked && (normalized.success !== "unknown" ||
+      [normalized.transactionReference, ...SETTLEMENT_DIMENSIONS.map((dimension) => normalized[dimension])]
+        .some((state) => state !== "not_checked"))) {
+    fail("unchecked transaction evidence cannot claim settlement facts");
+  }
+  return Object.freeze(normalized);
+}
+
+function normalizeBalanceEvidence(value) {
+  const input = strictRecord(value, "balance evidence", new Set(["checked", "delta", "asset", "payer"]));
+  if (typeof input.checked !== "boolean") fail("balance evidence checked must be boolean");
+  const normalized = {
+    checked: input.checked,
+    delta: receiptMatchState(input.delta, "balance evidence delta"),
+    asset: receiptMatchState(input.asset, "balance evidence asset"),
+    payer: receiptMatchState(input.payer, "balance evidence payer"),
+  };
+  if (!normalized.checked && [normalized.delta, normalized.asset, normalized.payer].some((state) => state !== "not_checked")) {
+    fail("unchecked balance evidence cannot claim settlement facts");
+  }
+  return Object.freeze(normalized);
+}
+
+export function evaluateReceiptCompleteness(value) {
+  const input = strictRecord(value, "receipt completeness observation", new Set([
+    "schemaVersion", "protocol", "receipt", "transaction", "balance", "outputValidation",
+  ]));
+  if (input.schemaVersion !== SCHEMAS.receiptCompletenessObservation) {
+    fail("receipt completeness observation schema is invalid");
+  }
+  const protocol = cleanString(input.protocol, 20)?.toLowerCase();
+  if (!RECEIPT_PROTOCOLS.has(protocol)) fail("receipt completeness protocol is invalid");
+  const receipt = normalizeReceiptEvidence(input.receipt);
+  const transaction = normalizeTransactionEvidence(input.transaction);
+  const balance = normalizeBalanceEvidence(input.balance);
+  const outputValidation = cleanString(input.outputValidation, 20)?.toLowerCase();
+  if (!["passed", "failed", "not_checked"].includes(outputValidation)) {
+    fail("receipt completeness outputValidation is invalid");
+  }
+
+  const conflicts = [];
+  if (receipt.success === "rejected") conflicts.push("receipt.success");
+  if (transaction.success === "rejected") conflicts.push("transaction.success");
+  if (receipt.transactionReference === "mismatch") conflicts.push("receipt.transaction_reference");
+  if (transaction.transactionReference === "mismatch") conflicts.push("transaction.transaction_reference");
+  for (const dimension of SETTLEMENT_DIMENSIONS) {
+    if (receipt[dimension] === "mismatch") conflicts.push(`receipt.${dimension}`);
+    if (transaction[dimension] === "mismatch") conflicts.push(`transaction.${dimension}`);
+  }
+  if (balance.delta === "mismatch") conflicts.push("balance.amount");
+  if (balance.asset === "mismatch") conflicts.push("balance.asset");
+  if (balance.payer === "mismatch") conflicts.push("balance.payer");
+
+  const successProven = receipt.success === "confirmed" || transaction.success === "confirmed";
+  const transactionReferenceProven = receipt.transactionReference === "match" ||
+    transaction.transactionReference === "match";
+  const provenDimensions = SETTLEMENT_DIMENSIONS.filter((dimension) =>
+    receipt[dimension] === "match" || transaction[dimension] === "match" ||
+    (dimension === "amount" && balance.delta === "match") ||
+    (dimension === "asset" && balance.asset === "match") ||
+    (dimension === "payer" && balance.payer === "match"));
+  const missingDimensions = SETTLEMENT_DIMENSIONS.filter((dimension) => !provenDimensions.includes(dimension));
+  let state = "insufficient";
+  if (conflicts.length) state = "conflict";
+  else if (successProven && transactionReferenceProven && !missingDimensions.length) state = "reconciled";
+  else if (successProven && transactionReferenceProven && provenDimensions.includes("amount")) state = "partial";
+
+  const supplementedBy = [];
+  if (transaction.checked && (transaction.success === "confirmed" || transaction.transactionReference === "match" ||
+      SETTLEMENT_DIMENSIONS.some((dimension) => transaction[dimension] === "match"))) supplementedBy.push("transaction");
+  if (balance.checked && [balance.delta, balance.asset, balance.payer].some((item) => item === "match")) {
+    supplementedBy.push("balance");
+  }
+  return Object.freeze({
+    schemaVersion: SCHEMAS.receiptCompletenessReport,
+    protocol,
+    state,
+    receiptPresent: receipt.present,
+    successProven,
+    transactionReferenceProven,
+    provenDimensions: Object.freeze(provenDimensions),
+    missingDimensions: Object.freeze(missingDimensions),
+    conflicts: Object.freeze(conflicts.sort()),
+    supplementedBy: Object.freeze(supplementedBy),
+    deliveryState: outputValidation === "passed" ? "valid" : outputValidation === "failed" ? "invalid" : "unverified",
+    evidenceBoundary: "Classifies caller-verified normalized facts. It does not parse raw receipts, verify signatures or transactions, authorize payment, or prove independent demand.",
+    rawEvidenceRetained: false,
+    credentialsUsed: false,
+    walletAccessed: false,
+    paymentSigned: false,
+    paymentSent: false,
+  });
+}
+
+function receiptMatchStateSchema() {
+  return { type: "string", enum: [...RECEIPT_MATCH_STATES] };
+}
+
+export function receiptCompletenessInputSchema() {
+  const dimensions = Object.fromEntries(SETTLEMENT_DIMENSIONS.map((dimension) => [dimension, receiptMatchStateSchema()]));
+  return {
+    $schema: "https://json-schema.org/draft/2020-12/schema",
+    type: "object",
+    additionalProperties: false,
+    required: ["schemaVersion", "protocol", "receipt", "transaction", "balance", "outputValidation"],
+    properties: {
+      schemaVersion: { type: "string", const: SCHEMAS.receiptCompletenessObservation },
+      protocol: { type: "string", enum: [...RECEIPT_PROTOCOLS] },
+      receipt: {
+        type: "object",
+        additionalProperties: false,
+        required: ["present", "success", "transactionReference", ...SETTLEMENT_DIMENSIONS],
+        properties: {
+          present: { type: "boolean" },
+          success: { type: "string", enum: [...RECEIPT_SUCCESS_STATES] },
+          transactionReference: receiptMatchStateSchema(),
+          ...dimensions,
+        },
+      },
+      transaction: {
+        type: "object",
+        additionalProperties: false,
+        required: ["checked", "success", "transactionReference", ...SETTLEMENT_DIMENSIONS],
+        properties: {
+          checked: { type: "boolean" },
+          success: { type: "string", enum: [...RECEIPT_SUCCESS_STATES] },
+          transactionReference: receiptMatchStateSchema(),
+          ...dimensions,
+        },
+      },
+      balance: {
+        type: "object",
+        additionalProperties: false,
+        required: ["checked", "delta", "asset", "payer"],
+        properties: {
+          checked: { type: "boolean" },
+          delta: receiptMatchStateSchema(),
+          asset: receiptMatchStateSchema(),
+          payer: receiptMatchStateSchema(),
+        },
+      },
+      outputValidation: { type: "string", enum: ["passed", "failed", "not_checked"] },
+    },
+  };
+}
+
+export function receiptCompletenessOutputSchema() {
+  return {
+    $schema: "https://json-schema.org/draft/2020-12/schema",
+    type: "object",
+    additionalProperties: false,
+    required: [
+      "schemaVersion", "protocol", "state", "receiptPresent", "successProven",
+      "transactionReferenceProven", "provenDimensions", "missingDimensions", "conflicts",
+      "supplementedBy", "deliveryState", "evidenceBoundary", "rawEvidenceRetained",
+      "credentialsUsed", "walletAccessed", "paymentSigned", "paymentSent",
+    ],
+    properties: {
+      schemaVersion: { type: "string", const: SCHEMAS.receiptCompletenessReport },
+      protocol: { type: "string", enum: [...RECEIPT_PROTOCOLS] },
+      state: { type: "string", enum: ["reconciled", "partial", "conflict", "insufficient"] },
+      receiptPresent: { type: "boolean" },
+      successProven: { type: "boolean" },
+      transactionReferenceProven: { type: "boolean" },
+      provenDimensions: { type: "array", uniqueItems: true, items: { type: "string", enum: [...SETTLEMENT_DIMENSIONS] } },
+      missingDimensions: { type: "array", uniqueItems: true, items: { type: "string", enum: [...SETTLEMENT_DIMENSIONS] } },
+      conflicts: { type: "array", uniqueItems: true, items: { type: "string" } },
+      supplementedBy: { type: "array", uniqueItems: true, items: { type: "string", enum: ["transaction", "balance"] } },
+      deliveryState: { type: "string", enum: ["valid", "invalid", "unverified"] },
+      evidenceBoundary: { type: "string" },
+      rawEvidenceRetained: { const: false },
+      credentialsUsed: { const: false },
+      walletAccessed: { const: false },
+      paymentSigned: { const: false },
+      paymentSent: { const: false },
+    },
+  };
 }
 
 export function createReceipt({ plan, authorization, executionAuthorization, amountAtomic, transactionReference, response, outputSchemaValidator, now = Date.now() } = {}) {

@@ -58,7 +58,7 @@ Example:
 Inspect the schema locally with an exact package version:
 
 ```bash
-npm install --save-exact agent-payment-policy@0.13.1
+npm install --save-exact agent-payment-policy@0.14.0
 npx agent-payment-policy output-schema-check \
   ./output-schema.json \
   data.source,data.value,data.observedAt
@@ -124,6 +124,19 @@ const result = validateOutput(responseBytes, contract, { schemaValidator });
 
 Use the package README for the complete intent, planning, authorization, and
 receipt APIs.
+
+## Reconcile incomplete receipt evidence
+
+After the rail adapter has independently verified the provider receipt,
+transaction, and buyer balance, normalize only controlled match states into
+`evaluateReceiptCompleteness`. Do not pass raw headers, signatures, transaction
+bodies, credentials, wallet secrets, or paid output. Treat any mismatch as a
+conflict. Preserve missing facts honestly and use transaction or exact balance
+evidence only to supplement the dimension it actually proves.
+
+The completeness report does not replace output validation. A payment can be
+reconciled while delivery is invalid, and valid delivery does not prove
+settlement.
 
 ## Fail closed at the right stage
 

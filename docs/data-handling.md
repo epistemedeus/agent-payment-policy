@@ -64,3 +64,13 @@ Verified bindings retain only the manifest digest, service version, effect,
 response-schema digest, buyer-required paths, and seller-declaration label.
 The core performs no network request and retains no query value, request body,
 payment credential, wallet state, signature, paid output, or settlement.
+
+Receipt-completeness observations contain only controlled present, checked,
+success, match, mismatch, missing, and not-checked states for receipt,
+transaction, balance, and output evidence. Reports retain only completeness
+state, proven and missing settlement dimensions, conflict labels, supplemental
+evidence classes, and delivery state. They do not retain raw headers, receipt
+payloads, transaction bodies, signatures, credentials, wallet addresses,
+amounts, request values, or paid output. The caller remains responsible for
+verifying the normalized input facts and preserving any private source evidence
+under its own retention policy.

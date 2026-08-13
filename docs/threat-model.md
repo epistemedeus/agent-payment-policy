@@ -42,6 +42,9 @@
   is incorrectly fetched as purchase evidence.
 - A seller manifest that changes effect, output guarantees, replay terms, or
   receipt expectations after buyer authorization while price stays constant.
+- A provider receipt that proves success or a transaction reference but omits
+  an accounting field, and an integrator that either invents the missing fact
+  or treats the whole settlement as unverified.
 
 ## Out of scope
 
@@ -113,6 +116,16 @@ the resulting manifest and response-schema digests into authorization, and
 refetch before wallet access. Seller-declared evidence can narrow a policy
 decision but cannot authorize spend or replace live challenge, output, receipt,
 or settlement verification.
+
+Treat `evaluateReceiptCompleteness` as a classifier for already verified facts,
+not a receipt parser or chain verifier. Map provider receipts, authoritative
+transactions, and exact balance evidence to controlled states before calling
+it. Preserve missing dimensions as null evidence, reject every mismatch, and
+require the integrating buyer to establish payer, recipient, asset, network,
+amount, finality, and output validity through its own trusted adapters. A
+`reconciled` report proves only that the supplied normalized facts collectively
+cover the settlement dimensions without conflict. It does not prove their
+source, authorize payment, or establish demand.
 
 ## Wallet-policy observation evidence
 

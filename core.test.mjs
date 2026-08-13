@@ -39,6 +39,7 @@ import {
   serviceDeploymentStatementSchema,
   serviceDeploymentVerificationSchema,
   evaluateResponseContract,
+  evaluateReceiptCompleteness,
   inspectOutputSchema,
   prepareOutputValidator,
   purchaseEvidenceLink,
@@ -48,6 +49,8 @@ import {
   SCHEMAS,
   responseContractInputSchema,
   responseContractOutputSchema,
+  receiptCompletenessInputSchema,
+  receiptCompletenessOutputSchema,
   signServiceDeploymentStatement,
   verifyServiceDeploymentStatement,
   walletPolicyObservationInputSchema,
@@ -1117,6 +1120,135 @@ test("creates public-safe receipt evidence and rejects overcharge or invalid out
   assert.throws(() => createReceipt({ plan, authorization, amountAtomic: "10000", transactionReference: "0xabc", response: { data: {} } }), /missing required/);
   assert.throws(() => createReceipt({ plan, authorization: { ...authorization }, amountAtomic: "10000", transactionReference: "0xabc", response: { data: { value: 42 } } }), /verified authorization/);
   assert.throws(() => createReceipt({ plan, authorization, amountAtomic: "10000", transactionReference: "", response: { data: { value: 42 } } }), /transactionReference/);
+});
+
+test("classifies receipt completeness with bounded supplemental settlement evidence", () => {
+  const report = evaluateReceiptCompleteness({
+    schemaVersion: SCHEMAS.receiptCompletenessObservation,
+    protocol: "x402",
+    receipt: {
+      present: true,
+      success: "confirmed",
+      transactionReference: "match",
+      amount: "missing",
+      network: "match",
+      asset: "match",
+      recipient: "match",
+      payer: "match",
+    },
+    transaction: {
+      checked: true,
+      success: "confirmed",
+      transactionReference: "match",
+      amount: "not_checked",
+      network: "match",
+      asset: "match",
+      recipient: "match",
+      payer: "match",
+    },
+    balance: { checked: true, delta: "match", asset: "match", payer: "match" },
+    outputValidation: "passed",
+  });
+  assert.equal(report.state, "reconciled");
+  assert.equal(report.receiptPresent, true);
+  assert.deepEqual(report.missingDimensions, []);
+  assert.deepEqual(report.provenDimensions, ["amount", "network", "asset", "recipient", "payer"]);
+  assert.deepEqual(report.supplementedBy, ["transaction", "balance"]);
+  assert.equal(report.deliveryState, "valid");
+  assert.equal(report.rawEvidenceRetained, false);
+  assert.doesNotMatch(JSON.stringify(report), /0xsecret|rawHeader|paymentCredential/i);
+});
+
+test("distinguishes partial, conflict, and insufficient receipt evidence", () => {
+  const base = {
+    schemaVersion: SCHEMAS.receiptCompletenessObservation,
+    protocol: "mpp",
+    receipt: {
+      present: true,
+      success: "confirmed",
+      transactionReference: "match",
+      amount: "missing",
+      network: "missing",
+      asset: "missing",
+      recipient: "missing",
+      payer: "missing",
+    },
+    transaction: {
+      checked: false,
+      success: "unknown",
+      transactionReference: "not_checked",
+      amount: "not_checked",
+      network: "not_checked",
+      asset: "not_checked",
+      recipient: "not_checked",
+      payer: "not_checked",
+    },
+    balance: { checked: true, delta: "match", asset: "match", payer: "match" },
+    outputValidation: "failed",
+  };
+  const partial = evaluateReceiptCompleteness(base);
+  assert.equal(partial.state, "partial");
+  assert.deepEqual(partial.missingDimensions, ["network", "recipient"]);
+  assert.equal(partial.deliveryState, "invalid");
+
+  const conflict = evaluateReceiptCompleteness({
+    ...base,
+    receipt: { ...base.receipt, amount: "mismatch" },
+  });
+  assert.equal(conflict.state, "conflict");
+  assert.deepEqual(conflict.conflicts, ["receipt.amount"]);
+
+  const insufficient = evaluateReceiptCompleteness({
+    ...base,
+    receipt: {
+      present: false,
+      success: "unknown",
+      transactionReference: "missing",
+      amount: "missing",
+      network: "missing",
+      asset: "missing",
+      recipient: "missing",
+      payer: "missing",
+    },
+    balance: { checked: false, delta: "not_checked", asset: "not_checked", payer: "not_checked" },
+    outputValidation: "not_checked",
+  });
+  assert.equal(insufficient.state, "insufficient");
+});
+
+test("fails closed on receipt completeness overclaim and publishes strict schemas", () => {
+  assert.throws(() => evaluateReceiptCompleteness({
+    schemaVersion: SCHEMAS.receiptCompletenessObservation,
+    protocol: "x402",
+    receipt: {
+      present: false,
+      success: "confirmed",
+      transactionReference: "missing",
+      amount: "missing",
+      network: "missing",
+      asset: "missing",
+      recipient: "missing",
+      payer: "missing",
+    },
+    transaction: {
+      checked: false,
+      success: "unknown",
+      transactionReference: "not_checked",
+      amount: "not_checked",
+      network: "not_checked",
+      asset: "not_checked",
+      recipient: "not_checked",
+      payer: "not_checked",
+    },
+    balance: { checked: false, delta: "not_checked", asset: "not_checked", payer: "not_checked" },
+    outputValidation: "not_checked",
+  }), /absent receipt evidence/);
+  const inputSchema = receiptCompletenessInputSchema();
+  const outputSchema = receiptCompletenessOutputSchema();
+  assert.equal(inputSchema.additionalProperties, false);
+  assert.equal(inputSchema.properties.receipt.additionalProperties, false);
+  assert.equal(outputSchema.additionalProperties, false);
+  assert.equal(outputSchema.properties.rawEvidenceRetained.const, false);
 });
 
 test("binds a buyer acceptance schema into the intent and validates the receipt output", () => {

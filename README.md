@@ -115,6 +115,63 @@ schema with strict JSON Schema 2020-12 plus standard formats. The prepared
 validator is capability-like and bound to one digest; a different or missing
 validator fails closed when the intent includes `schemaDigest`.
 
+## Classify receipt completeness
+
+Provider receipts, chain receipts, and buyer balance evidence frequently carry
+different parts of the settlement fact. Normalize already verified facts into
+controlled match states and classify them without retaining raw headers,
+signatures, paid bodies, credentials, or wallet secrets:
+
+```js
+import { evaluateReceiptCompleteness, SCHEMAS } from "agent-payment-policy";
+
+const report = evaluateReceiptCompleteness({
+  schemaVersion: SCHEMAS.receiptCompletenessObservation,
+  protocol: "x402",
+  receipt: {
+    present: true,
+    success: "confirmed",
+    transactionReference: "match",
+    amount: "missing",
+    network: "match",
+    asset: "match",
+    recipient: "match",
+    payer: "match"
+  },
+  transaction: {
+    checked: true,
+    success: "confirmed",
+    transactionReference: "match",
+    amount: "not_checked",
+    network: "match",
+    asset: "match",
+    recipient: "match",
+    payer: "match"
+  },
+  balance: {
+    checked: true,
+    delta: "match",
+    asset: "match",
+    payer: "match"
+  },
+  outputValidation: "passed"
+});
+```
+
+The report distinguishes `reconciled`, `partial`, `conflict`, and
+`insufficient`; lists proven and missing dimensions; and says whether
+transaction or balance evidence supplemented the provider receipt. The caller
+must verify every input fact first. This evaluator does not parse a raw receipt,
+verify a transaction or signature, authorize payment, access a wallet, or prove
+independent demand.
+
+For a local file:
+
+```bash
+npx agent-payment-policy receipt-completeness-check ./observation.json
+npx agent-payment-policy receipt-completeness-schema
+```
+
 ## Gate a delegated signer
 
 ```js
