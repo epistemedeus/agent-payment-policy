@@ -97,6 +97,13 @@ is never echoed.
 `partial`. Opt in with `--fail-on conflict` so CI can halt on `conflict`
 without treating missing optional evidence as failure.
 
+Version 0.15.0 packs two credential-free adoption examples, asserts that the
+default CLI and those examples neither sign a payment nor send one, repairs the
+skill output-contract field names (`maxResponseBytes`, an explicit
+`requiredFields` list, and parsed JSON), and isolates nested `npm pack` from CI
+`--dry-run`. It includes all additive decide, bind, and classify behavior from
+0.14.1; 0.14.1 does not include the packaged examples.
+
 ## Try it
 
 ```bash
@@ -108,7 +115,27 @@ npx agent-payment-policy output-schema-check ./output-schema.json data.value,dat
 ```
 
 The demo generates an ephemeral policy key and produces a plan plus a verified
-authorization. It performs no network request and no payment.
+authorization. It performs no network request and no payment. Running the CLI
+with no command prints usage and does not generate keys, sign, or pay.
+
+## Five-minute local adoption
+
+Pack this repository and run the two credential-free examples. Version 0.15.0
+ships them; version 0.14.1 does not. They use mock x402 and MPP offers plus a
+frozen policy-authorization fixture. They do not fetch, load a wallet, sign a
+payment, or send a payment.
+
+```bash
+npm pack --ignore-scripts
+npm install ./agent-payment-policy-0.15.0.tgz
+node node_modules/agent-payment-policy/examples/mock-x402-mpp-preflight.mjs
+node node_modules/agent-payment-policy/examples/verify-policy-receipt.mjs
+```
+
+The preflight example filters mock offers and selects one plan. The verification
+example checks a committed policy authorization, binds a public-safe receipt,
+and classifies synthetic completeness observations. That completeness report is
+not chain or wallet evidence. See [`examples/README.md`](examples/README.md).
 
 The five-minute no-pay path is unchanged: `inspect-url`, `output-schema-check`,
 `demo`, and `receipt-completeness-check`. Additive composition verbs:
