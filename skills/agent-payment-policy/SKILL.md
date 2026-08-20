@@ -76,7 +76,7 @@ Example:
 Inspect the schema locally with an exact package version:
 
 ```bash
-npm install --save-exact agent-payment-policy@0.14.1
+npm install --save-exact agent-payment-policy@0.15.0
 npx agent-payment-policy output-schema-check \
   ./output-schema.json \
   data.source,data.value,data.observedAt

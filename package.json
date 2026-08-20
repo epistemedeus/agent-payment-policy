@@ -1,6 +1,6 @@
 {
   "name": "agent-payment-policy",
-  "version": "0.14.1",
+  "version": "0.15.0",
   "description": "Pre-purchase seller evidence, policy authorization, and receipt primitives for AI agents buying APIs through x402 or MPP",
   "keywords": [
     "x402",
@@ -29,7 +29,8 @@
     "LICENSE",
     "SECURITY.md",
     "docs",
-    "skills"
+    "skills",
+    "examples"
   ],
   "engines": {
     "node": ">=22"
@@ -47,6 +48,7 @@
   },
   "scripts": {
     "test": "node --test *.test.mjs",
+    "examples": "node examples/mock-x402-mpp-preflight.mjs && node examples/verify-policy-receipt.mjs",
     "prepack": "npm test"
   },
   "dependencies": {

@@ -59,6 +59,33 @@
   the supplied Ed25519 key, not control of a hostname.
 - Semantic safety of the original unsigned action. Exact execution binding
   prevents mutation after review; it does not make an unsafe original safe.
+- Live x402 or MPP clients. The shipped adoption examples compare
+  caller-supplied mock offers and verify a frozen policy authorization
+  fixture. They are not a network adapter, wallet, or payment executor.
+
+## Adoption examples
+
+`examples/mock-x402-mpp-preflight.mjs` and
+`examples/verify-policy-receipt.mjs` must fail closed as documentation of the
+library boundary:
+
+- no DNS, sockets, HTTP client, or `fetch`;
+- no wallet, credential, or environment-key load;
+- no `authorizePlan`, `authorizeExecution`, or `signServiceDeploymentStatement`;
+- no payment signature or broadcast;
+- mock catalog and runtime offers may be the same object, and purchase-evidence
+  manifests may be caller-built, but reports must not present those as
+  independently fetched seller documents;
+- receipt completeness observations in the verify example are a synthetic
+  fixture. Printed reports must retain `evidenceBoundary` and must not be
+  copied as production chain, wallet, or facilitator evidence.
+
+`npm test` (and therefore GitHub Actions `verify` on pull requests and pushes
+to `main`) runs both examples, asserts the CLI default path only prints usage,
+and installs the packed tarball in a temporary consumer, including the
+in-package README path. Feature-branch pushes do not trigger that workflow
+until a pull request exists. A later executor remains responsible for live
+challenge matching, DNS/SSRF controls, and settlement.
 
 ## Fail-closed integration requirements
 

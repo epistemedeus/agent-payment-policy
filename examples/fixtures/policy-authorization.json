@@ -1,0 +1,17 @@
+{
+  "generatedAt": "2026-08-20T16:00:00.000Z",
+  "now": 1787241600000,
+  "kid": "adoption-fixture-policy",
+  "planId": "sha256:e20bdf1fa0b93bc5dd20e2dcb30428e492665ced1b72a9341e26d0b1d0a8ff60",
+  "intentId": "sha256:6bed9119f3d5b16be1ed3d1f5fdf8872d05723d0e34f7c6fe1250931659f3c44",
+  "authorizationId": "sha256:65de81acfc6df9df5aaf6223d09eaaf752b072196eff99ecbe6e7722c0644e5a",
+  "schemaDigest": "sha256:9284b1c3d04b3be2278220287df5336537a3b87ee0e6105225decd8a07daec59",
+  "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAnuPc69RVqumwKoxOgLPX9a23gIRk3uFlTqynLwrU3Yc=\n-----END PUBLIC KEY-----\n",
+  "envelope": {
+    "schemaVersion": "agent-payment-policy.authorization-jws.v1",
+    "protected": "eyJhbGciOiJFZERTQSIsImtpZCI6ImFkb3B0aW9uLWZpeHR1cmUtcG9saWN5IiwidHlwIjoiYWdlbnQtcGF5bWVudC1wb2xpY3krandzIn0",
+    "payload": "eyJhc3NldCI6IjB4ODMzNTg5ZkNENmVEYjZFMDhmNGM3QzMyRDRmNzFiNTRiZEEwMjkxMyIsImF1dGhvcml6YXRpb25JZCI6InNoYTI1Njo2NWRlODFhY2ZjNmRmOWRmNWFhZjYyMjNkMDllYWFmNzUyYjA3MjE5NmVmZjk5ZWNiZTZlNzcyMmMwNjQ0ZTVhIiwiZXhwaXJlc0F0IjoiMjAyNi0wOC0yMFQxNjowNTowMC4wMDBaIiwiaW50ZW50SWQiOiJzaGEyNTY6NmJlZDkxMTlmM2Q1YjE2YmUxZWQzZDFmNWZkZjg4NzJkMDU3MjNkMGUzNGY3YzZmZTEyNTA5MzE2NTlmM2M0NCIsImlzc3VlZEF0IjoiMjAyNi0wOC0yMFQxNjowMDowMC4wMDBaIiwibWF4QW1vdW50QXRvbWljIjoiMTAwMDAiLCJuZXR3b3JrIjoiZWlwMTU1Ojg0NTMiLCJwbGFuSWQiOiJzaGEyNTY6ZTIwYmRmMWZhMGI5M2JjNWRkMjBlMmRjYjMwNDI4ZTQ5MjY2NWNlZDFiNzJhOTM0MWUyNmQwYjFkMGE4ZmY2MCIsInByb3RvY29sIjoieDQwMiIsInJlY2lwaWVudCI6IjB4MjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMiIsInJlcXVlc3RCaW5kaW5nRGlnZXN0Ijoic2hhMjU2OmRkZWI2OGIwNjhkMTg1OGI4M2ZmMjE2M2ZkYjZjYjcxNGVjMzMxMjg4MjIwOWJjZWI2OTNhMmJiYjc5Y2YzYjciLCJzY2hlbWFWZXJzaW9uIjoiYWdlbnQtcGF5bWVudC1wb2xpY3kuYXV0aG9yaXphdGlvbi52MSJ9",
+    "signature": "4JllTfrNcJZw8p95r-KUK74TgS6Du5_-5TaV0m1XDW00OQ_imvNbnQFRCuNxRqCsYORD4IcOGj5Ijbsn9A5pCg"
+  },
+  "privateKeyRetained": false
+}
