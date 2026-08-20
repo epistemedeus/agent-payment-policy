@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -23,6 +23,26 @@ const FORBIDDEN_SOURCE = [
   /from ["']node:(crypto|http|https|net|tls|dgram|dns|child_process)["']/,
   /process\.env/,
 ];
+
+function isolatedNpmEnv() {
+  // CI `npm pack --dry-run` runs prepack -> npm test with npm_config_dry_run set.
+  // A nested pack that inherits it prints JSON and does not write a tarball.
+  const env = { ...process.env };
+  for (const key of Object.keys(env)) {
+    const lower = key.toLowerCase();
+    if (
+      lower === "npm_config_dry_run" ||
+      lower === "npm_config_pack_destination" ||
+      lower === "npm_config_json" ||
+      lower === "npm_lifecycle_event" ||
+      lower === "npm_lifecycle_script" ||
+      lower === "npm_command"
+    ) {
+      delete env[key];
+    }
+  }
+  return env;
+}
 
 function runNode(args, { cwd = ROOT } = {}) {
   return spawnSync(process.execPath, args, {
@@ -121,15 +141,18 @@ test("package import performs no signing or payment", async () => {
 
 test("packed package examples run in a temporary consumer", { timeout: 120_000 }, () => {
   const scratch = mkdtempSync(join(tmpdir(), "agent-payment-policy-consumer-"));
+  const previousDryRun = process.env.npm_config_dry_run;
+  process.env.npm_config_dry_run = "true";
   try {
     const pack = spawnSync("npm", ["pack", "--ignore-scripts", "--json", "--pack-destination", scratch], {
       cwd: ROOT,
       encoding: "utf8",
-      env: process.env,
+      env: isolatedNpmEnv(),
     });
     assert.equal(pack.status, 0, pack.stderr);
     const packed = JSON.parse(pack.stdout);
     const tarball = join(scratch, packed[0].filename);
+    assert.equal(existsSync(tarball), true, `inner pack did not write ${tarball}`);
     const consumer = join(scratch, "consumer");
     mkdirSync(consumer);
     writeFileSync(join(consumer, "package.json"), `${JSON.stringify({
@@ -140,7 +163,7 @@ test("packed package examples run in a temporary consumer", { timeout: 120_000 }
     const install = spawnSync("npm", ["install", tarball, "--ignore-scripts", "--no-fund", "--no-audit"], {
       cwd: consumer,
       encoding: "utf8",
-      env: process.env,
+      env: isolatedNpmEnv(),
     });
     assert.equal(install.status, 0, install.stderr + install.stdout);
     const installedExamples = join(consumer, "node_modules/agent-payment-policy/examples");
@@ -181,6 +204,8 @@ test("packed package examples run in a temporary consumer", { timeout: 120_000 }
     assert.equal(verify.boundary.paymentSigned, false);
     assert.equal(verify.boundary.completenessObservationsSynthetic, true);
   } finally {
+    if (previousDryRun === undefined) delete process.env.npm_config_dry_run;
+    else process.env.npm_config_dry_run = previousDryRun;
     rmSync(scratch, { recursive: true, force: true });
   }
 });
