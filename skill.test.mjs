@@ -17,6 +17,10 @@ test("ships a valid neutral agent-payment-policy skill with the package", () => 
   assert.doesNotMatch(skill, /\bTODO\b/);
   assert.match(skill, /buyer-owned response contract/);
   assert.match(skill, /does\s+not create a wallet, sign a payment/);
+  assert.match(skill, /decide, bind, and classify/);
+  assert.match(skill, /construct-request/);
+  assert.match(skill, /verify-authorization/);
+  assert.match(skill, /output-accept/);
   assert.ok(skill.includes(`agent-payment-policy@${packageJson.version}`));
   assert.ok(packageJson.files.includes("skills"));
 

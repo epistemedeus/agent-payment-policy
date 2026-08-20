@@ -117,6 +117,18 @@ refetch before wallet access. Seller-declared evidence can narrow a policy
 decision but cannot authorize spend or replace live challenge, output, receipt,
 or settlement verification.
 
+Treat `constructRequest` as an offline constructibility gate, not permission to
+spend. Refuse unfinished path parameters, unresolved query values, a missing
+finished example, credential-shaped query keys, and a non-read-only effect when
+that contract is in play. A finished HTTPS example may bind through
+`normalizeRequest`. Missing purchase evidence remains observable unless the
+caller sets `requirePurchaseEvidence`. The evaluator performs no fetch and
+retains no query values.
+
+`output-accept` validates a local paid body against a buyer-owned schema digest.
+Print only hashes. Never echo the body. A type or format failure is a rejected
+delivery, not a settlement success.
+
 Treat `evaluateReceiptCompleteness` as a classifier for already verified facts,
 not a receipt parser or chain verifier. Map provider receipts, authoritative
 transactions, and exact balance evidence to controlled states before calling

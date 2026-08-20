@@ -42,6 +42,61 @@ Version 0.13.1 adds a neutral installable agent skill for applying that boundary
 to x402, MPP, HTTP 402, paid API, and paid MCP workflows. The skill complements
 wallet and payment-execution tools. It does not authorize spend or move funds.
 
+Version 0.14.1 adds the public residual as three verbs: decide, bind, and
+classify. A foreign agent can inspect a request, plan an offer, verify a signed
+authorization, accept a local paid body, and classify caller-verified receipt
+facts without importing Pilot buyer code, loading a wallet, or calling a
+facilitator. Official clients can still pay a SameDayDesk 402 without this
+package. This release is CLI-additive on 0.14.x; a buyer pin on 0.14.0 keeps
+working.
+
+## Decide, bind, and classify
+
+Speak the package as three verbs. Public residual may inspect, plan, verify,
+accept a local body, and classify caller-verified facts. It may not load a
+wallet, sign a payment, call a facilitator, or read Pilot identity. Durable
+Ed25519 policy signing stays library-only. There is no durable private-key CLI
+flag.
+
+| Verb | Meaning | CLI | Library |
+| --- | --- | --- | --- |
+| **decide** | Is this request constructible, and is there a viable offer? | `construct-request`, `construct-request-schema`, `plan-check`, `inspect-url`, `inspect-json-request`, `output-schema-check`, `offer-coherence-check`, `listing-identity-check`, `response-contract-check` | `constructRequest`, `createPlan`, `normalizeRequest`, `inspectOutputSchema`, `evaluateOfferCoherence`, `evaluateListingIdentity`, `evaluateResponseContract` |
+| **bind** | Lock one finished request or verify a signed plan without a private key | `construct-request` (when `request_constructible`), `verify-authorization`, `verify-execution`, `service-deployment-verify` | `constructRequest`, `verifyAuthorization`, `verifyExecutionAuthorization`, `verifyServiceDeploymentStatement` |
+| **classify** | Accept a local paid body or classify already verified settlement facts | `output-accept`, `receipt-completeness-check` | `inspectOutputSchema` → `prepareOutputValidator` → `validateOutput`, `evaluateReceiptCompleteness` |
+
+`construct-request` takes offline JSON and returns `request_constructible` or
+`not_constructible`. It reuses `normalizeRequest`. Bare path templates, empty or
+placeholder query values, a missing finished example, credential-shaped query
+keys, and a non-`read_only` effect are refused. Bare `/extract` is
+`not_constructible`. A finished example such as
+`https://agents.samedaydesk.com/extract?url=https://example.com` binds. Missing
+purchase evidence stays observable; `requirePurchaseEvidence` remains opt-in.
+
+```json
+{
+  "method": "GET",
+  "url": "/extract",
+  "example": "https://agents.samedaydesk.com/extract?url=https://example.com",
+  "effect": "read_only",
+  "requirePurchaseEvidence": false
+}
+```
+
+`plan-check` wraps `createPlan` with no key. Over-cap, stale, and self-pay
+offers are `no_viable_offer`.
+
+`verify-authorization` takes an envelope, a public PEM, and a plan file.
+A tampered plan fails. A matching envelope verifies. `verify-execution` is the
+optional second check after the plan authorization is independently verified.
+
+`output-accept` inspects a local schema, prepares the validator, and validates a
+paid body. Stdout is hash-only. Exit `0` accepts and exit `1` rejects. The body
+is never echoed.
+
+`receipt-completeness-check` still exits `0` by default, including for
+`partial`. Opt in with `--fail-on conflict` so CI can halt on `conflict`
+without treating missing optional evidence as failure.
+
 ## Try it
 
 ```bash
@@ -54,6 +109,17 @@ npx agent-payment-policy output-schema-check ./output-schema.json data.value,dat
 
 The demo generates an ephemeral policy key and produces a plan plus a verified
 authorization. It performs no network request and no payment.
+
+The five-minute no-pay path is unchanged: `inspect-url`, `output-schema-check`,
+`demo`, and `receipt-completeness-check`. Additive composition verbs:
+
+```bash
+npx agent-payment-policy construct-request ./request.json
+npx agent-payment-policy plan-check ./plan-input.json
+npx agent-payment-policy verify-authorization ./envelope.json ./public.pem ./plan.json
+npx agent-payment-policy output-accept ./output-schema.json sha256:... ./paid-body.json
+npx agent-payment-policy receipt-completeness-check ./observation.json --fail-on conflict
+```
 
 ## Install the agent skill
 
@@ -169,6 +235,7 @@ For a local file:
 
 ```bash
 npx agent-payment-policy receipt-completeness-check ./observation.json
+npx agent-payment-policy receipt-completeness-check ./observation.json --fail-on conflict
 npx agent-payment-policy receipt-completeness-schema
 ```
 

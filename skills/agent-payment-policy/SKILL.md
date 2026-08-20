@@ -25,6 +25,24 @@ workflow before an agent accepts a paid JSON response.
 This skill complements wallet, budget, x402, and MPP execution tools. It does
 not create a wallet, sign a payment, choose a facilitator, or authorize spend.
 
+## Speak the package as decide, bind, and classify
+
+A foreign agent can use this package without Pilot private buyer code, a
+wallet, or a facilitator. Official clients can still pay a SameDayDesk 402
+without it. Durable Ed25519 policy signing stays library-only.
+
+| Verb | Use it to | CLI | Library |
+| --- | --- | --- | --- |
+| **decide** | Inspect constructibility and plan viability | `construct-request`, `plan-check`, `inspect-url`, `output-schema-check` | `constructRequest`, `createPlan`, `normalizeRequest`, `inspectOutputSchema` |
+| **bind** | Bind a finished request or verify a signed plan | `construct-request`, `verify-authorization`, `verify-execution` | `constructRequest`, `verifyAuthorization`, `verifyExecutionAuthorization` |
+| **classify** | Accept a local body or classify caller-verified facts | `output-accept`, `receipt-completeness-check` | `inspectOutputSchema` → `prepareOutputValidator` → `validateOutput`, `evaluateReceiptCompleteness` |
+
+Refuse unfinished URLs. Bare `/extract` is `not_constructible`. A finished
+example such as
+`https://agents.samedaydesk.com/extract?url=https://example.com` binds.
+`requirePurchaseEvidence` stays opt-in. `receipt-completeness-check` exits `0`
+by default; pass `--fail-on conflict` only when CI must halt on conflict.
+
 ## Build the buyer contract
 
 Write a bounded JSON Schema 2020-12 document that expresses only the fields the
@@ -58,7 +76,7 @@ Example:
 Inspect the schema locally with an exact package version:
 
 ```bash
-npm install --save-exact agent-payment-policy@0.14.0
+npm install --save-exact agent-payment-policy@0.14.1
 npx agent-payment-policy output-schema-check \
   ./output-schema.json \
   data.source,data.value,data.observedAt

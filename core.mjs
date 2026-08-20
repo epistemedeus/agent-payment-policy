@@ -35,6 +35,8 @@ export const SCHEMAS = Object.freeze({
   purchaseEvidenceBinding: "agent-payment-policy.purchase-evidence-binding.v1",
   receiptCompletenessObservation: "agent-payment-policy.receipt-completeness-observation.v1",
   receiptCompletenessReport: "agent-payment-policy.receipt-completeness-report.v1",
+  requestConstructObservation: "agent-payment-policy.request-construct-observation.v1",
+  requestConstructReport: "agent-payment-policy.request-construct-report.v1",
 });
 
 export const PURCHASE_EVIDENCE_RELATION = "https://github.com/epistemedeus/agent-payment-policy#purchase-evidence";
@@ -2128,6 +2130,247 @@ export function normalizeRequest(method, target, options = {}) {
     bodyBinding,
     bindingDigest: digest(privateBinding),
   });
+}
+
+const REQUEST_CONSTRUCT_REASONS = Object.freeze([
+  "missing_example",
+  "unfinished_path_parameter",
+  "unresolved_query_value",
+  "credential_query_key",
+  "non_read_only_effect",
+  "invalid_target",
+  "missing_purchase_evidence",
+  "invalid_purchase_evidence",
+]);
+const UNRESOLVED_QUERY_VALUE = /^(?:\{[^}]+\}$|<[^>]+>$|\$[A-Za-z_][A-Za-z0-9_]*$)$/;
+const PATH_TEMPLATE = /\{[^}]+\}/;
+const COLON_PATH_PARAM = /(?:^|\/):[A-Za-z_][A-Za-z0-9_]*(?:\/|$)/;
+
+function publicConstructedRequest(request) {
+  return Object.freeze({
+    method: request.method,
+    origin: request.origin,
+    pathname: request.pathname,
+    queryKeys: Object.freeze([...request.queryKeys]),
+    publicRoute: request.publicRoute,
+    bodyBinding: request.bodyBinding,
+    bindingDigest: request.bindingDigest,
+  });
+}
+
+function unfinishedRequestReasons(target) {
+  const value = cleanString(target, 2_048);
+  if (!value) return ["missing_example"];
+  let url;
+  try {
+    url = new URL(value);
+  } catch {
+    return ["missing_example"];
+  }
+  if (url.protocol !== "https:") return ["invalid_target"];
+  const reasons = [];
+  let pathname = url.pathname;
+  try { pathname = decodeURIComponent(url.pathname); } catch { /* keep encoded pathname */ }
+  if (PATH_TEMPLATE.test(value) || PATH_TEMPLATE.test(pathname) || COLON_PATH_PARAM.test(pathname)) {
+    reasons.push("unfinished_path_parameter");
+  }
+  for (const queryValue of url.searchParams.values()) {
+    if (queryValue === "" || UNRESOLVED_QUERY_VALUE.test(queryValue) || PATH_TEMPLATE.test(queryValue)) {
+      reasons.push("unresolved_query_value");
+      break;
+    }
+  }
+  return reasons;
+}
+
+function requestConstructBoundary(statement) {
+  return Object.freeze({
+    credentialsAccepted: false,
+    networkAccessed: false,
+    walletAccessed: false,
+    paymentSigned: false,
+    paymentSent: false,
+    queryValuesRetained: false,
+    requestBodyRetained: false,
+    purchaseEvidenceRequired: false,
+    statement,
+  });
+}
+
+export function constructRequest(input, { now = Date.now() } = {}) {
+  const value = strictRecord(input, "request construct observation", new Set([
+    "schemaVersion", "method", "url", "example", "effect", "body", "mediaType",
+    "requirePurchaseEvidence", "purchaseEvidence",
+  ]));
+  if (value.schemaVersion !== undefined && value.schemaVersion !== SCHEMAS.requestConstructObservation) {
+    fail(`unsupported request construct schema: ${value.schemaVersion}`);
+  }
+  if (!Number.isFinite(now)) fail("now must be a finite epoch millisecond value");
+  const method = String(value.method || "GET").toUpperCase();
+  if (!/^[A-Z]{3,12}$/.test(method)) fail("request construct method is invalid");
+  if (value.requirePurchaseEvidence !== undefined && typeof value.requirePurchaseEvidence !== "boolean") {
+    fail("requirePurchaseEvidence must be a boolean when supplied");
+  }
+  const requirePurchaseEvidence = value.requirePurchaseEvidence === true;
+  const reasons = new Set();
+  if (value.effect !== undefined && value.effect !== null) {
+    const effect = cleanString(value.effect, 40);
+    if (!effect) fail("request construct effect is invalid");
+    if (effect !== "read_only") reasons.add("non_read_only_effect");
+  }
+
+  let purchaseEvidence = "absent";
+  if (value.purchaseEvidence !== undefined && value.purchaseEvidence !== null) {
+    try {
+      normalizePurchaseEvidenceBinding(value.purchaseEvidence);
+      purchaseEvidence = "verified";
+    } catch {
+      purchaseEvidence = "invalid";
+      reasons.add("invalid_purchase_evidence");
+    }
+  }
+  if (requirePurchaseEvidence && purchaseEvidence !== "verified") {
+    reasons.add("missing_purchase_evidence");
+  }
+
+  const urlReasons = unfinishedRequestReasons(value.url);
+  const exampleReasons = value.example === undefined || value.example === null
+    ? null
+    : unfinishedRequestReasons(value.example);
+  const exampleUsed = urlReasons.length > 0 && exampleReasons !== null && exampleReasons.length === 0;
+  const targetReasons = exampleUsed ? [] : urlReasons.length ? urlReasons : [];
+  if (urlReasons.length && exampleReasons === null) {
+    for (const reason of urlReasons) reasons.add(reason === "missing_example" ? "missing_example" : reason);
+    if (!urlReasons.includes("missing_example") && !cleanString(value.example, 2_048)) {
+      reasons.add("missing_example");
+    }
+  } else if (urlReasons.length && exampleReasons.length) {
+    for (const reason of exampleReasons) reasons.add(reason);
+  }
+
+  const finishedTarget = exampleUsed
+    ? cleanString(value.example, 2_048)
+    : urlReasons.length === 0
+      ? cleanString(value.url, 2_048)
+      : null;
+
+  let request = null;
+  if (finishedTarget && !reasons.has("non_read_only_effect")) {
+    try {
+      request = normalizeRequest(
+        method,
+        finishedTarget,
+        Object.prototype.hasOwnProperty.call(value, "body")
+          ? { body: value.body, mediaType: value.mediaType }
+          : {},
+      );
+    } catch (error) {
+      const message = String(error?.message || "");
+      reasons.add(message.includes("credential-like") ? "credential_query_key" : "invalid_target");
+      request = null;
+    }
+  } else if (finishedTarget && reasons.has("non_read_only_effect")) {
+    // Keep the finished URL unpublished; effect refusal is sufficient.
+  } else {
+    for (const reason of targetReasons) reasons.add(reason);
+  }
+
+  const sortedReasons = [...reasons].filter((reason) => REQUEST_CONSTRUCT_REASONS.includes(reason)).sort();
+  const decision = sortedReasons.length || !request ? "not_constructible" : "request_constructible";
+  const boundary = requestConstructBoundary(
+    decision === "request_constructible"
+      ? "Binds one finished HTTPS request without retaining query values, bodies, credentials, or payment authority."
+      : "Refuses unfinished, credential-bearing, or non-read-only request templates. Missing purchase evidence remains observable unless requirePurchaseEvidence is set.",
+  );
+  return Object.freeze({
+    schemaVersion: SCHEMAS.requestConstructReport,
+    evaluatedAt: new Date(now).toISOString(),
+    decision,
+    request: request ? publicConstructedRequest(request) : null,
+    reasons: Object.freeze(decision === "request_constructible" ? [] : sortedReasons.length ? sortedReasons : Object.freeze(["invalid_target"])),
+    exampleUsed,
+    purchaseEvidence,
+    requirePurchaseEvidence,
+    boundary: Object.freeze({ ...boundary, purchaseEvidenceRequired: requirePurchaseEvidence }),
+  });
+}
+
+export function constructRequestInputSchema() {
+  return {
+    $schema: "https://json-schema.org/draft/2020-12/schema",
+    type: "object",
+    additionalProperties: false,
+    required: ["method", "url"],
+    properties: {
+      schemaVersion: { type: "string", const: SCHEMAS.requestConstructObservation },
+      method: { type: "string", minLength: 3, maxLength: 12 },
+      url: { type: "string", minLength: 1, maxLength: 2048 },
+      example: { type: "string", minLength: 1, maxLength: 2048 },
+      effect: { type: "string", minLength: 1, maxLength: 40 },
+      body: {},
+      mediaType: { type: "string", minLength: 1, maxLength: 200 },
+      requirePurchaseEvidence: { type: "boolean" },
+      purchaseEvidence: { type: "object" },
+    },
+  };
+}
+
+export function constructRequestOutputSchema() {
+  return {
+    $schema: "https://json-schema.org/draft/2020-12/schema",
+    type: "object",
+    additionalProperties: false,
+    required: [
+      "schemaVersion", "evaluatedAt", "decision", "request", "reasons", "exampleUsed",
+      "purchaseEvidence", "requirePurchaseEvidence", "boundary",
+    ],
+    properties: {
+      schemaVersion: { type: "string", const: SCHEMAS.requestConstructReport },
+      evaluatedAt: { type: "string", format: "date-time" },
+      decision: { type: "string", enum: ["request_constructible", "not_constructible"] },
+      request: {
+        type: ["object", "null"],
+        additionalProperties: false,
+        properties: {
+          method: { type: "string" },
+          origin: { type: "string" },
+          pathname: { type: "string" },
+          queryKeys: { type: "array", items: { type: "string" } },
+          publicRoute: { type: "string" },
+          bodyBinding: { type: ["object", "null"] },
+          bindingDigest: { type: "string" },
+        },
+      },
+      reasons: {
+        type: "array",
+        uniqueItems: true,
+        items: { type: "string", enum: [...REQUEST_CONSTRUCT_REASONS] },
+      },
+      exampleUsed: { type: "boolean" },
+      purchaseEvidence: { type: "string", enum: ["absent", "verified", "invalid"] },
+      requirePurchaseEvidence: { type: "boolean" },
+      boundary: {
+        type: "object",
+        additionalProperties: false,
+        required: [
+          "credentialsAccepted", "networkAccessed", "walletAccessed", "paymentSigned",
+          "paymentSent", "queryValuesRetained", "requestBodyRetained", "purchaseEvidenceRequired",
+          "statement",
+        ],
+        properties: {
+          credentialsAccepted: { const: false },
+          networkAccessed: { const: false },
+          walletAccessed: { const: false },
+          paymentSigned: { const: false },
+          paymentSent: { const: false },
+          queryValuesRetained: { const: false },
+          requestBodyRetained: { const: false },
+          purchaseEvidenceRequired: { type: "boolean" },
+          statement: { type: "string" },
+        },
+      },
+    },
+  };
 }
 
 function normalizeOutput(output) {
