@@ -3,6 +3,9 @@ import { generateKeyPairSync } from "node:crypto";
 import { readFileSync } from "node:fs";
 import {
   authorizePlan,
+  constructRequest,
+  constructRequestInputSchema,
+  constructRequestOutputSchema,
   createStatefulWalletPolicyObservationDraft,
   createWalletPolicyObservationDraft,
   createIntent,
@@ -12,7 +15,10 @@ import {
   evaluateWalletPolicyObservations,
   evaluateStatefulWalletPolicyObservations,
   normalizeRequest,
+  prepareOutputValidator,
+  validateOutput,
   verifyAuthorization,
+  verifyExecutionAuthorization,
   walletPolicyObservationInputSchema,
   walletPolicyObservationOutputSchema,
   statefulWalletPolicyObservationInputSchema,
@@ -35,24 +41,137 @@ import {
 } from "./core.mjs";
 
 function usage() {
-  console.error("Usage: agent-payment-policy inspect-url <https-url> | inspect-json-request <https-url> <body-file> | output-schema-check <schema-json> <required-fields-csv> | receipt-completeness-check <json-file> | receipt-completeness-schema | offer-coherence-check <json-file> | offer-coherence-schema | listing-identity-check <json-file> | listing-identity-schema | service-deployment-verify <envelope-json> <public-key-pem> <observation-json> | service-deployment-schema | response-contract-check <json-file> | response-contract-schema | wallet-policy-init <profile-id> <provider> <network> <protocol> | wallet-policy-check <json-file> | wallet-policy-schema | stateful-policy-init <profile-id> <provider> <network> <protocol> | stateful-policy-check <json-file> | stateful-policy-schema | demo");
+  console.error("Usage: agent-payment-policy inspect-url <https-url> | inspect-json-request <https-url> <body-file> | construct-request <json-file> | construct-request-schema | plan-check <json-file> | verify-authorization <envelope-json> <public-key-pem> <plan-json> | verify-execution <envelope-json> <public-key-pem> <context-json> | output-schema-check <schema-json> <required-fields-csv> | output-accept <schema-json> <schema-digest> <body-json> | receipt-completeness-check <json-file> [--fail-on conflict] | receipt-completeness-schema | offer-coherence-check <json-file> | offer-coherence-schema | listing-identity-check <json-file> | listing-identity-schema | service-deployment-verify <envelope-json> <public-key-pem> <observation-json> | service-deployment-schema | response-contract-check <json-file> | response-contract-schema | wallet-policy-init <profile-id> <provider> <network> <protocol> | wallet-policy-check <json-file> | wallet-policy-schema | stateful-policy-init <profile-id> <provider> <network> <protocol> | stateful-policy-check <json-file> | stateful-policy-schema | demo");
   process.exitCode = 2;
 }
 
-const [command, argument, bodyFile, thirdArgument, fourthArgument] = process.argv.slice(2);
+function takeOption(args, name) {
+  const flag = `--${name}`;
+  const index = args.indexOf(flag);
+  if (index === -1) return { value: null, rest: args };
+  if (index === args.length - 1) {
+    usage();
+    return { value: null, rest: args };
+  }
+  return {
+    value: args[index + 1],
+    rest: args.filter((_, item) => item !== index && item !== index + 1),
+  };
+}
+
+function optionalNow(value) {
+  if (value === undefined || value === null || value === "") return undefined;
+  if (typeof value === "number") {
+    if (!Number.isFinite(value)) throw new Error("now is invalid");
+    return value;
+  }
+  const text = String(value).trim();
+  if (/^(?:0|[1-9][0-9]{0,15})$/.test(text)) return Number(text);
+  const now = Date.parse(text);
+  if (!Number.isFinite(now)) throw new Error("now is invalid");
+  return now;
+}
+
+function readJsonFile(path) {
+  return JSON.parse(readFileSync(path, "utf8"));
+}
+
+function printJson(value) {
+  console.log(JSON.stringify(value, null, 2));
+}
+
+const argv = process.argv.slice(2);
+const [command, argument, bodyFile, thirdArgument, fourthArgument] = argv;
 
 if (command === "inspect-url" && argument) {
   console.log(JSON.stringify(normalizeRequest("GET", argument), null, 2));
 } else if (command === "inspect-json-request" && argument && bodyFile) {
   const body = JSON.parse(readFileSync(bodyFile, "utf8"));
   console.log(JSON.stringify(normalizeRequest("POST", argument, { body, mediaType: "application/json" }), null, 2));
+} else if (command === "construct-request" && argument) {
+  printJson(constructRequest(readJsonFile(argument)));
+} else if (command === "construct-request-schema") {
+  printJson({
+    input: constructRequestInputSchema(),
+    output: constructRequestOutputSchema(),
+  });
+} else if (command === "plan-check" && argument) {
+  const input = readJsonFile(argument);
+  const now = optionalNow(input.now);
+  printJson(createPlan({
+    intent: input.intent,
+    offers: input.offers,
+    ...(input.spentTodayAtomic === undefined ? {} : { spentTodayAtomic: input.spentTodayAtomic }),
+    ...(now === undefined ? {} : { now }),
+  }));
+} else if (command === "verify-authorization" && argument && bodyFile && thirdArgument) {
+  const envelope = readJsonFile(argument);
+  const publicKey = readFileSync(bodyFile, "utf8");
+  const plan = readJsonFile(thirdArgument);
+  const now = optionalNow(fourthArgument);
+  printJson(verifyAuthorization(envelope, {
+    publicKey,
+    plan,
+    ...(now === undefined ? {} : { now }),
+  }));
+} else if (command === "verify-execution" && argument && bodyFile && thirdArgument) {
+  const envelope = readJsonFile(argument);
+  const publicKey = readFileSync(bodyFile, "utf8");
+  const context = readJsonFile(thirdArgument);
+  const now = optionalNow(context.now);
+  const authorization = verifyAuthorization(context.authorizationEnvelope, {
+    publicKey,
+    plan: context.plan,
+    ...(now === undefined ? {} : { now }),
+  });
+  printJson(verifyExecutionAuthorization(envelope, {
+    publicKey,
+    authorization,
+    method: context.method,
+    network: context.network,
+    action: context.action,
+    ...(now === undefined ? {} : { now }),
+  }));
 } else if (command === "output-schema-check" && argument && bodyFile) {
   const schema = JSON.parse(readFileSync(argument, "utf8"));
   const requiredFields = bodyFile.split(",").map((item) => item.trim()).filter(Boolean);
   console.log(JSON.stringify(inspectOutputSchema({ schema, requiredFields }), null, 2));
-} else if (command === "receipt-completeness-check" && argument) {
-  const input = JSON.parse(readFileSync(argument, "utf8"));
-  console.log(JSON.stringify(evaluateReceiptCompleteness(input), null, 2));
+} else if (command === "output-accept" && argument && bodyFile && thirdArgument) {
+  let accepted = false;
+  try {
+    const schema = readJsonFile(argument);
+    const inspected = inspectOutputSchema({ schema });
+    if (inspected.schemaDigest !== bodyFile) {
+      throw new Error("output schema does not match schemaDigest");
+    }
+    const contract = {
+      mediaType: "application/json",
+      requiredFields: inspected.requiredPaths,
+      schemaDigest: inspected.schemaDigest,
+    };
+    const schemaValidator = prepareOutputValidator({ schema, contract });
+    const body = readJsonFile(thirdArgument);
+    const result = validateOutput(body, contract, { schemaValidator });
+    printJson({
+      valid: true,
+      responseDigest: result.responseDigest,
+      schemaDigest: result.schemaDigest,
+    });
+    accepted = true;
+  } catch {
+    printJson({ valid: false });
+  }
+  process.exitCode = accepted ? 0 : 1;
+} else if (command === "receipt-completeness-check") {
+  const { value: failOn, rest } = takeOption(argv.slice(1), "fail-on");
+  const observationFile = rest[0];
+  if (!observationFile || rest.length !== 1 || (failOn && failOn !== "conflict")) {
+    usage();
+  } else {
+    const report = evaluateReceiptCompleteness(readJsonFile(observationFile));
+    printJson(report);
+    if (failOn === "conflict" && report.state === "conflict") process.exitCode = 1;
+  }
 } else if (command === "receipt-completeness-schema") {
   console.log(JSON.stringify({
     input: receiptCompletenessInputSchema(),

@@ -8,6 +8,9 @@ import {
   authorizeExecution,
   authorizePlan,
   canonicalRequestBody,
+  constructRequest,
+  constructRequestInputSchema,
+  constructRequestOutputSchema,
   createControlCoverage,
   createIntent,
   createPlan,
@@ -1341,4 +1344,80 @@ test("keeps existing field-only output contracts backward compatible", () => {
   });
   assert.equal(receipt.output.schemaValidated, false);
   assert.equal(receipt.output.schemaDigest, null);
+});
+
+test("constructs a finished SameDayDesk extract example and refuses bare or unfinished targets", () => {
+  const finished = constructRequest({
+    schemaVersion: SCHEMAS.requestConstructObservation,
+    method: "GET",
+    url: "https://agents.samedaydesk.com/extract?url=https://example.com",
+  }, { now: NOW });
+  assert.equal(finished.schemaVersion, SCHEMAS.requestConstructReport);
+  assert.equal(finished.decision, "request_constructible");
+  assert.equal(finished.request.publicRoute, "GET https://agents.samedaydesk.com/extract");
+  assert.deepEqual(finished.request.queryKeys, ["url"]);
+  assert.equal(finished.purchaseEvidence, "absent");
+  assert.equal(finished.requirePurchaseEvidence, false);
+  assert.equal(finished.boundary.queryValuesRetained, false);
+  assert.doesNotMatch(JSON.stringify(finished), /example\.com/);
+
+  const fromExample = constructRequest({
+    method: "GET",
+    url: "/extract",
+    example: "https://agents.samedaydesk.com/extract?url=https://example.com",
+  }, { now: NOW });
+  assert.equal(fromExample.decision, "request_constructible");
+  assert.equal(fromExample.exampleUsed, true);
+  assert.equal(fromExample.request.bindingDigest, finished.request.bindingDigest);
+
+  const bare = constructRequest({ method: "GET", url: "/extract" }, { now: NOW });
+  assert.equal(bare.decision, "not_constructible");
+  assert.deepEqual(bare.reasons, ["missing_example"]);
+  assert.equal(bare.request, null);
+
+  const templated = constructRequest({
+    method: "GET",
+    url: "https://agents.samedaydesk.com/users/{id}",
+  }, { now: NOW });
+  assert.equal(templated.decision, "not_constructible");
+  assert.ok(templated.reasons.includes("unfinished_path_parameter"));
+  assert.ok(templated.reasons.includes("missing_example"));
+
+  const unresolved = constructRequest({
+    method: "GET",
+    url: "https://agents.samedaydesk.com/extract?url=",
+  }, { now: NOW });
+  assert.equal(unresolved.decision, "not_constructible");
+  assert.ok(unresolved.reasons.includes("unresolved_query_value"));
+
+  const credential = constructRequest({
+    method: "GET",
+    url: "https://agents.samedaydesk.com/extract?api_key=secret",
+  }, { now: NOW });
+  assert.equal(credential.decision, "not_constructible");
+  assert.deepEqual(credential.reasons, ["credential_query_key"]);
+  assert.doesNotMatch(JSON.stringify(credential), /secret/);
+
+  const mutating = constructRequest({
+    method: "GET",
+    url: "https://agents.samedaydesk.com/extract?url=https://example.com",
+    effect: "state_changing",
+  }, { now: NOW });
+  assert.equal(mutating.decision, "not_constructible");
+  assert.deepEqual(mutating.reasons, ["non_read_only_effect"]);
+
+  const missingEvidence = constructRequest({
+    method: "GET",
+    url: "https://agents.samedaydesk.com/extract?url=https://example.com",
+    requirePurchaseEvidence: true,
+  }, { now: NOW });
+  assert.equal(missingEvidence.decision, "not_constructible");
+  assert.equal(missingEvidence.purchaseEvidence, "absent");
+  assert.deepEqual(missingEvidence.reasons, ["missing_purchase_evidence"]);
+
+  const inputSchema = constructRequestInputSchema();
+  const outputSchema = constructRequestOutputSchema();
+  assert.equal(inputSchema.additionalProperties, false);
+  assert.equal(outputSchema.properties.decision.enum[0], "request_constructible");
+  assert.equal(outputSchema.properties.boundary.properties.walletAccessed.const, false);
 });

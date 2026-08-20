@@ -65,6 +65,16 @@ response-schema digest, buyer-required paths, and seller-declaration label.
 The core performs no network request and retains no query value, request body,
 payment credential, wallet state, signature, paid output, or settlement.
 
+Request-construct reports retain only the public HTTP method, origin, path,
+query-key names, request binding digest, optional body digest, constructibility
+decision, refusal reasons, whether a finished example was used, and whether
+purchase evidence was absent, verified, or invalid. They do not retain query
+values, request bodies, unfinished URL templates, credentials, or paid output.
+`requirePurchaseEvidence` stays opt-in; absence remains observable.
+
+Output-accept prints only validity and SHA-256 digests. It never echoes the
+paid body.
+
 Receipt-completeness observations contain only controlled present, checked,
 success, match, mismatch, missing, and not-checked states for receipt,
 transaction, balance, and output evidence. Reports retain only completeness
