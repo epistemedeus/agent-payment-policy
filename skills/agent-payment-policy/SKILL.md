@@ -58,7 +58,7 @@ Example:
 Inspect the schema locally with an exact package version:
 
 ```bash
-npm install --save-exact agent-payment-policy@0.14.0
+npm install --save-exact agent-payment-policy@0.15.0
 npx agent-payment-policy output-schema-check \
   ./output-schema.json \
   data.source,data.value,data.observedAt
@@ -104,23 +104,33 @@ import {
   validateOutput,
 } from "agent-payment-policy";
 
+const requiredFields = ["data.source", "data.value", "data.observedAt"];
 const inspected = inspectOutputSchema({
   schema,
-  requiredFields: ["data.source", "data.value", "data.observedAt"],
+  requiredFields,
 });
+
+const contract = {
+  mediaType: "application/json",
+  maxResponseBytes: 65536,
+  requiredFields,
+  schemaDigest: inspected.schemaDigest,
+};
 
 const schemaValidator = prepareOutputValidator({
   schema,
-  contract: {
-    mediaType: "application/json",
-    maxBytes: 65536,
-    requiredFields: inspected.requiredFields,
-    schemaDigest: inspected.schemaDigest,
-  },
+  contract,
 });
 
-const result = validateOutput(responseBytes, contract, { schemaValidator });
+const parsedBody = JSON.parse(responseText);
+const result = validateOutput(parsedBody, contract, { schemaValidator });
 ```
+
+`inspectOutputSchema` returns `requiredPaths`, `schemaDigest`, and
+`canonicalBytes`. It does not return `requiredFields`. Repeat the same
+required-path list in the output contract. `maxResponseBytes` is the byte
+ceiling; `maxBytes` is ignored. `validateOutput` takes the parsed JSON value,
+not raw response bytes.
 
 Use the package README for the complete intent, planning, authorization, and
 receipt APIs.

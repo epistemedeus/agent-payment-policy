@@ -42,6 +42,14 @@ Version 0.13.1 adds a neutral installable agent skill for applying that boundary
 to x402, MPP, HTTP 402, paid API, and paid MCP workflows. The skill complements
 wallet and payment-execution tools. It does not authorize spend or move funds.
 
+Version 0.15.0 packs two credential-free adoption examples, asserts that the
+default CLI and those examples neither sign a payment nor send one, repairs the
+skill output-contract field names (`maxResponseBytes`, an explicit
+`requiredFields` list, and parsed JSON), and isolates nested `npm pack` from CI
+`--dry-run`. Published npm `0.14.0` does not include `examples/` or the repaired
+skill. `core.mjs` and `cli.mjs` are unchanged from `0.14.0`. This `0.15.0`
+package is not on the npm registry until a later GitHub release publishes it.
+
 ## Try it
 
 ```bash
@@ -53,7 +61,28 @@ npx agent-payment-policy output-schema-check ./output-schema.json data.value,dat
 ```
 
 The demo generates an ephemeral policy key and produces a plan plus a verified
-authorization. It performs no network request and no payment.
+authorization. It performs no network request and no payment. Running the CLI
+with no command prints usage and does not generate keys, sign, or pay.
+
+## Five-minute local adoption
+
+Pack this repository and run the two credential-free examples. Published npm
+`0.14.0` does not ship them. This repository version is `0.15.0` and is not on
+the registry until a later GitHub release publishes it. They use mock x402 and
+MPP offers plus a frozen policy-authorization fixture. They do not fetch, load a
+wallet, sign a payment, or send a payment.
+
+```bash
+npm pack --ignore-scripts
+npm install ./agent-payment-policy-0.15.0.tgz
+node node_modules/agent-payment-policy/examples/mock-x402-mpp-preflight.mjs
+node node_modules/agent-payment-policy/examples/verify-policy-receipt.mjs
+```
+
+The preflight example filters mock offers and selects one plan. The verification
+example checks a committed policy authorization, binds a public-safe receipt,
+and classifies synthetic completeness observations. That completeness report is
+not chain or wallet evidence. See [`examples/README.md`](examples/README.md).
 
 ## Install the agent skill
 
