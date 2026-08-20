@@ -29,7 +29,8 @@
     "LICENSE",
     "SECURITY.md",
     "docs",
-    "skills"
+    "skills",
+    "examples"
   ],
   "engines": {
     "node": ">=22"
@@ -47,6 +48,7 @@
   },
   "scripts": {
     "test": "node --test *.test.mjs",
+    "examples": "node examples/mock-x402-mpp-preflight.mjs && node examples/verify-policy-receipt.mjs",
     "prepack": "npm test"
   },
   "dependencies": {

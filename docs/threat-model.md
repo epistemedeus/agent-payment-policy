@@ -59,6 +59,24 @@
   the supplied Ed25519 key, not control of a hostname.
 - Semantic safety of the original unsigned action. Exact execution binding
   prevents mutation after review; it does not make an unsafe original safe.
+- Live x402 or MPP clients. The shipped adoption examples compare
+  caller-supplied mock offers and verify a frozen policy authorization
+  fixture. They are not a network adapter, wallet, or payment executor.
+
+## Adoption examples
+
+`examples/mock-x402-mpp-preflight.mjs` and
+`examples/verify-policy-receipt.mjs` must fail closed as documentation of the
+library boundary:
+
+- no DNS, sockets, HTTP client, or `fetch`;
+- no wallet, credential, or environment-key load;
+- no `authorizePlan`, `authorizeExecution`, or `signServiceDeploymentStatement`;
+- no payment signature or broadcast.
+
+CI runs both examples, asserts the CLI default path only prints usage, and
+installs the packed tarball in a temporary consumer. A later executor remains
+responsible for live challenge matching, DNS/SSRF controls, and settlement.
 
 ## Fail-closed integration requirements
 

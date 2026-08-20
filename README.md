@@ -53,7 +53,24 @@ npx agent-payment-policy output-schema-check ./output-schema.json data.value,dat
 ```
 
 The demo generates an ephemeral policy key and produces a plan plus a verified
-authorization. It performs no network request and no payment.
+authorization. It performs no network request and no payment. Running the CLI
+with no command prints usage and does not generate keys, sign, or pay.
+
+## Five-minute local adoption
+
+Install the package and run the two credential-free examples. They use mock
+x402 and MPP offers plus a frozen policy-authorization fixture. They do not
+fetch, load a wallet, sign a payment, or send a payment.
+
+```bash
+npm install agent-payment-policy
+node node_modules/agent-payment-policy/examples/mock-x402-mpp-preflight.mjs
+node node_modules/agent-payment-policy/examples/verify-policy-receipt.mjs
+```
+
+The preflight example filters mock offers and selects one plan. The verification
+example checks a committed policy authorization and binds a public-safe receipt.
+See [`examples/README.md`](examples/README.md).
 
 ## Install the agent skill
 
