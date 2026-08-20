@@ -72,11 +72,20 @@ library boundary:
 - no DNS, sockets, HTTP client, or `fetch`;
 - no wallet, credential, or environment-key load;
 - no `authorizePlan`, `authorizeExecution`, or `signServiceDeploymentStatement`;
-- no payment signature or broadcast.
+- no payment signature or broadcast;
+- mock catalog and runtime offers may be the same object, and purchase-evidence
+  manifests may be caller-built, but reports must not present those as
+  independently fetched seller documents;
+- receipt completeness observations in the verify example are a synthetic
+  fixture. Printed reports must retain `evidenceBoundary` and must not be
+  copied as production chain, wallet, or facilitator evidence.
 
-CI runs both examples, asserts the CLI default path only prints usage, and
-installs the packed tarball in a temporary consumer. A later executor remains
-responsible for live challenge matching, DNS/SSRF controls, and settlement.
+`npm test` (and therefore GitHub Actions `verify` on pull requests and pushes
+to `main`) runs both examples, asserts the CLI default path only prints usage,
+and installs the packed tarball in a temporary consumer, including the
+in-package README path. Feature-branch pushes do not trigger that workflow
+until a pull request exists. A later executor remains responsible for live
+challenge matching, DNS/SSRF controls, and settlement.
 
 ## Fail-closed integration requirements
 

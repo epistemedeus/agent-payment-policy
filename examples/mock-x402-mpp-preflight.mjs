@@ -48,6 +48,9 @@ function mockOffer({ protocol, amountAtomic, recipient, network, asset, url = `$
 }
 
 function coherenceObservation(source, offer) {
+  // Mock only: catalog and runtime are the same caller-supplied offer. A
+  // production adapter must compare a catalog record to a separately fetched
+  // live unsigned challenge.
   return {
     schemaVersion: "agent-payment-policy.offer-coherence-observation.v1",
     catalog: { source, ...offer },
@@ -233,6 +236,7 @@ export async function run(policyModule) {
     },
     purchaseEvidence: {
       status: purchaseEvidence.status,
+      declaration: purchaseEvidence.declaration,
       serviceVersion: purchaseEvidence.serviceVersion,
       manifestDigest: purchaseEvidence.manifestDigest,
       requiredPaths: purchaseEvidence.requiredPaths,
@@ -256,7 +260,9 @@ export async function run(policyModule) {
       paymentSigned: false,
       paymentSent: false,
       policyAuthorizationCreated: false,
-      statement: "Mock x402 and MPP preflight over caller-supplied offers. It does not fetch, authenticate, authorize, sign, or send a payment.",
+      catalogEqualsRuntime: true,
+      purchaseEvidenceIndependentlyFetched: false,
+      statement: "Mock x402 and MPP preflight over caller-supplied offers. Catalog and runtime are the same mock object, and purchase evidence is caller-built, not fetched. It does not fetch, authenticate, authorize, sign, or send a payment.",
     },
   };
 }

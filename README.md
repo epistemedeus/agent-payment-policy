@@ -58,19 +58,22 @@ with no command prints usage and does not generate keys, sign, or pay.
 
 ## Five-minute local adoption
 
-Install the package and run the two credential-free examples. They use mock
-x402 and MPP offers plus a frozen policy-authorization fixture. They do not
-fetch, load a wallet, sign a payment, or send a payment.
+Pack this repository (or install a later npm release that includes `examples/`)
+and run the two credential-free examples. Published `0.14.0` does not ship them.
+They use mock x402 and MPP offers plus a frozen policy-authorization fixture.
+They do not fetch, load a wallet, sign a payment, or send a payment.
 
 ```bash
-npm install agent-payment-policy
+npm pack --ignore-scripts
+npm install ./agent-payment-policy-0.14.0.tgz
 node node_modules/agent-payment-policy/examples/mock-x402-mpp-preflight.mjs
 node node_modules/agent-payment-policy/examples/verify-policy-receipt.mjs
 ```
 
 The preflight example filters mock offers and selects one plan. The verification
-example checks a committed policy authorization and binds a public-safe receipt.
-See [`examples/README.md`](examples/README.md).
+example checks a committed policy authorization, binds a public-safe receipt,
+and classifies synthetic completeness observations. That completeness report is
+not chain or wallet evidence. See [`examples/README.md`](examples/README.md).
 
 ## Install the agent skill
 

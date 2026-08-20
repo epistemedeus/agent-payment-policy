@@ -15,10 +15,12 @@ const FORBIDDEN_SOURCE = [
   /\bauthorizePlan\b/,
   /\bauthorizeExecution\b/,
   /\bsignServiceDeploymentStatement\b/,
-  /\bgenerateKeyPairSync\b/,
+  /\bgenerateKeyPair(?:Sync)?\b/,
+  /\bcreatePrivateKey\b/,
+  /\bcreateSign\b/,
   /\bprivateKey\b/,
   /\bfetch\s*\(/,
-  /from ["']node:(http|https|net|tls|dgram|dns|child_process)["']/,
+  /from ["']node:(crypto|http|https|net|tls|dgram|dns|child_process)["']/,
   /process\.env/,
 ];
 
@@ -63,11 +65,14 @@ test("mock x402/MPP preflight selects a plan without signing or paying", () => {
   assert.equal(report.coherence.mpp.decision, "coherent");
   assert.equal(report.responseContract.decision, "admissible");
   assert.equal(report.purchaseEvidence.status, "verified");
+  assert.equal(report.purchaseEvidence.declaration, "seller_declared");
   assert.equal(report.plan.decision, "authorized_candidate");
   assert.equal(report.plan.selected.protocol, "mpp");
   assert.equal(report.plan.selected.publicRoute, "GET https://seller.example/data");
   assert.equal(report.plan.killed.length, 3);
   assert.equal(report.boundary.policyAuthorizationCreated, false);
+  assert.equal(report.boundary.catalogEqualsRuntime, true);
+  assert.equal(report.boundary.purchaseEvidenceIndependentlyFetched, false);
   assertHarmlessBoundary(report.boundary, "preflight");
   assertHarmlessBoundary(report.coherence.x402.boundary, "x402 coherence");
   assertHarmlessBoundary(report.coherence.mpp.boundary, "mpp coherence");
@@ -85,7 +90,14 @@ test("policy/receipt verification uses a frozen fixture and does not pay", () =>
   assert.equal(report.receipt.output.schemaValidated, true);
   assert.equal(report.completeness.state, "reconciled");
   assert.equal(report.completeness.deliveryState, "valid");
+  assert.match(
+    report.completeness.evidenceBoundary,
+    /Classifies caller-verified normalized facts/,
+  );
+  assert.match(report.completeness.evidenceBoundary, /does not parse raw receipts/);
   assert.equal(report.boundary.policyAuthorizationVerified, true);
+  assert.equal(report.boundary.completenessObservationsSynthetic, true);
+  assert.match(report.boundary.statement, /synthetic fixture classifier/);
   assertHarmlessBoundary(report.boundary, "verify");
   assertHarmlessBoundary(report.completeness, "completeness");
   assert.doesNotMatch(JSON.stringify(report), /ETH/);
@@ -136,6 +148,23 @@ test("packed package examples run in a temporary consumer", { timeout: 120_000 }
       readdirSync(installedExamples).filter((name) => name.endsWith(".mjs")).sort(),
       ["mock-x402-mpp-preflight.mjs", "verify-policy-receipt.mjs"],
     );
+    assert.equal(
+      readdirSync(join(installedExamples, "fixtures")).includes("policy-authorization.json"),
+      true,
+    );
+    const inplacePreflight = parseJsonProcess(
+      runNode(["node_modules/agent-payment-policy/examples/mock-x402-mpp-preflight.mjs"], { cwd: consumer }),
+      "inplace consumer preflight",
+    );
+    const inplaceVerify = parseJsonProcess(
+      runNode(["node_modules/agent-payment-policy/examples/verify-policy-receipt.mjs"], { cwd: consumer }),
+      "inplace consumer verify",
+    );
+    assert.equal(inplacePreflight.plan.selected.protocol, "mpp");
+    assert.equal(inplacePreflight.boundary.paymentSent, false);
+    assert.equal(inplaceVerify.completeness.state, "reconciled");
+    assert.equal(inplaceVerify.boundary.completenessObservationsSynthetic, true);
+    assert.match(inplaceVerify.completeness.evidenceBoundary, /does not parse raw receipts/);
     cpSync(installedExamples, join(consumer, "examples"), { recursive: true });
     const preflight = parseJsonProcess(
       runNode(["examples/mock-x402-mpp-preflight.mjs"], { cwd: consumer }),
@@ -147,8 +176,10 @@ test("packed package examples run in a temporary consumer", { timeout: 120_000 }
     );
     assert.equal(preflight.plan.selected.protocol, "mpp");
     assert.equal(preflight.boundary.paymentSent, false);
+    assert.equal(preflight.purchaseEvidence.declaration, "seller_declared");
     assert.equal(verify.completeness.state, "reconciled");
     assert.equal(verify.boundary.paymentSigned, false);
+    assert.equal(verify.boundary.completenessObservationsSynthetic, true);
   } finally {
     rmSync(scratch, { recursive: true, force: true });
   }

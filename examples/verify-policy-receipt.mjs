@@ -109,6 +109,8 @@ export async function run(policyModule) {
     schema: OUTPUT_SCHEMA,
     contract: plan.output,
   });
+  // Fixture label only. createReceipt binds a caller-supplied reference; it
+  // does not observe a chain, wallet, or facilitator.
   const receipt = policy.createReceipt({
     plan,
     authorization,
@@ -118,10 +120,13 @@ export async function run(policyModule) {
     outputSchemaValidator,
     now: NOW + 2_000,
   });
-  const completeness = policy.evaluateReceiptCompleteness({
+  // Synthetic classifier input. Production adapters must map independently
+  // verified receipt, transaction, and balance facts; copying these match
+  // states would mint a reconciled report without settlement verification.
+  const syntheticCompletenessObservation = Object.freeze({
     schemaVersion: policy.SCHEMAS.receiptCompletenessObservation,
     protocol: plan.selected.protocol,
-    receipt: {
+    receipt: Object.freeze({
       present: true,
       success: "confirmed",
       transactionReference: "match",
@@ -130,8 +135,8 @@ export async function run(policyModule) {
       asset: "match",
       recipient: "match",
       payer: "match",
-    },
-    transaction: {
+    }),
+    transaction: Object.freeze({
       checked: true,
       success: "confirmed",
       transactionReference: "match",
@@ -140,15 +145,16 @@ export async function run(policyModule) {
       asset: "match",
       recipient: "match",
       payer: "match",
-    },
-    balance: {
+    }),
+    balance: Object.freeze({
       checked: true,
       delta: "match",
       asset: "match",
       payer: "match",
-    },
+    }),
     outputValidation: receipt.output.valid ? "passed" : "failed",
   });
+  const completeness = policy.evaluateReceiptCompleteness(syntheticCompletenessObservation);
 
   return {
     authorization: {
@@ -170,6 +176,9 @@ export async function run(policyModule) {
       deliveryState: completeness.deliveryState,
       provenDimensions: completeness.provenDimensions,
       missingDimensions: completeness.missingDimensions,
+      conflicts: completeness.conflicts,
+      supplementedBy: completeness.supplementedBy,
+      evidenceBoundary: completeness.evidenceBoundary,
       rawEvidenceRetained: completeness.rawEvidenceRetained,
       credentialsUsed: completeness.credentialsUsed,
       walletAccessed: completeness.walletAccessed,
@@ -183,7 +192,8 @@ export async function run(policyModule) {
       paymentSigned: false,
       paymentSent: false,
       policyAuthorizationVerified: true,
-      statement: "Verifies a frozen policy authorization fixture and binds a receipt. It does not load a wallet, sign a payment, or send a payment.",
+      completenessObservationsSynthetic: true,
+      statement: "Verifies a frozen policy authorization fixture and binds a receipt. Completeness observations are a synthetic fixture classifier, not chain, wallet, or facilitator evidence. It does not load a wallet, sign a payment, or send a payment.",
     },
   };
 }
