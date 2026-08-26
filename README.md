@@ -104,6 +104,14 @@ skill output-contract field names (`maxResponseBytes`, an explicit
 `--dry-run`. It includes all additive decide, bind, and classify behavior from
 0.14.1; 0.14.1 does not include the packaged examples.
 
+Version 0.15.1 keeps a nullable object property in the buyer contract when its
+parent requires that property, without falsely promoting the nullable object's
+branch-only nested fields to unconditional required paths. This covers both
+JSON Schema `type: ["object", "null"]` and OpenAPI-style `nullable: true`. A
+nullable root exposes no guaranteed property paths. The exact prepared schema
+still validates the selected runtime branch, so a non-null object must satisfy
+its own nested requirements while `null` remains valid when permitted.
+
 ## Try it
 
 ```bash
@@ -127,7 +135,7 @@ payment, or send a payment.
 
 ```bash
 npm pack --ignore-scripts
-npm install ./agent-payment-policy-0.15.0.tgz
+npm install ./agent-payment-policy-0.15.1.tgz
 node node_modules/agent-payment-policy/examples/mock-x402-mpp-preflight.mjs
 node node_modules/agent-payment-policy/examples/verify-policy-receipt.mjs
 ```

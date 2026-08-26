@@ -17,6 +17,7 @@ const interfaceMetadata = readFileSync(
   new URL("./skills/agent-payment-policy/agents/openai.yaml", import.meta.url),
   "utf8",
 );
+const exampleReadme = readFileSync(new URL("./examples/README.md", import.meta.url), "utf8");
 
 function fencedBlock(language) {
   const match = skill.match(new RegExp("```" + language + "\\n([\\s\\S]*?)```"));
@@ -38,6 +39,11 @@ test("ships a valid neutral agent-payment-policy skill with the package", () => 
 
   assert.match(interfaceMetadata, /display_name: "Agent Payment Policy"/);
   assert.match(interfaceMetadata, /\$agent-payment-policy/);
+});
+
+test("packaged install examples pin the current package version", () => {
+  assert.match(skill, new RegExp(`agent-payment-policy@${packageJson.version.replaceAll(".", "\\.")}`));
+  assert.match(exampleReadme, new RegExp(`agent-payment-policy-${packageJson.version.replaceAll(".", "\\.")}\\.tgz`));
 });
 
 test("skill library example uses real output-contract field names", () => {

@@ -1594,7 +1594,8 @@ function unsupportedSchemaKeywords(value, path = "$", found = []) {
 
 function schemaTypes(schema) {
   const raw = schema?.type;
-  const values = Array.isArray(raw) ? raw : raw === undefined ? [] : [raw];
+  const values = Array.isArray(raw) ? [...raw] : raw === undefined ? [] : [raw];
+  if (schema?.nullable === true && !values.includes("null")) values.push("null");
   return [...new Set(values.map(String))];
 }
 
@@ -1646,6 +1647,8 @@ function responseContractBoundary(statement) {
 
 function guaranteedRequiredPaths(schema, prefix = "", depth = 0, paths = []) {
   if (!record(schema) || depth > 20 || paths.length >= 1_000) return paths;
+  const types = schemaTypes(schema);
+  if (types.length !== 1 || types[0] !== "object") return paths;
   const properties = record(schema.properties) || {};
   const required = Array.isArray(schema.required) ? schema.required : [];
   for (const field of required) {
@@ -1653,9 +1656,7 @@ function guaranteedRequiredPaths(schema, prefix = "", depth = 0, paths = []) {
     if (!clean || !record(properties[clean])) continue;
     const path = prefix ? `${prefix}.${clean}` : clean;
     paths.push(path);
-    if (schemaTypes(properties[clean]).includes("object")) {
-      guaranteedRequiredPaths(properties[clean], path, depth + 1, paths);
-    }
+    guaranteedRequiredPaths(properties[clean], path, depth + 1, paths);
   }
   return paths;
 }

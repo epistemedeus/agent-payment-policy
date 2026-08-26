@@ -5,12 +5,12 @@ mock x402 and MPP offers plus a frozen policy-authorization fixture. They do not
 fetch, load a wallet, accept credentials, sign a payment, or send a payment.
 
 Versions before 0.15.0, including 0.14.1, do not include `examples/`. Version
-0.15.0 includes them. To test the exact source tree before installation, pack
+0.15.0 and later include them. To test the exact source tree before installation, pack
 this repository:
 
 ```bash
 npm pack --ignore-scripts
-npm install ./agent-payment-policy-0.15.0.tgz
+npm install ./agent-payment-policy-0.15.1.tgz
 node node_modules/agent-payment-policy/examples/mock-x402-mpp-preflight.mjs
 node node_modules/agent-payment-policy/examples/verify-policy-receipt.mjs
 ```

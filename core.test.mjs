@@ -45,6 +45,7 @@ import {
   evaluateReceiptCompleteness,
   inspectOutputSchema,
   prepareOutputValidator,
+  validateOutput,
   purchaseEvidenceLink,
   selectPurchaseEvidenceLink,
   verifyPurchaseEvidenceManifest,
@@ -1328,6 +1329,121 @@ test("binds a buyer acceptance schema into the intent and validates the receipt 
     schema: { ...schema, additionalProperties: true },
     contract: boundIntent.output,
   }), /does not match schemaDigest/);
+});
+
+test("does not promote nested fields inside a nullable object to unconditional required paths", () => {
+  const schema = {
+    $schema: "https://json-schema.org/draft/2020-12/schema",
+    type: "object",
+    properties: {
+      report: {
+        type: "object",
+        properties: {
+          repairPlan: {
+            type: ["object", "null"],
+            properties: {
+              actions: { type: "array", items: { type: "string" } },
+              complete: { type: "boolean" },
+            },
+            required: ["actions", "complete"],
+            additionalProperties: false,
+          },
+        },
+        required: ["repairPlan"],
+        additionalProperties: false,
+      },
+    },
+    required: ["report"],
+    additionalProperties: false,
+  };
+  const inspection = inspectOutputSchema({ schema });
+  assert.deepEqual(inspection.requiredPaths, ["report", "report.repairPlan"]);
+  const contract = {
+    mediaType: "application/json",
+    requiredFields: inspection.requiredPaths,
+    maxResponseBytes: 10_000,
+    schemaDigest: inspection.schemaDigest,
+  };
+  const validator = prepareOutputValidator({ schema, contract });
+  assert.equal(validateOutput({ report: { repairPlan: null } }, contract, { schemaValidator: validator }).valid, true);
+  assert.equal(validateOutput({
+    report: { repairPlan: { actions: [], complete: false } },
+  }, contract, { schemaValidator: validator }).valid, true);
+  assert.throws(() => validateOutput({
+    report: { repairPlan: { actions: [] } },
+  }, contract, { schemaValidator: validator }), /JSON Schema validation/);
+});
+
+test("does not promote root fields when the whole response object is nullable", () => {
+  for (const nullable of [
+    { type: ["object", "null"] },
+    { type: "object", nullable: true },
+  ]) {
+    const schema = {
+      $schema: "https://json-schema.org/draft/2020-12/schema",
+      ...nullable,
+      properties: { report: { type: "string" } },
+      required: ["report"],
+      additionalProperties: false,
+    };
+    const inspection = inspectOutputSchema({ schema });
+    assert.deepEqual(inspection.requiredPaths, []);
+    assert.throws(() => inspectOutputSchema({ schema, requiredFields: ["report"] }), /not admissible for required fields/);
+    const contract = {
+      mediaType: "application/json",
+      requiredFields: [],
+      maxResponseBytes: 10_000,
+      schemaDigest: inspection.schemaDigest,
+    };
+    const validator = prepareOutputValidator({ schema, contract });
+    assert.equal(validateOutput(null, contract, { schemaValidator: validator }).valid, true);
+    assert.equal(validateOutput({ report: "ready" }, contract, { schemaValidator: validator }).valid, true);
+    assert.throws(() => validateOutput({}, contract, { schemaValidator: validator }), /JSON Schema validation/);
+  }
+});
+
+test("treats OpenAPI nullable objects as branch-conditional at nested paths", () => {
+  const schema = {
+    $schema: "https://json-schema.org/draft/2020-12/schema",
+    type: "object",
+    properties: {
+      report: {
+        type: "object",
+        properties: {
+          repairPlan: {
+            type: "object",
+            nullable: true,
+            properties: {
+              actions: { type: "array", items: { type: "string" } },
+              complete: { type: "boolean" },
+            },
+            required: ["actions", "complete"],
+            additionalProperties: false,
+          },
+        },
+        required: ["repairPlan"],
+        additionalProperties: false,
+      },
+    },
+    required: ["report"],
+    additionalProperties: false,
+  };
+  const inspection = inspectOutputSchema({ schema });
+  assert.deepEqual(inspection.requiredPaths, ["report", "report.repairPlan"]);
+  const contract = {
+    mediaType: "application/json",
+    requiredFields: inspection.requiredPaths,
+    maxResponseBytes: 10_000,
+    schemaDigest: inspection.schemaDigest,
+  };
+  const validator = prepareOutputValidator({ schema, contract });
+  assert.equal(validateOutput({ report: { repairPlan: null } }, contract, { schemaValidator: validator }).valid, true);
+  assert.equal(validateOutput({
+    report: { repairPlan: { actions: [], complete: false } },
+  }, contract, { schemaValidator: validator }).valid, true);
+  assert.throws(() => validateOutput({
+    report: { repairPlan: { actions: [] } },
+  }, contract, { schemaValidator: validator }), /JSON Schema validation/);
 });
 
 test("keeps existing field-only output contracts backward compatible", () => {
