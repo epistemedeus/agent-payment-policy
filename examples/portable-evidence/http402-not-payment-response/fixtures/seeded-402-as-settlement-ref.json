@@ -1,0 +1,46 @@
+{
+  "schemaVersion": "agent-payment-policy.http402-not-payment-response-observation.v1",
+  "note": "Seeded failure: treat the unpaid HTTP 402 PAYMENT-REQUIRED body as the PAYMENT-RESPONSE settlementRef source.",
+  "capturedAt": "2026-09-17T11:30:14Z",
+  "http": {
+    "status": 402,
+    "headerNames": [
+      "content-type",
+      "link",
+      "payment-required",
+      "www-authenticate"
+    ]
+  },
+  "paymentRequired": {
+    "x402Version": 2,
+    "error": "Payment required",
+    "accepts": [
+      {
+        "scheme": "exact",
+        "network": "eip155:8453",
+        "amount": "5000",
+        "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "payTo": "0x8904dF3DE6DFEe6a7C8cc38619d2f17806213Cee"
+      }
+    ]
+  },
+  "wellKnown": {
+    "operation": {
+      "method": "GET",
+      "path": "/extract",
+      "receipt": {
+        "x402": "PAYMENT-RESPONSE with signed offer-receipt extension and settlement reference",
+        "mpp": "Payment-Receipt",
+        "runtimeValidationRequired": true
+      }
+    }
+  },
+  "settlementRefSource": "payment_required",
+  "receipt": {
+    "x402Version": 2,
+    "error": "Payment required",
+    "settlement": {
+      "transactionReference": "Payment required"
+    }
+  }
+}

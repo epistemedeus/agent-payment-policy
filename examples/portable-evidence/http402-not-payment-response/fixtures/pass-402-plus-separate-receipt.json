@@ -1,0 +1,103 @@
+{
+  "schemaVersion": "agent-payment-policy.http402-not-payment-response-observation.v1",
+  "note": "Frozen unpaid GET /extract HTTP 402 PAYMENT-REQUIRED (2026-09-17T11:30:14Z) plus a separate existing createReceipt. Well-known receipt.x402 names PAYMENT-RESPONSE; this 402 is not that header and is not settlementRef.",
+  "capturedAt": "2026-09-17T11:30:14Z",
+  "http": {
+    "status": 402,
+    "headerNames": [
+      "cache-control",
+      "content-type",
+      "date",
+      "etag",
+      "link",
+      "payment-required",
+      "server",
+      "www-authenticate",
+      "x-powered-by",
+      "x-railway-request-id",
+      "content-length",
+      "x-hikari-trace",
+      "x-railway-edge",
+      "vary"
+    ]
+  },
+  "paymentRequired": {
+    "x402Version": 2,
+    "error": "Payment required",
+    "accepts": [
+      {
+        "scheme": "exact",
+        "network": "eip155:8453",
+        "amount": "5000",
+        "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "payTo": "0x8904dF3DE6DFEe6a7C8cc38619d2f17806213Cee"
+      }
+    ],
+    "extensions": {
+      "offer-receipt": {
+        "info": {
+          "offers": [
+            {
+              "format": "eip712",
+              "acceptIndex": 0,
+              "payload": {
+                "version": 1,
+                "scheme": "exact",
+                "network": "eip155:8453",
+                "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+                "payTo": "0x8904dF3DE6DFEe6a7C8cc38619d2f17806213Cee",
+                "amount": "5000",
+                "validUntil": 1789644914
+              },
+              "signature": "0xe7aeee06329bf73781c34f8fe8d6d0d36ade6189cbab28eb392fbc67d9afb6971e542f698215bdcc81acb1109b242bdd79816a7bba73e865c08ad90c10311a3e1b"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "wellKnown": {
+    "service": {
+      "origin": "https://agents.samedaydesk.com",
+      "version": "1.23.49"
+    },
+    "operation": {
+      "method": "GET",
+      "path": "/extract",
+      "receipt": {
+        "x402": "PAYMENT-RESPONSE with signed offer-receipt extension and settlement reference",
+        "mpp": "Payment-Receipt",
+        "runtimeValidationRequired": true
+      }
+    }
+  },
+  "settlementRefSource": "existing_receipt",
+  "receipt": {
+    "schemaVersion": "agent-payment-policy.receipt.v1",
+    "receiptId": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "planId": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "intentId": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "authorizationId": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "protocol": "x402",
+    "request": {
+      "publicRoute": "GET https://seller.example/data",
+      "queryKeys": ["asset"],
+      "bodyBinding": null,
+      "bindingDigest": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    "settlement": {
+      "amountAtomic": "5000",
+      "recipient": "0x2222222222222222222222222222222222222222",
+      "network": "eip155:8453",
+      "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "transactionReference": "0xadoptionfixture"
+    },
+    "output": {
+      "valid": true,
+      "schemaValidated": true,
+      "schemaDigest": "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "responseDigest": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+    },
+    "createdAt": "2026-08-20T16:00:02.000Z"
+  }
+}
