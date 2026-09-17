@@ -53,3 +53,9 @@ node cli.mjs receipt-completeness-check \
 Exit `1`. `state` is `conflict`, `deliveryState` is `invalid`, and
 `successProven` remains `true` (settlement success is preserved while delivery
 is rejected).
+
+The projection also fails closed, with `evidence: null`, when:
+
+- `buyer.schemaDigest` differs from the existing receipt `output.schemaDigest`;
+- the seller `offer-receipt` lists more than one signed offer;
+- `buyer.verdict` is `accepted` while completeness `deliveryState` is `invalid`.

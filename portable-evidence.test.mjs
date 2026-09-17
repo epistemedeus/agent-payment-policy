@@ -253,3 +253,67 @@ test("refusal payload never mints evidence or a ledger", () => {
     assert.equal(payload.boundary.paidCapture, false);
   }
 });
+
+test("buyer schemaDigest that differs from the receipt fails closed", () => {
+  const { receipt } = bindAdoptionReceipt();
+  const otherDigest = inspectOutputSchema({ schema: CONST_TRUE }).schemaDigest;
+  assert.notEqual(otherDigest, receipt.output.schemaDigest);
+  assert.throws(
+    () => projectPortableEvidence({
+      paymentRequired: livePaymentRequired(),
+      buyer: { schemaDigest: otherDigest, verdict: "accepted" },
+      receipt,
+    }),
+    (error) => {
+      assert.equal(error.reason, "buyer_schema_digest_mismatch");
+      assert.equal(refusalPayload(error).evidence, null);
+      return true;
+    },
+  );
+});
+
+test("a second signed offer is ambiguous and fails closed", () => {
+  const { inspection, receipt } = bindAdoptionReceipt();
+  const paymentRequired = structuredClone(livePaymentRequired());
+  const extra = structuredClone(paymentRequired.extensions["offer-receipt"].info.offers[0]);
+  extra.payload = { ...extra.payload, amount: "999999" };
+  extra.signature = `0x${"ab".repeat(65)}`;
+  paymentRequired.extensions["offer-receipt"].info.offers = [
+    paymentRequired.extensions["offer-receipt"].info.offers[0],
+    extra,
+  ];
+  assert.throws(
+    () => projectPortableEvidence({
+      paymentRequired,
+      buyer: { schemaDigest: inspection.schemaDigest, verdict: "accepted" },
+      receipt,
+    }),
+    (error) => {
+      assert.equal(error.reason, "seller_offer_receipt_ambiguous");
+      assert.equal(refusalPayload(error).evidence, null);
+      return true;
+    },
+  );
+});
+
+test("accepted verdict with invalid delivery completeness fails closed", () => {
+  const { inspection, receipt } = bindAdoptionReceipt();
+  const completeness = evaluateReceiptCompleteness(
+    JSON.parse(readFileSync(new URL("amount-mismatch-observation.json", FIXTURES), "utf8")),
+  );
+  assert.equal(completeness.deliveryState, "invalid");
+  assert.equal(completeness.successProven, true);
+  assert.throws(
+    () => projectPortableEvidence({
+      paymentRequired: livePaymentRequired(),
+      buyer: { schemaDigest: inspection.schemaDigest, verdict: "accepted" },
+      receipt,
+      completeness,
+    }),
+    (error) => {
+      assert.equal(error.reason, "buyer_verdict_delivery_inconsistent");
+      assert.equal(refusalPayload(error).evidence, null);
+      return true;
+    },
+  );
+});

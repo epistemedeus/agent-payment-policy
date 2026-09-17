@@ -157,13 +157,41 @@ export function projectPortableEvidence(input) {
   if (!sellerPresent) {
     failClosed("seller_offer_receipt_missing", "seller-signed offer-receipt is required for portable evidence");
   }
+  if (offers.length !== 1) {
+    failClosed(
+      "seller_offer_receipt_ambiguous",
+      "seller offer-receipt must contain exactly one signed offer",
+    );
+  }
   const sellerId = sellerOfferReceiptId(offers[0]);
   const verdict = typeof buyer.verdict === "string" ? buyer.verdict.trim().toLowerCase() : "";
   if (!BUYER_VERDICTS.includes(verdict)) {
     failClosed("buyer_verdict_required", "buyer output-accept verdict is required");
   }
   const receipt = existingReceipt(body.receipt);
+  if (receipt.outputSchemaDigest && receipt.outputSchemaDigest !== buyerDigest) {
+    failClosed(
+      "buyer_schema_digest_mismatch",
+      "buyer schemaDigest does not match the existing receipt schemaDigest",
+      {
+        sellerOfferReceiptPresent: true,
+        buyerSchemaDigest: buyerDigest,
+        decisionChanged: decisionChangedString({ verdict }),
+      },
+    );
+  }
   const completeness = completenessSlice(body.completeness);
+  if (verdict === "accepted" && completeness?.deliveryState === "invalid") {
+    failClosed(
+      "buyer_verdict_delivery_inconsistent",
+      "accepted output-accept verdict cannot accompany invalid delivery completeness",
+      {
+        sellerOfferReceiptPresent: true,
+        buyerSchemaDigest: buyerDigest,
+        decisionChanged: decisionChangedString({ verdict, completeness }),
+      },
+    );
+  }
   const decisionChanged = decisionChangedString({ verdict, completeness });
   const accepted = verdict === "accepted";
   return Object.freeze({
