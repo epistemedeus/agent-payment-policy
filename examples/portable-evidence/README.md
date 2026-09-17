@@ -1,0 +1,55 @@
+# Portable evidence projection
+
+Thin, credential-free projection of already existing receipt facts. It does not
+add a receipt network, a ledger, a paid capture canary, or a seller-signature
+verifier.
+
+The projection binds six public-safe fields onto an existing
+`createReceipt` object:
+
+| Field | Source | Authority label |
+| --- | --- | --- |
+| `sellerOfferReceiptId` | live x402 `extensions.offer-receipt` signed offer identity (`sha256:` of canonical format, acceptIndex, payload, signature) | `seller-signed-offer-receipt` |
+| `buyer.schemaDigest` | policy 0.13+ `createIntent` / `inspectOutputSchema` | `buyer-intent` |
+| `buyer.verdict` | `output-accept` | `buyer-output-accept` |
+| `responseHash` | existing receipt `output.responseDigest` | `buyer-output-accept` |
+| `settlementRef` | existing receipt `settlement.transactionReference` | `caller-supplied-receipt` |
+| `decisionChanged` | bounded `;`-joined tokens, max 200 characters | `receipt-completeness-classifier` when completeness is supplied |
+
+Seller offer-receipt presence does not relax the buyer schema boundary. A
+fixture with a live-shaped seller offer-receipt and an omitted buyer
+`schemaDigest` fails closed.
+
+This helper does not fetch, load a wallet, sign a payment, send a payment,
+verify EIP-712/JWS, or recapture a paid body.
+
+## Seeded refusals
+
+From the repository root, after `npm ci --ignore-scripts`:
+
+```bash
+node examples/portable-evidence/project.mjs \
+  examples/portable-evidence/fixtures/missing-buyer-schema-digest.json
+```
+
+Exit `1`. `evidence` is `null`. Reason `buyer_schema_digest_omitted`.
+
+```bash
+DIGEST=$(node --input-type=module -e 'import { inspectOutputSchema } from "./core.mjs"; import { readFileSync } from "node:fs"; const schema = JSON.parse(readFileSync("examples/portable-evidence/fixtures/const-true-schema.json", "utf8")); process.stdout.write(inspectOutputSchema({ schema }).schemaDigest);')
+node cli.mjs output-accept \
+  examples/portable-evidence/fixtures/const-true-schema.json \
+  "$DIGEST" \
+  examples/portable-evidence/fixtures/ok-false.json
+```
+
+Exit `1`. Stdout is `{ "valid": false }`. The body is not echoed.
+
+```bash
+node cli.mjs receipt-completeness-check \
+  examples/portable-evidence/fixtures/amount-mismatch-observation.json \
+  --fail-on conflict
+```
+
+Exit `1`. `state` is `conflict`, `deliveryState` is `invalid`, and
+`successProven` remains `true` (settlement success is preserved while delivery
+is rejected).
