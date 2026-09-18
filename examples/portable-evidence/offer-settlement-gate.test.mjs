@@ -27,6 +27,8 @@ function runGate(args) {
   return spawnSync(process.execPath, [GATE, ...args], {
     encoding: "utf8",
     cwd: ROOT,
+    timeout: 60_000,
+    maxBuffer: 1024 * 1024,
   });
 }
 
@@ -171,4 +173,96 @@ test("usage without a fixture exits 2", () => {
   const cli = runGate([]);
   assert.equal(cli.status, 2, cli.stderr || cli.stdout);
   assert.match(cli.stderr, /Usage:/);
+});
+
+test("unpaid 402 with injected matching settlement is unpaid_402_is_not_settlement", () => {
+  const fixture = loadFixture("seeded-402-injected-settlement.json");
+  assert.equal(fixture.settlement.amountAtomic, "5000");
+  assert.equal(fixture.extensions["offer-receipt"].info.offers[0].payload.amount, "5000");
+
+  assert.throws(
+    () => projectOfferSettlement(fixture),
+    (error) => {
+      assert.equal(error.reason, "unpaid_402_is_not_settlement");
+      const payload = refusalPayload(error);
+      assert.equal(payload.accepted, false);
+      assert.equal(payload.evidence, null);
+      assert.deepEqual(payload.reasons, ["unpaid_402_is_not_settlement"]);
+      return true;
+    },
+  );
+
+  const cli = runGate(["examples/portable-evidence/fixtures/seeded-402-injected-settlement.json"]);
+  assert.equal(cli.status, 1, cli.stderr || cli.stdout);
+  const body = parseCli(cli);
+  assert.equal(body.accepted, false);
+  assert.equal(body.evidence, null);
+  assert.deepEqual(body.reasons, ["unpaid_402_is_not_settlement"]);
+  assert.doesNotMatch(cli.stdout, /0xforged-from-unpaid-402/);
+});
+
+test("402 envelope used as receipt is unpaid_402_is_not_settlement", () => {
+  const cli = runGate(["examples/portable-evidence/fixtures/seeded-402-envelope-as-receipt.json"]);
+  assert.equal(cli.status, 1, cli.stderr || cli.stdout);
+  const body = parseCli(cli);
+  assert.equal(body.accepted, false);
+  assert.equal(body.evidence, null);
+  assert.deepEqual(body.reasons, ["unpaid_402_is_not_settlement"]);
+  assert.doesNotMatch(cli.stdout, /0xforged-402-as-receipt/);
+});
+
+test("unknown bind field discountCode is invented_receipt_field", () => {
+  const cli = runGate(["examples/portable-evidence/fixtures/seeded-unknown-bind-field.json"]);
+  assert.equal(cli.status, 1, cli.stderr || cli.stdout);
+  const body = parseCli(cli);
+  assert.equal(body.evidence, null);
+  assert.deepEqual(body.reasons, ["invented_receipt_field"]);
+  assert.deepEqual(body.invented, ["discountCode"]);
+});
+
+test("allowlisted bindFields amount is not invented", () => {
+  const fixture = loadFixture("matching-offer-settlement.json");
+  fixture.bindFields = ["amount"];
+  const projection = projectOfferSettlement(fixture);
+  assert.equal(projection.accepted, true);
+  assert.equal(projection.evidence.compared.amount.equal, true);
+});
+
+test("overlong payload amount is mismatch, not converted", () => {
+  const result = compareOfferSettlement(
+    {
+      amount: `5000${"0".repeat(200)}`,
+      network: "eip155:8453",
+      asset: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      payTo: "0x8904dF3DE6DFEe6a7C8cc38619d2f17806213Cee",
+    },
+    {
+      amountAtomic: "5000",
+      network: "eip155:8453",
+      asset: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      recipient: "0x8904dF3DE6DFEe6a7C8cc38619d2f17806213Cee",
+    },
+  );
+  assert.equal(result.equal, false);
+  assert.equal(result.mismatches[0].field, "amount");
+  assert.equal(result.mismatches[0].payload, null);
+  assert.equal(result.mismatches[0].absenceIsNotMatch, true);
+});
+
+test("live 402 without a separate receipt is existing_receipt_required", () => {
+  const cli = runGate(["examples/portable-evidence/fixtures/live-402-offer-receipt.json"]);
+  assert.equal(cli.status, 1, cli.stderr || cli.stdout);
+  const body = parseCli(cli);
+  assert.equal(body.accepted, false);
+  assert.equal(body.evidence, null);
+  assert.deepEqual(body.reasons, ["existing_receipt_required"]);
+});
+
+test("invalid JSON is projection_input_invalid", () => {
+  const cli = runGate(["examples/portable-evidence/offer-settlement-gate.mjs"]);
+  assert.equal(cli.status, 1, cli.stderr || cli.stdout);
+  const body = parseCli(cli);
+  assert.equal(body.accepted, false);
+  assert.equal(body.evidence, null);
+  assert.deepEqual(body.reasons, ["projection_input_invalid"]);
 });

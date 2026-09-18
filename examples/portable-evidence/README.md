@@ -7,8 +7,11 @@ Fail-closed adapter: a live x402 `offer-receipt` payload
 It does not hash the signed offer blob, verify EIP-712 or JWS, create a ledger,
 recapture a paid body, load a wallet, send a payment, convert atomic units, or
 treat a missing payload amount as demand. Unpaid HTTP 402 is not a settlement
-source. `transactionReference` stays on the existing receipt; live 402 payloads
-do not carry it.
+source: an injected `settlement` object on the 402 envelope, or a 402 envelope
+used as `receipt`, is refused. `transactionReference` stays on the existing
+receipt; live 402 payloads do not carry it. Bind/compare field names must be
+payload `amount`/`network`/`asset`/`payTo` or settlement `amountAtomic`/
+`network`/`asset`/`recipient`.
 
 Compared fields are the live offer-receipt payload keys captured
 2026-09-17T11:30:14Z from `GET /extract?url=https://example.com`
@@ -72,3 +75,19 @@ node examples/portable-evidence/offer-settlement-gate.mjs --create-receipt \
 
 Exit `1`. Live payload amount `"5000"` / `payTo` `0x8904…` against the adoption
 `createReceipt.settlement` amount `"10000"` / recipient `0x2222…`.
+
+```bash
+node examples/portable-evidence/offer-settlement-gate.mjs \
+  examples/portable-evidence/fixtures/seeded-402-injected-settlement.json
+```
+
+Exit `1`. `evidence` is `null`. Reason `unpaid_402_is_not_settlement`. Matching
+payload and injected `settlement.amountAtomic` `"5000"` do not make the unpaid
+402 a receipt.
+
+```bash
+node examples/portable-evidence/offer-settlement-gate.mjs \
+  examples/portable-evidence/fixtures/seeded-unknown-bind-field.json
+```
+
+Exit `1`. `evidence` is `null`. Reason `invented_receipt_field` (`discountCode`).

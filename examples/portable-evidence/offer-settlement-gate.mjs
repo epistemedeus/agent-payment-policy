@@ -9,6 +9,9 @@ export const SETTLEMENT_BINDINGS = Object.freeze([
   Object.freeze({ payload: "asset", settlement: "asset" }),
   Object.freeze({ payload: "payTo", settlement: "recipient" }),
 ]);
+export const ALLOWED_BIND_FIELDS = Object.freeze(
+  SETTLEMENT_BINDINGS.flatMap((binding) => [binding.payload, binding.settlement]),
+);
 export const INVENTED_RECEIPT_FIELDS = Object.freeze([
   "loyaltyPoints",
   "throughBlock",
@@ -16,6 +19,9 @@ export const INVENTED_RECEIPT_FIELDS = Object.freeze([
   "npsScore",
   "tipAmount",
 ]);
+export const MAX_INPUT_BYTES = 256 * 1024;
+export const MAX_COMPARE_CHARS = 200;
+export const MAX_TX_REF_CHARS = 500;
 export const BOUNDARY = Object.freeze({
   credentialsUsed: false,
   networkAccessed: false,
@@ -26,8 +32,16 @@ export const BOUNDARY = Object.freeze({
   paidCapture: false,
   sellerSignatureVerified: false,
   unitConverted: false,
-  statement: "Fail-closed string equality of live x402 offer-receipt payload amount/network/asset/payTo against existing createReceipt.settlement amountAtomic/network/asset/recipient. It does not verify EIP-712/JWS, hash the signed offer blob, create a ledger, recapture a paid body, load a wallet, send a payment, or treat a missing payload amount as demand.",
+  statement: "Fail-closed string equality of live x402 offer-receipt payload amount/network/asset/payTo against existing createReceipt.settlement amountAtomic/network/asset/recipient. Unpaid HTTP 402 is not a settlement source. It does not verify EIP-712/JWS, hash the signed offer blob, create a ledger, recapture a paid body, load a wallet, send a payment, or treat a missing payload amount as demand.",
 });
+
+const UNPAID_SETTLEMENT_KEYS = new Set([
+  "settlement",
+  "transactionReference",
+  "settlementRef",
+  "PAYMENT-RESPONSE",
+  "payment-response",
+]);
 
 function record(value) {
   return value && typeof value === "object" && !Array.isArray(value) ? value : null;
@@ -40,12 +54,58 @@ function failClosed(reason, message, extra = {}) {
   throw error;
 }
 
-function exactString(value) {
-  return typeof value === "string" && value.length > 0 ? value : null;
+function exactString(value, max = MAX_COMPARE_CHARS) {
+  return typeof value === "string" && value.length > 0 && value.length <= max ? value : null;
+}
+
+function looksLikePaymentRequired(value) {
+  const body = record(value);
+  if (!body) return false;
+  if (typeof body.receiptId === "string" && body.receiptId.length > 0) return false;
+  if (typeof body.error === "string" && body.error.trim().toLowerCase() === "payment required") return true;
+  if (body.httpStatus === 402) return true;
+  if (body.x402Version !== undefined && (body.accepts !== undefined || body.extensions !== undefined)) return true;
+  return false;
+}
+
+function unpaidEnvelope(input) {
+  const body = record(input);
+  if (!body) return null;
+  if (record(body.paymentRequired)) return body.paymentRequired;
+  if (looksLikePaymentRequired(body)) return body;
+  return null;
+}
+
+function walkKeys(value, visit, path = "") {
+  if (Array.isArray(value)) {
+    value.forEach((item, index) => walkKeys(item, visit, `${path}[${index}]`));
+    return;
+  }
+  const obj = record(value);
+  if (!obj) return;
+  for (const [key, child] of Object.entries(obj)) {
+    const childPath = path ? `${path}.${key}` : key;
+    visit(key, child, childPath);
+    walkKeys(child, visit, childPath);
+  }
+}
+
+function assertUnpaidBodyIsNotSettlement(input) {
+  const envelope = unpaidEnvelope(input);
+  if (!envelope) return;
+  walkKeys(envelope, (key, _child, path) => {
+    if (UNPAID_SETTLEMENT_KEYS.has(key)) {
+      failClosed(
+        "unpaid_402_is_not_settlement",
+        `unpaid HTTP 402 is not a settlement source: ${path}`,
+        { path },
+      );
+    }
+  });
 }
 
 function extractOfferReceiptExtension(input) {
-  const paymentRequired = record(input?.paymentRequired) || input;
+  const paymentRequired = record(input?.paymentRequired) || (looksLikePaymentRequired(input) ? input : null);
   const extensions = record(paymentRequired?.extensions) || record(input?.extensions);
   return record(extensions?.["offer-receipt"]) || record(paymentRequired?.["offer-receipt"]) || null;
 }
@@ -79,9 +139,22 @@ export function extractOfferPayload(input) {
 export function settlementFrom(input) {
   const body = record(input);
   if (!body) failClosed("existing_receipt_required", "offer-settlement equality requires an existing receipt");
-  const receipt = record(body.receipt) || body;
-  const settlement = record(receipt.settlement) || record(body.settlement);
+  const receipt = record(body.receipt);
+  if (!receipt) failClosed("existing_receipt_required", "existing createReceipt.settlement is required");
+  if (looksLikePaymentRequired(receipt) || unpaidEnvelope(receipt)) {
+    failClosed(
+      "unpaid_402_is_not_settlement",
+      "unpaid HTTP 402 PAYMENT-REQUIRED is not createReceipt.settlement",
+    );
+  }
+  const settlement = record(receipt.settlement);
   if (!settlement) failClosed("existing_receipt_required", "existing createReceipt.settlement is required");
+  if (looksLikePaymentRequired(settlement)) {
+    failClosed(
+      "unpaid_402_is_not_settlement",
+      "unpaid HTTP 402 PAYMENT-REQUIRED is not createReceipt.settlement",
+    );
+  }
   return settlement;
 }
 
@@ -90,7 +163,11 @@ function rejectInventedBindFields(input) {
   const requested = [];
   if (Array.isArray(body.bindFields)) requested.push(...body.bindFields);
   if (Array.isArray(body.compareFields)) requested.push(...body.compareFields);
-  const invented = requested.filter((name) => INVENTED_RECEIPT_FIELDS.includes(name));
+  const invented = requested.filter((name) => (
+    typeof name !== "string"
+    || INVENTED_RECEIPT_FIELDS.includes(name)
+    || !ALLOWED_BIND_FIELDS.includes(name)
+  ));
   if (invented.length) {
     failClosed(
       "invented_receipt_field",
@@ -146,8 +223,15 @@ export function projectOfferSettlement(input, { settlement: boundSettlement = nu
   const body = record(input);
   if (!body) failClosed("projection_input_invalid", "offer-settlement input must be a JSON object");
   rejectInventedBindFields(body);
+  assertUnpaidBodyIsNotSettlement(body);
   const payload = extractOfferPayload(body);
   const settlement = boundSettlement || settlementFrom(body);
+  if (looksLikePaymentRequired(settlement)) {
+    failClosed(
+      "unpaid_402_is_not_settlement",
+      "unpaid HTTP 402 PAYMENT-REQUIRED is not createReceipt.settlement",
+    );
+  }
   const result = compareOfferSettlement(payload, settlement);
   if (!result.equal) {
     failClosed(
@@ -160,7 +244,7 @@ export function projectOfferSettlement(input, { settlement: boundSettlement = nu
       },
     );
   }
-  const settlementRef = exactString(settlement.transactionReference);
+  const settlementRef = exactString(settlement.transactionReference, MAX_TX_REF_CHARS);
   return Object.freeze({
     accepted: true,
     reasons: Object.freeze([]),
@@ -192,15 +276,49 @@ export function refusalPayload(error) {
 }
 
 export async function bindCreateReceiptSettlement() {
-  const { run } = await import(new URL("../verify-policy-receipt.mjs", import.meta.url));
-  const result = await run();
-  const settlement = record(result?.receipt?.settlement);
-  if (!settlement) failClosed("existing_receipt_required", "createReceipt did not return settlement");
-  return Object.freeze({ ...settlement });
+  try {
+    const { run } = await import(new URL("../verify-policy-receipt.mjs", import.meta.url));
+    const result = await run();
+    const settlement = record(result?.receipt?.settlement);
+    if (!settlement) failClosed("existing_receipt_required", "createReceipt did not return settlement");
+    if (looksLikePaymentRequired(settlement)) {
+      failClosed(
+        "unpaid_402_is_not_settlement",
+        "createReceipt.settlement must not look like unpaid HTTP 402",
+      );
+    }
+    return Object.freeze({ ...settlement });
+  } catch (error) {
+    if (error?.reason) throw error;
+    failClosed(
+      "create_receipt_unavailable",
+      error?.message || "createReceipt bind failed",
+    );
+  }
 }
 
 function printJson(value) {
   console.log(JSON.stringify(value, null, 2));
+}
+
+function readInputFile(path) {
+  let raw;
+  try {
+    raw = readFileSync(path);
+  } catch (error) {
+    failClosed("projection_input_invalid", error?.message || "offer-settlement input is unreadable");
+  }
+  if (raw.length > MAX_INPUT_BYTES) {
+    failClosed(
+      "projection_input_too_large",
+      `offer-settlement input exceeds ${MAX_INPUT_BYTES} bytes`,
+    );
+  }
+  try {
+    return JSON.parse(raw.toString("utf8"));
+  } catch {
+    failClosed("projection_input_invalid", "offer-settlement JSON is invalid");
+  }
 }
 
 export async function run(argv = process.argv.slice(2)) {
@@ -221,7 +339,7 @@ export async function run(argv = process.argv.slice(2)) {
     return;
   }
   try {
-    const input = JSON.parse(readFileSync(positional[0], "utf8"));
+    const input = readInputFile(positional[0]);
     const settlement = bindCreateReceipt ? await bindCreateReceiptSettlement() : null;
     const result = projectOfferSettlement(input, { settlement });
     printJson(result);
