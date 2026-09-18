@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "agent-payment-policy.http402-not-payment-response-observation.v1",
+  "note": "Seeded failure: a well-known string that merely contains PAYMENT-RESPONSE is not a receipt.x402 declaration.",
+  "capturedAt": "2026-09-17T11:30:14Z",
+  "http": {
+    "status": 402,
+    "headerNames": ["payment-required"]
+  },
+  "paymentRequired": {
+    "x402Version": 2,
+    "error": "Payment required"
+  },
+  "wellKnown": {
+    "operation": {
+      "method": "GET",
+      "path": "/extract",
+      "receipt": {
+        "x402": "this operation does not send PAYMENT-RESPONSE on unpaid 402"
+      }
+    }
+  },
+  "settlementRefSource": "existing_receipt",
+  "receipt": {
+    "receiptId": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "settlement": {
+      "transactionReference": "0xadoptionfixture"
+    },
+    "output": {
+      "responseDigest": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+    }
+  }
+}
