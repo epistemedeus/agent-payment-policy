@@ -1,0 +1,38 @@
+{
+  "note": "Treat-absence-as-demand reject. Offer payload omits amount. Absence is not a match against createReceipt.settlement.amountAtomic 5000. Expected: evidence null, offer_settlement_mismatch, exit 1.",
+  "paymentRequired": {
+    "x402Version": 2,
+    "error": "Payment required",
+    "extensions": {
+      "offer-receipt": {
+        "info": {
+          "offers": [
+            {
+              "format": "eip712",
+              "acceptIndex": 0,
+              "payload": {
+                "version": 1,
+                "resourceUrl": "https://agents.samedaydesk.com/extract?url=https://example.com",
+                "scheme": "exact",
+                "network": "eip155:8453",
+                "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+                "payTo": "0x8904dF3DE6DFEe6a7C8cc38619d2f17806213Cee",
+                "validUntil": 1789644914
+              },
+              "signature": "fixture-not-verified"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "receipt": {
+    "settlement": {
+      "amountAtomic": "5000",
+      "recipient": "0x8904dF3DE6DFEe6a7C8cc38619d2f17806213Cee",
+      "network": "eip155:8453",
+      "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "transactionReference": "0xcreate-receipt-settlement-fixture"
+    }
+  }
+}

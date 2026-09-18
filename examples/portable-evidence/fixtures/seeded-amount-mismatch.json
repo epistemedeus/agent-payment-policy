@@ -1,0 +1,51 @@
+{
+  "note": "Seeded fail-closed case. Live-shaped offer-receipt payload.amount is \"1\" against createReceipt.settlement.amountAtomic \"5000\". accepts[0].amount stays \"5000\" so a copy of the challenge amount cannot override the signed payload. Expected: evidence null, offer_settlement_mismatch, exit 1.",
+  "capturedAt": "2026-09-17T11:30:14Z",
+  "sourceUrl": "https://agents.samedaydesk.com/extract?url=https://example.com",
+  "paymentRequired": {
+    "x402Version": 2,
+    "error": "Payment required",
+    "httpStatus": 402,
+    "accepts": [
+      {
+        "scheme": "exact",
+        "network": "eip155:8453",
+        "amount": "5000",
+        "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "payTo": "0x8904dF3DE6DFEe6a7C8cc38619d2f17806213Cee"
+      }
+    ],
+    "extensions": {
+      "offer-receipt": {
+        "info": {
+          "offers": [
+            {
+              "format": "eip712",
+              "acceptIndex": 0,
+              "payload": {
+                "version": 1,
+                "resourceUrl": "https://agents.samedaydesk.com/extract?url=https://example.com",
+                "scheme": "exact",
+                "network": "eip155:8453",
+                "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+                "payTo": "0x8904dF3DE6DFEe6a7C8cc38619d2f17806213Cee",
+                "amount": "1",
+                "validUntil": 1789644914
+              },
+              "signature": "0xe7aeee06329bf73781c34f8fe8d6d0d36ade6189cbab28eb392fbc67d9afb6971e542f698215bdcc81acb1109b242bdd79816a7bba73e865c08ad90c10311a3e1b"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "receipt": {
+    "settlement": {
+      "amountAtomic": "5000",
+      "recipient": "0x8904dF3DE6DFEe6a7C8cc38619d2f17806213Cee",
+      "network": "eip155:8453",
+      "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "transactionReference": "0xcreate-receipt-settlement-fixture"
+    }
+  }
+}

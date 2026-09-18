@@ -1,0 +1,61 @@
+{
+  "note": "Seeded fail-closed case. receipt is an unpaid HTTP 402 PAYMENT-REQUIRED envelope with matching settlement fields. Unpaid 402 is not createReceipt.settlement. Expected: evidence null, unpaid_402_is_not_settlement, exit 1.",
+  "paymentRequired": {
+    "x402Version": 2,
+    "error": "Payment required",
+    "httpStatus": 402,
+    "accepts": [
+      {
+        "scheme": "exact",
+        "network": "eip155:8453",
+        "amount": "5000",
+        "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "payTo": "0x8904dF3DE6DFEe6a7C8cc38619d2f17806213Cee"
+      }
+    ],
+    "extensions": {
+      "offer-receipt": {
+        "info": {
+          "offers": [
+            {
+              "format": "eip712",
+              "acceptIndex": 0,
+              "payload": {
+                "version": 1,
+                "resourceUrl": "https://agents.samedaydesk.com/extract?url=https://example.com",
+                "scheme": "exact",
+                "network": "eip155:8453",
+                "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+                "payTo": "0x8904dF3DE6DFEe6a7C8cc38619d2f17806213Cee",
+                "amount": "5000",
+                "validUntil": 1789644914
+              },
+              "signature": "fixture-not-verified"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "receipt": {
+    "x402Version": 2,
+    "error": "Payment required",
+    "httpStatus": 402,
+    "accepts": [
+      {
+        "scheme": "exact",
+        "network": "eip155:8453",
+        "amount": "5000",
+        "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "payTo": "0x8904dF3DE6DFEe6a7C8cc38619d2f17806213Cee"
+      }
+    ],
+    "settlement": {
+      "amountAtomic": "5000",
+      "recipient": "0x8904dF3DE6DFEe6a7C8cc38619d2f17806213Cee",
+      "network": "eip155:8453",
+      "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "transactionReference": "0xforged-402-as-receipt"
+    }
+  }
+}
