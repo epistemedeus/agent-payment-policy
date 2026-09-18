@@ -62,13 +62,49 @@ node examples/portable-evidence/http402-not-payment-response/classify.mjs \
 Exit `1`. Reason `payment_response_missing`. Seller-declared well-known text
 is not a live `PAYMENT-RESPONSE` header.
 
+```bash
+node examples/portable-evidence/http402-not-payment-response/classify.mjs \
+  examples/portable-evidence/http402-not-payment-response/fixtures/seeded-string-true-absence-as-demand.json
+```
+
+Exit `1`. Reason `absence_is_not_demand`. String `"true"` (also `1` / `"yes"`) does not bypass the boolean demand flags.
+
+```bash
+node examples/portable-evidence/http402-not-payment-response/classify.mjs \
+  examples/portable-evidence/http402-not-payment-response/fixtures/seeded-well-known-negation.json
+```
+
+Exit `1`. Reason `well_known_receipt_x402_missing`. A well-known string that merely contains `PAYMENT-RESPONSE` is not `operations[].receipt.x402`.
+
+```bash
+node examples/portable-evidence/http402-not-payment-response/classify.mjs \
+  examples/portable-evidence/http402-not-payment-response/fixtures/seeded-402-receipt-with-digest.json
+```
+
+Exit `1`. Reason `payment_response_missing`. A `PAYMENT-REQUIRED` body with a fake `receiptId` digest is not `createReceipt`.
+
+```bash
+node examples/portable-evidence/http402-not-payment-response/classify.mjs \
+  examples/portable-evidence/http402-not-payment-response/fixtures/seeded-payment-response-header.json
+```
+
+Exit `1`. Reason `unpaid_402_carries_payment_response`. `paymentResponse` is `present` (not `missing`).
+
+```bash
+node examples/portable-evidence/http402-not-payment-response/classify.mjs --live
+```
+
+Exit `2`. Reason `live_or_payment_refused`. `--live` / `--pay` / `--fetch` are not filenames.
+
 The classifier also fails closed, with `evidence: null`, when:
 
-- HTTP status is not 402;
+- HTTP status is not the JSON number `402` (`"402"` / `[402]` rejected);
+- `x402Version` is not the number `2`;
 - `PAYMENT-REQUIRED` is absent, or `PAYMENT-RESPONSE` / `PAYMENT-SIGNATURE` is present;
 - the unpaid body already carries `transactionReference` or `settlementRef`;
 - the 402 body is supplied as `receipt`;
-- an existing receipt is missing (`existing_receipt_required`).
+- an existing receipt is missing (`existing_receipt_required`);
+- the observation file exceeds 256 KiB (`observation_too_large`).
 
 ## Boundary
 

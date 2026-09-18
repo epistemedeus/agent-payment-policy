@@ -1,12 +1,14 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
 
 import {
   BOUNDARY,
+  MAX_OBSERVATION_BYTES,
   REPORT_SCHEMA,
   WELL_KNOWN_RECEIPT_X402,
   classifyHttp402NotPaymentResponse,
@@ -21,6 +23,10 @@ const SEEDED_402 = join(FIXTURES, "seeded-402-as-settlement-ref.json");
 const SEEDED_ABSENCE = join(FIXTURES, "seeded-treat-absence-as-demand.json");
 const SEEDED_INVENTED = join(FIXTURES, "seeded-invented-field.json");
 const SEEDED_WELL_KNOWN = join(FIXTURES, "seeded-well-known-as-settlement-ref.json");
+const SEEDED_STRING_TRUE = join(FIXTURES, "seeded-string-true-absence-as-demand.json");
+const SEEDED_WK_NEGATION = join(FIXTURES, "seeded-well-known-negation.json");
+const SEEDED_402_DIGEST = join(FIXTURES, "seeded-402-receipt-with-digest.json");
+const SEEDED_PR_HEADER = join(FIXTURES, "seeded-payment-response-header.json");
 
 function run(file) {
   return spawnSync(process.execPath, [CLASSIFY, file], {
@@ -162,4 +168,112 @@ test("unpaid body that already carries transactionReference fails closed", () =>
     () => classifyHttp402NotPaymentResponse(observation),
     (error) => error.reason === "unpaid_402_carries_settlement_reference",
   );
+});
+
+test("string true does not bypass absence_is_not_demand", () => {
+  const observation = load(SEEDED_STRING_TRUE);
+  assert.equal(observation.treatAbsenceAsDemand, "true");
+  assert.throws(
+    () => classifyHttp402NotPaymentResponse(observation),
+    (error) => error.reason === "absence_is_not_demand",
+  );
+
+  const cli = run(SEEDED_STRING_TRUE);
+  assert.equal(cli.status, 1, cli.stderr || cli.stdout);
+  const body = JSON.parse(cli.stdout);
+  assert.equal(body.accepted, false);
+  assert.deepEqual(body.reasons, ["absence_is_not_demand"]);
+  assert.equal(body.evidence, null);
+});
+
+test("numeric 1 and yes also raise absence-as-demand", () => {
+  for (const patch of [{ demand: 1 }, { absenceMeansPaid: "yes" }, { treatUnpaidAsPaymentResponse: "true" }]) {
+    const observation = load(PASS);
+    Object.assign(observation, patch);
+    assert.throws(
+      () => classifyHttp402NotPaymentResponse(observation),
+      (error) => error.reason === "absence_is_not_demand" || error.reason === "payment_response_missing",
+    );
+  }
+});
+
+test("http.status must be the number 402, not a coerced string or array", () => {
+  for (const status of ["402", [402], "0402"]) {
+    const observation = load(PASS);
+    observation.http.status = status;
+    assert.throws(
+      () => classifyHttp402NotPaymentResponse(observation),
+      (error) => error.reason === "not_unpaid_http_402",
+    );
+  }
+});
+
+test("x402Version string 2 is not the live number 2", () => {
+  const observation = load(PASS);
+  observation.paymentRequired.x402Version = "2";
+  assert.throws(
+    () => classifyHttp402NotPaymentResponse(observation),
+    (error) => error.reason === "payment_required_version_invalid",
+  );
+});
+
+test("PAYMENT-RESPONSE header is refused as present, not reported missing", () => {
+  const cli = run(SEEDED_PR_HEADER);
+  assert.equal(cli.status, 1, cli.stderr || cli.stdout);
+  const body = JSON.parse(cli.stdout);
+  assert.equal(body.accepted, false);
+  assert.deepEqual(body.reasons, ["unpaid_402_carries_payment_response"]);
+  assert.equal(body.paymentResponse, "present");
+  assert.equal(body.unpaid402Class, "PAYMENT-REQUIRED");
+  assert.equal(body.evidence, null);
+});
+
+test("well-known text that only contains PAYMENT-RESPONSE is not a declaration", () => {
+  const cli = run(SEEDED_WK_NEGATION);
+  assert.equal(cli.status, 1, cli.stderr || cli.stdout);
+  const body = JSON.parse(cli.stdout);
+  assert.equal(body.accepted, false);
+  assert.deepEqual(body.reasons, ["well_known_receipt_x402_missing"]);
+  assert.equal(body.unpaid402Class, "PAYMENT-REQUIRED");
+  assert.equal(body.evidence, null);
+});
+
+test("402-shaped receipt with a fake digest is still payment_response_missing", () => {
+  const cli = run(SEEDED_402_DIGEST);
+  assert.equal(cli.status, 1, cli.stderr || cli.stdout);
+  const body = JSON.parse(cli.stdout);
+  assert.equal(body.accepted, false);
+  assert.deepEqual(body.reasons, ["payment_response_missing"]);
+  assert.equal(body.unpaid402Class, "PAYMENT-REQUIRED");
+  assert.equal(body.evidence, null);
+  assert.doesNotMatch(cli.stdout, /0xfrom402body/);
+});
+
+test("--live is refused and is not opened as a filename", () => {
+  const cli = spawnSync(process.execPath, [CLASSIFY, "--live"], {
+    encoding: "utf8",
+    cwd: join(HERE, "../../.."),
+  });
+  assert.equal(cli.status, 2, cli.stderr || cli.stdout);
+  const body = JSON.parse(cli.stdout);
+  assert.equal(body.accepted, false);
+  assert.deepEqual(body.reasons, ["live_or_payment_refused"]);
+  assert.equal(body.evidence, null);
+  assert.doesNotMatch(cli.stdout, /ENOENT|no such file/);
+});
+
+test("oversized observation is refused before JSON parse", () => {
+  const dir = mkdtempSync(join(tmpdir(), "http402-not-pr-"));
+  const file = join(dir, "too-large.json");
+  writeFileSync(file, `{${" ".repeat(MAX_OBSERVATION_BYTES)}}`);
+  try {
+    const cli = run(file);
+    assert.equal(cli.status, 1, cli.stderr || cli.stdout);
+    const body = JSON.parse(cli.stdout);
+    assert.equal(body.accepted, false);
+    assert.deepEqual(body.reasons, ["observation_too_large"]);
+    assert.equal(body.evidence, null);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });

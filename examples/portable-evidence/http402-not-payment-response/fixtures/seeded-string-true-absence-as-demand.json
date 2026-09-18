@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "agent-payment-policy.http402-not-payment-response-observation.v1",
+  "note": "Seeded failure: string true must not bypass absence-is-not-demand.",
+  "capturedAt": "2026-09-17T11:30:14Z",
+  "http": {
+    "status": 402,
+    "headerNames": ["payment-required"]
+  },
+  "paymentRequired": {
+    "x402Version": 2,
+    "error": "Payment required"
+  },
+  "wellKnown": {
+    "operation": {
+      "method": "GET",
+      "path": "/extract",
+      "receipt": {
+        "x402": "PAYMENT-RESPONSE with signed offer-receipt extension and settlement reference"
+      }
+    }
+  },
+  "treatAbsenceAsDemand": "true",
+  "settlementRefSource": "existing_receipt",
+  "receipt": {
+    "receiptId": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "settlement": {
+      "transactionReference": "0xadoptionfixture"
+    },
+    "output": {
+      "responseDigest": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+    }
+  }
+}

@@ -1,11 +1,15 @@
 #!/usr/bin/env node
-import { readFileSync } from "node:fs";
+import { closeSync, fstatSync, openSync, readFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 
 export const OBSERVATION_SCHEMA = "agent-payment-policy.http402-not-payment-response-observation.v1";
 export const REPORT_SCHEMA = "agent-payment-policy.http402-not-payment-response.v1";
 export const WELL_KNOWN_RECEIPT_X402 =
   "PAYMENT-RESPONSE with signed offer-receipt extension and settlement reference";
+export const ALLOWED_WELL_KNOWN_RECEIPT_X402 = Object.freeze([
+  WELL_KNOWN_RECEIPT_X402,
+  "PAYMENT-RESPONSE",
+]);
 export const EXISTING_RECEIPT_SOURCES = Object.freeze([
   "existing_receipt",
   "caller-supplied-receipt",
@@ -37,6 +41,16 @@ export const INVENTED_RECEIPT_FIELDS = Object.freeze([
   "throughBlock",
   "uniqueVisitors",
 ]);
+export const LIVE_CLI_FLAGS = Object.freeze([
+  "--live",
+  "--pay",
+  "--fetch",
+  "--cdp",
+  "--wallet",
+  "--paid",
+  "--network",
+]);
+export const MAX_OBSERVATION_BYTES = 256 * 1024;
 export const BOUNDARY = Object.freeze({
   credentialsUsed: false,
   networkAccessed: false,
@@ -66,6 +80,7 @@ const OBSERVATION_KEYS = new Set([
   "demand",
   "receiptFields",
 ]);
+const LIVE_FLAG_NAMES = new Set(LIVE_CLI_FLAGS);
 
 function record(value) {
   return value && typeof value === "object" && !Array.isArray(value) ? value : null;
@@ -80,6 +95,18 @@ function failClosed(reason, message, extra = {}) {
 
 function digestString(value) {
   return typeof value === "string" && DIGEST.test(value.toLowerCase()) ? value.toLowerCase() : null;
+}
+
+function flagRaised(value) {
+  if (value === undefined || value === null || value === false || value === 0) return false;
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    if (!normalized || normalized === "false" || normalized === "no" || normalized === "off" || normalized === "0") {
+      return false;
+    }
+    return true;
+  }
+  return Boolean(value);
 }
 
 function headerNames(http) {
@@ -107,16 +134,20 @@ function headerPresent(names, header) {
   return names.has(String(header).toLowerCase());
 }
 
-function walkKeys(value, visit, path = "") {
+function walkKeys(value, visit, path = "", seen = new WeakSet()) {
   if (Array.isArray(value)) {
-    value.forEach((item, index) => walkKeys(item, visit, `${path}[${index}]`));
+    if (seen.has(value)) return;
+    seen.add(value);
+    value.forEach((item, index) => walkKeys(item, visit, `${path}[${index}]`, seen));
     return;
   }
   const obj = record(value);
   if (!obj) return;
+  if (seen.has(obj)) return;
+  seen.add(obj);
   for (const [key, child] of Object.entries(obj)) {
     visit(key, child, path ? `${path}.${key}` : key);
-    walkKeys(child, visit, path ? `${path}.${key}` : key);
+    walkKeys(child, visit, path ? `${path}.${key}` : key, seen);
   }
 }
 
@@ -132,6 +163,7 @@ function assertNoSettlementRefInUnpaid(paymentRequired) {
       failClosed(
         "unpaid_402_carries_payment_response",
         `unpaid HTTP 402 must not carry ${path}`,
+        { paymentResponse: "present" },
       );
     }
   });
@@ -153,9 +185,8 @@ function looksLikePaymentRequired(value) {
   const body = record(value);
   if (!body) return false;
   if (typeof body.error === "string" && body.error.trim().toLowerCase() === "payment required") return true;
-  if (body.x402Version !== undefined && !digestString(body.receiptId) && (body.accepts !== undefined || body.extensions !== undefined)) {
-    return true;
-  }
+  if (body.x402Version !== undefined) return true;
+  if (body.accepts !== undefined || body.extensions !== undefined) return true;
   return false;
 }
 
@@ -177,27 +208,28 @@ function isForbiddenSettlementRefSource(source) {
   return FORBIDDEN_SETTLEMENT_REF_SOURCES.some((item) => item.toLowerCase().replace(/-/g, "_") === normalized);
 }
 
-function existingReceipt(value) {
+function existingReceipt(value, extra = {}) {
   const receipt = record(value);
-  if (!receipt) failClosed("existing_receipt_required", "projection requires an existing receipt");
+  if (!receipt) failClosed("existing_receipt_required", "projection requires an existing receipt", extra);
   if (looksLikePaymentRequired(receipt)) {
     failClosed(
       "payment_response_missing",
       "unpaid HTTP 402 PAYMENT-REQUIRED is not a PAYMENT-RESPONSE settlementRef source",
+      extra,
     );
   }
   const receiptId = digestString(receipt.receiptId);
-  if (!receiptId) failClosed("existing_receipt_required", "existing receiptId is required");
+  if (!receiptId) failClosed("existing_receipt_required", "existing receiptId is required", extra);
   const settlement = record(receipt.settlement);
   const settlementRef = typeof settlement?.transactionReference === "string"
     ? settlement.transactionReference.trim()
     : "";
   if (!settlementRef || settlementRef.length > 500) {
-    failClosed("existing_receipt_required", "existing receipt settlement ref is required");
+    failClosed("existing_receipt_required", "existing receipt settlement ref is required", extra);
   }
   const output = record(receipt.output) || {};
   const responseHash = digestString(output.responseDigest);
-  if (!responseHash) failClosed("existing_receipt_required", "existing receipt response hash is required");
+  if (!responseHash) failClosed("existing_receipt_required", "existing receipt response hash is required", extra);
   return Object.freeze({
     receiptId,
     settlementRef,
@@ -208,8 +240,7 @@ function existingReceipt(value) {
 function classifyHttp(input) {
   const http = record(input.http);
   if (!http) failClosed("http_required", "http observation is required");
-  const status = Number(http.status);
-  if (status !== 402) failClosed("not_unpaid_http_402", "observation must be unpaid HTTP 402");
+  if (http.status !== 402) failClosed("not_unpaid_http_402", "observation must be unpaid HTTP 402");
   const names = headerNames(http);
   const paymentRequiredPresent = headerPresent(names, "payment-required");
   const paymentResponsePresent = headerPresent(names, "payment-response");
@@ -221,6 +252,7 @@ function classifyHttp(input) {
     failClosed(
       "unpaid_402_carries_payment_response",
       "unpaid HTTP 402 must not present PAYMENT-RESPONSE",
+      { unpaid402Class: "PAYMENT-REQUIRED", paymentResponse: "present" },
     );
   }
   if (paymentSignaturePresent) {
@@ -241,8 +273,7 @@ function classifyPaymentRequired(input) {
   if (error.toLowerCase() !== "payment required") {
     failClosed("payment_required_error_missing", "paymentRequired.error must be Payment required");
   }
-  const version = body.x402Version;
-  if (version !== 2 && version !== "2") {
+  if (body.x402Version !== 2) {
     failClosed("payment_required_version_invalid", "paymentRequired.x402Version must be 2");
   }
   assertNoSettlementRefInUnpaid(body);
@@ -253,14 +284,18 @@ function classifyPaymentRequired(input) {
   });
 }
 
-function classifyWellKnown(input) {
+function classifyWellKnown(input, extra = {}) {
   const wellKnown = record(input.wellKnown);
-  if (!wellKnown) failClosed("well_known_required", "wellKnown operation receipt declaration is required");
+  if (!wellKnown) failClosed("well_known_required", "wellKnown operation receipt declaration is required", extra);
   const operation = record(wellKnown.operation) || wellKnown;
   const receipt = record(operation.receipt);
   const declared = typeof receipt?.x402 === "string" ? receipt.x402.trim() : "";
-  if (!declared.includes("PAYMENT-RESPONSE")) {
-    failClosed("well_known_receipt_x402_missing", "well-known operations[].receipt.x402 must declare PAYMENT-RESPONSE");
+  if (!ALLOWED_WELL_KNOWN_RECEIPT_X402.includes(declared)) {
+    failClosed(
+      "well_known_receipt_x402_missing",
+      "well-known operations[].receipt.x402 must declare PAYMENT-RESPONSE",
+      extra,
+    );
   }
   return Object.freeze({
     method: typeof operation.method === "string" ? operation.method : null,
@@ -290,17 +325,17 @@ export function classifyHttp402NotPaymentResponse(input) {
 
   const http = classifyHttp(body);
   const unpaid = classifyPaymentRequired(body);
-  const wellKnown = classifyWellKnown(body);
   const classified = { unpaid402Class: unpaid.class };
+  const wellKnown = classifyWellKnown(body, classified);
 
-  if (body.treatAbsenceAsDemand === true || body.absenceMeansPaid === true || body.demand === true) {
+  if (flagRaised(body.treatAbsenceAsDemand) || flagRaised(body.absenceMeansPaid) || flagRaised(body.demand)) {
     failClosed(
       "absence_is_not_demand",
       "absence of PAYMENT-RESPONSE on unpaid HTTP 402 is not demand",
       classified,
     );
   }
-  if (body.treatUnpaidAsPaymentResponse === true) {
+  if (flagRaised(body.treatUnpaidAsPaymentResponse)) {
     failClosed(
       "payment_response_missing",
       "unpaid HTTP 402 PAYMENT-REQUIRED is not well-known PAYMENT-RESPONSE",
@@ -317,7 +352,7 @@ export function classifyHttp402NotPaymentResponse(input) {
     );
   }
 
-  const receipt = existingReceipt(body.receipt);
+  const receipt = existingReceipt(body.receipt, classified);
   return Object.freeze({
     accepted: true,
     reasons: Object.freeze([]),
@@ -359,7 +394,7 @@ export function refusalPayload(error) {
     accepted: false,
     reasons: Object.freeze([reason]),
     unpaid402Class: extra.unpaid402Class ?? null,
-    paymentResponse: "missing",
+    paymentResponse: extra.paymentResponse === "present" ? "present" : "missing",
     evidence: null,
     error: error?.message || "http402-not-payment-response classification failed",
     boundary: BOUNDARY,
@@ -370,15 +405,45 @@ function printJson(value) {
   console.log(JSON.stringify(value, null, 2));
 }
 
+function liveOrPaymentArg(argv) {
+  return argv.find((arg) => LIVE_FLAG_NAMES.has(String(arg).split("=")[0]));
+}
+
+export function readObservationFile(path) {
+  let fd;
+  try {
+    fd = openSync(path, "r");
+    const { size } = fstatSync(fd);
+    if (size > MAX_OBSERVATION_BYTES) {
+      failClosed("observation_too_large", `observation exceeds ${MAX_OBSERVATION_BYTES} bytes`);
+    }
+    return JSON.parse(readFileSync(fd, "utf8"));
+  } catch (error) {
+    if (error?.reason) throw error;
+    failClosed("observation_unreadable", error?.message || "observation is unreadable");
+  } finally {
+    if (fd !== undefined) closeSync(fd);
+  }
+}
+
 export async function run(argv = process.argv.slice(2)) {
+  const live = liveOrPaymentArg(argv);
+  if (live) {
+    printJson(refusalPayload(Object.assign(
+      new Error(`${live} is refused: this classifier does not fetch, pay, or recapture a paid body`),
+      { reason: "live_or_payment_refused" },
+    )));
+    process.exitCode = 2;
+    return;
+  }
   const path = argv[0];
-  if (!path || argv.length !== 1) {
+  if (!path || argv.length !== 1 || path.startsWith("-")) {
     console.error("Usage: node examples/portable-evidence/http402-not-payment-response/classify.mjs <observation-json>");
     process.exitCode = 2;
     return;
   }
   try {
-    const result = classifyHttp402NotPaymentResponse(JSON.parse(readFileSync(path, "utf8")));
+    const result = classifyHttp402NotPaymentResponse(readObservationFile(path));
     printJson(result);
     process.exitCode = result.accepted ? 0 : 1;
   } catch (error) {
