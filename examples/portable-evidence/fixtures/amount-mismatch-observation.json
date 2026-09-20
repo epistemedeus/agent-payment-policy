@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "agent-payment-policy.receipt-completeness-observation.v1",
+  "protocol": "x402",
+  "receipt": {
+    "present": true,
+    "success": "confirmed",
+    "transactionReference": "match",
+    "amount": "mismatch",
+    "network": "match",
+    "asset": "match",
+    "recipient": "match",
+    "payer": "match"
+  },
+  "transaction": {
+    "checked": false,
+    "success": "unknown",
+    "transactionReference": "not_checked",
+    "amount": "not_checked",
+    "network": "not_checked",
+    "asset": "not_checked",
+    "recipient": "not_checked",
+    "payer": "not_checked"
+  },
+  "balance": {
+    "checked": false,
+    "delta": "not_checked",
+    "asset": "not_checked",
+    "payer": "not_checked"
+  },
+  "outputValidation": "failed"
+}

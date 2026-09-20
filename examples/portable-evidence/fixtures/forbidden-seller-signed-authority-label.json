@@ -1,0 +1,7 @@
+{
+  "note": "Seeded failure: the projection must not export seller-signed-offer-receipt. That label implied EIP-712/JWS seller authentication the helper does not perform.",
+  "requiredAuthorityLabel": "caller-supplied-offer-receipt-hash",
+  "absentAuthorityLabels": [
+    "seller-signed-offer-receipt"
+  ]
+}
