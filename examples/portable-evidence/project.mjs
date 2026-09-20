@@ -9,13 +9,14 @@ export const DECISION_CHANGED_MAX = 200;
 export const OFFER_RECEIPT_FORMATS = Object.freeze(["eip712", "jws"]);
 export const BUYER_VERDICTS = Object.freeze(["accepted", "rejected"]);
 export const AUTHORITY_LABELS = Object.freeze({
-  sellerOfferReceiptId: "seller-signed-offer-receipt",
+  sellerOfferReceiptId: "caller-supplied-offer-receipt-hash",
   schemaDigest: "buyer-intent",
   verdict: "buyer-output-accept",
   responseHash: "buyer-output-accept",
   settlementRef: "caller-supplied-receipt",
   completeness: "receipt-completeness-classifier",
 });
+export const FORBIDDEN_AUTHORITY_LABELS = Object.freeze(["seller-signed-offer-receipt"]);
 export const BOUNDARY = Object.freeze({
   credentialsUsed: false,
   networkAccessed: false,
@@ -25,7 +26,7 @@ export const BOUNDARY = Object.freeze({
   ledgerCreated: false,
   paidCapture: false,
   sellerSignatureVerified: false,
-  statement: "Projects seller-signed x402 offer-receipt identity, buyer schemaDigest and output-accept verdict, response hash, and settlement ref into an existing public-safe receipt. It does not verify EIP-712/JWS seller signatures, create a ledger, recapture a paid body, load a wallet, or send a payment.",
+  statement: "Projects a caller-supplied x402 offer-receipt hash, buyer schemaDigest and output-accept verdict, response hash, and settlement ref into an existing public-safe receipt. It does not verify EIP-712/JWS seller signatures, create a ledger, recapture a paid body, load a wallet, or send a payment.",
 });
 
 const DIGEST = /^sha256:[0-9a-f]{64}$/;
@@ -77,6 +78,19 @@ export function sellerOfferReceiptId(offer) {
     payload: item.payload ?? null,
     signature,
   });
+}
+
+export function exportedAuthority() {
+  const labels = AUTHORITY_LABELS;
+  for (const forbidden of FORBIDDEN_AUTHORITY_LABELS) {
+    if (Object.values(labels).includes(forbidden)) {
+      failClosed(
+        "seller_signed_authority_label_forbidden",
+        "portable evidence must not export a seller-signed offer-receipt authority label",
+      );
+    }
+  }
+  return labels;
 }
 
 function completenessSlice(value) {
@@ -207,7 +221,7 @@ export function projectPortableEvidence(input) {
       buyer: Object.freeze({ schemaDigest: buyerDigest, verdict }),
       responseHash: receipt.responseHash,
       settlementRef: receipt.settlementRef,
-      authority: AUTHORITY_LABELS,
+      authority: exportedAuthority(),
       decisionChanged,
     }),
     completeness,

@@ -9,12 +9,18 @@ The projection binds six public-safe fields onto an existing
 
 | Field | Source | Authority label |
 | --- | --- | --- |
-| `sellerOfferReceiptId` | live x402 `extensions.offer-receipt` signed offer identity (`sha256:` of canonical format, acceptIndex, payload, signature) | `seller-signed-offer-receipt` |
+| `sellerOfferReceiptId` | caller-supplied `sha256:` of observed x402 `extensions.offer-receipt` format, acceptIndex, payload, and signature bytes. Not EIP-712/JWS-verified. | `caller-supplied-offer-receipt-hash` |
 | `buyer.schemaDigest` | policy 0.13+ `createIntent` / `inspectOutputSchema` | `buyer-intent` |
 | `buyer.verdict` | `output-accept` | `buyer-output-accept` |
 | `responseHash` | existing receipt `output.responseDigest` | `buyer-output-accept` |
 | `settlementRef` | existing receipt `settlement.transactionReference` | `caller-supplied-receipt` |
 | `decisionChanged` | bounded `;`-joined tokens, max 200 characters | `receipt-completeness-classifier` when completeness is supplied |
+
+`sellerOfferReceiptId` is a hash of caller-supplied offer-receipt bytes. The
+helper does not verify a seller signature, `validUntil`, or
+amount/payTo/resource binding, so the authority label is
+`caller-supplied-offer-receipt-hash`. The old `seller-signed-offer-receipt`
+label is rejected because it implied a verified seller receipt identity.
 
 Seller offer-receipt presence does not relax the buyer schema boundary. A
 fixture with a live-shaped seller offer-receipt and an omitted buyer

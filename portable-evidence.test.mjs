@@ -17,6 +17,8 @@ import {
   AUTHORITY_LABELS,
   BOUNDARY,
   DECISION_CHANGED_MAX,
+  FORBIDDEN_AUTHORITY_LABELS,
+  exportedAuthority,
   projectPortableEvidence,
   refusalPayload,
   sellerOfferReceiptId,
@@ -91,6 +93,33 @@ function bindAdoptionReceipt() {
   });
   return { inspection, plan, receipt };
 }
+
+test("exported authority rejects the old seller-signed-offer-receipt label", () => {
+  const fixture = JSON.parse(
+    readFileSync(new URL("forbidden-seller-signed-authority-label.json", FIXTURES), "utf8"),
+  );
+  assert.deepEqual(fixture.absentAuthorityLabels, ["seller-signed-offer-receipt"]);
+  assert.equal(fixture.requiredAuthorityLabel, "caller-supplied-offer-receipt-hash");
+  assert.deepEqual([...FORBIDDEN_AUTHORITY_LABELS], fixture.absentAuthorityLabels);
+  assert.equal(AUTHORITY_LABELS.sellerOfferReceiptId, fixture.requiredAuthorityLabel);
+  assert.equal(exportedAuthority().sellerOfferReceiptId, fixture.requiredAuthorityLabel);
+
+  const { inspection, receipt } = bindAdoptionReceipt();
+  const projection = projectPortableEvidence({
+    paymentRequired: livePaymentRequired(),
+    buyer: { schemaDigest: inspection.schemaDigest, verdict: "accepted" },
+    receipt,
+  });
+  const exported = JSON.stringify(projection.evidence);
+  for (const label of fixture.absentAuthorityLabels) {
+    assert.equal(Object.values(projection.evidence.authority).includes(label), false);
+    assert.doesNotMatch(exported, new RegExp(label.replaceAll("-", "\\-")));
+  }
+  assert.equal(projection.evidence.authority.sellerOfferReceiptId, fixture.requiredAuthorityLabel);
+  assert.equal(projection.boundary.sellerSignatureVerified, false);
+  assert.match(projection.boundary.statement, /caller-supplied x402 offer-receipt hash/);
+  assert.doesNotMatch(projection.boundary.statement, /seller-signed/);
+});
 
 test("seller offer-receipt without buyer schemaDigest fails closed", () => {
   assert.equal(LIVE_402.httpStatus, 402);
