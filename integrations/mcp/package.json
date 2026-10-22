@@ -1,0 +1,52 @@
+{
+  "name": "@epistemedeus/agent-payment-policy-mcp",
+  "version": "0.1.0",
+  "description": "Offline request binding, output acceptance and supplied receipt classification over MCP stdio.",
+  "mcpName": "io.github.epistemedeus/agent-payment-policy-mcp",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "bin": {
+    "agent-payment-policy-mcp": "bin/agent-payment-policy-mcp.mjs"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "policy/core.mjs",
+    "LICENSE",
+    "NOTICE.md",
+    "README.md",
+    "SOURCE-MANIFEST.json",
+    "DEPENDENCIES.json",
+    "release/SDK-LICENSE.txt",
+    "npm-shrinkwrap.json"
+  ],
+  "scripts": {
+    "test": "node --max-old-space-size=256 tests/cold.mjs",
+    "baseline": "node --max-old-space-size=256 tests/baseline.mjs",
+    "check:release": "node scripts/validate-release.mjs",
+    "test:wire": "node --max-old-space-size=256 tests/wire.mjs",
+    "test:variant": "node --max-old-space-size=256 tests/variant.mjs",
+    "test:dual-era": "node --max-old-space-size=256 tests/dual-era.mjs",
+    "test:era-wire": "node --max-old-space-size=256 tests/era-wire.mjs",
+    "test:runtime": "node --max-old-space-size=256 tests/runtime-controls.mjs"
+  },
+  "dependencies": {
+    "agent-payment-policy": "0.15.1",
+    "@modelcontextprotocol/server": "2.3.1",
+    "@modelcontextprotocol/core": "2.3.1"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/client": "2.3.1"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/epistemedeus/agent-payment-policy.git",
+    "directory": "integrations/mcp"
+  }
+}

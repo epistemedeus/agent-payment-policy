@@ -24,3 +24,31 @@ jobs:
       - run: npm pack --dry-run
       - run: npm sbom --sbom-format cyclonedx > sbom.cdx.json
       - run: test -s sbom.cdx.json
+
+  optional-mcp:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: integrations/mcp
+    env:
+      NODE_OPTIONS: --max-old-space-size=384
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: integrations/mcp/npm-shrinkwrap.json
+      - name: Set task-owned MCP receipt directory
+        shell: bash
+        run: printf 'MCP_EVIDENCE_DIR=%s/policy-mcp-receipts\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
+      - run: npm ci --ignore-scripts --engine-strict
+      - run: npm run baseline
+      - run: npm test
+      - run: npm run test:variant
+      - run: npm run test:wire
+      - run: npm run check:release
+      - run: mkdir -p artifacts && npm pack --ignore-scripts --pack-destination artifacts
+      - run: python3 scripts/check-pack.py artifacts/epistemedeus-agent-payment-policy-mcp-0.1.0.tgz
+      - run: python3 scripts/cold-receive.py artifacts/epistemedeus-agent-payment-policy-mcp-0.1.0.tgz

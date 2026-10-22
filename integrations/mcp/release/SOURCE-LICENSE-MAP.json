@@ -1,0 +1,168 @@
+{
+  "formatVersion": 1,
+  "adapterSourceBinding": {
+    "repository": "https://github.com/epistemedeus/agent-payment-policy",
+    "directory": "integrations/mcp",
+    "role": "owning source projection",
+    "status": "Feature source; final commit/tree/archive binding is external. No npm publication or registry listing is asserted."
+  },
+  "sources": [
+    {
+      "role": "unchanged pure policy dependency",
+      "repository": "https://github.com/epistemedeus/agent-payment-policy",
+      "commit": "ad2065914251e1f807ab6c226a9bdb3dd631dd7b",
+      "package": "agent-payment-policy",
+      "version": "0.15.1",
+      "license": "MIT",
+      "binding": "Exact official npm core/CLI/license bytes received against this source; artifact integrity and installed transitive inventory are recorded by the parent source/dependency manifest.",
+      "files": [
+        {
+          "path": "core.mjs",
+          "bytes": 146700,
+          "sha256": "437871515006ca1b15dc050ca944ff6941b3bc55633a9c26735b54bc33e019a1"
+        },
+        {
+          "path": "cli.mjs",
+          "bytes": 11915,
+          "sha256": "7a46b8e7deb967bef7d57f0c1d39181cac3e108ca961ca54abb2c126400c5f87"
+        },
+        {
+          "path": "LICENSE",
+          "bytes": 1090,
+          "sha256": "48778414be7220ecf3f9bfbaf1e4d9f462b06e5f035ce3df7cd8d5a488935a11"
+        },
+        {
+          "path": "package.json",
+          "bytes": 1370,
+          "sha256": "eb64c841ac94137368eeeecef6bff6bbf017e59bf598150358948b47607fbf76"
+        }
+      ]
+    },
+    {
+      "role": "official SDK implementation",
+      "repository": "https://github.com/modelcontextprotocol/typescript-sdk",
+      "commit": "fcef852f6cdafea07f36cf6fae69b37c8adf85be",
+      "tag": "v2.3.1",
+      "packages": [
+        "@modelcontextprotocol/server@2.3.1",
+        "@modelcontextprotocol/client@2.3.1",
+        "@modelcontextprotocol/core@2.3.1"
+      ],
+      "declaredLicense": "Apache-2.0",
+      "notice": "SDK-LICENSE.txt preserves original Apache/MIT transition notice and complete license text. Documentation excluding specifications has CC-BY-4.0 terms.",
+      "files": [
+        {
+          "path": "LICENSE",
+          "bytes": 12227,
+          "sha256": "0382b0057770ca05e9c350a50aa3b1c1fea84da0bc81d723bf00b9aa841be58a"
+        },
+        {
+          "path": "packages/server/package.json",
+          "bytes": 5494,
+          "sha256": "9d5f4d85ddfc3085816750202c6c78244d131880656cf2d74252db26dd8ca08a"
+        },
+        {
+          "path": "packages/client/package.json",
+          "bytes": 5813,
+          "sha256": "00f56e3d9b3a06bca972154737bac5cfe66ca3e107f251011cc73f6713982c0e"
+        },
+        {
+          "path": "packages/core/package.json",
+          "bytes": 2767,
+          "sha256": "51e87eace1da2ba6973bb9b4059b62336c225f14af49cb8408e9f7d3f7736c85"
+        },
+        {
+          "path": "docs/migration/upgrade-to-v2.md",
+          "bytes": 132319,
+          "sha256": "e608a7bdc3e383f72b13a325e9b47e5ae6196c7dbb5594c66711803f01ab3106"
+        },
+        {
+          "path": "docs/migration/support-2026-07-28.md",
+          "bytes": 47290,
+          "sha256": "8d6e417347cc53ea087f6c943a45b2573f165b376a0beb610df64efcf924d5f4"
+        }
+      ]
+    },
+    {
+      "role": "protocol contract",
+      "repository": "https://github.com/modelcontextprotocol/modelcontextprotocol",
+      "commit": "80041ab0a139a8f4fb3adbc99f7ae9113ea59671",
+      "revision": "2026-07-28",
+      "files": [
+        {
+          "path": "schema/2026-07-28/schema.ts",
+          "bytes": 98426,
+          "sha256": "742750af0bb8c716e7030c4977c992b55d1adc4407e9e66997db5846baedc2cd"
+        },
+        {
+          "path": "schema/2026-07-28/schema.json",
+          "bytes": 181474,
+          "sha256": "ef70b61f99b6d2e5e3b46863822eab08dff6a45bedc7a08914e0e5b133f40203"
+        }
+      ]
+    },
+    {
+      "role": "registry contract",
+      "repository": "https://github.com/modelcontextprotocol/registry",
+      "commit": "11b7b0e274d518b6f449c5ee3518a6151d9848b9",
+      "files": [
+        {
+          "path": "docs/reference/server-json/official-registry-requirements.md",
+          "bytes": 5993,
+          "sha256": "282b2ba7a465b5f41857bafe03eea3601000e0c45938146b71b08554e5e15ca7"
+        },
+        {
+          "path": "docs/reference/server-json/generic-server-json.md",
+          "bytes": 24258,
+          "sha256": "23b02e7e25631a410e23a46cb7288f0b3f69b7c8f41e3edee711c1c9fe5a8a37"
+        },
+        {
+          "path": "docs/modelcontextprotocol-io/quickstart.mdx",
+          "bytes": 11645,
+          "sha256": "e4041720b593caffdeb51d12e3e72efe0e4d5ced6b7c1dbc84a8ca81b35024b4"
+        },
+        {
+          "path": "docs/modelcontextprotocol-io/package-types.mdx",
+          "bytes": 10342,
+          "sha256": "431f81e535b0b7c17e7b628f590194fd7f1a4e4209b870d003f6db0b05e611c0"
+        },
+        {
+          "path": "docs/modelcontextprotocol-io/versioning.mdx",
+          "bytes": 6107,
+          "sha256": "9ff587c57576db4f0883fad336ac8010a1ca17ce4d93596e1897ae035ce98769"
+        },
+        {
+          "path": "docs/modelcontextprotocol-io/authentication.mdx",
+          "bytes": 13429,
+          "sha256": "f4f1da4772b6aedb115044a290c50b6331d08be53a9d8b77c8d796e0d1e93107"
+        },
+        {
+          "path": "docs/reference/cli/commands.md",
+          "bytes": 12769,
+          "sha256": "98c6c29d463a3aaea9e6d0e4e32173b5826da701f02b85cde1bd74a098e5d923"
+        },
+        {
+          "path": "docs/reference/api/generic-registry-api.md",
+          "bytes": 3160,
+          "sha256": "f5352a13d8b7309e28a23da998759f14c34945cb4008de10e51bba9bc47bb109"
+        }
+      ]
+    }
+  ],
+  "officialRegistrySchema": {
+    "url": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+    "id": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+    "jsonSchemaDraft": "http://json-schema.org/draft-07/schema#",
+    "bytes": 22090,
+    "sha256": "3fba09590c99f61735d234822279f4223fab9e300c0a81e81c91ab62a4114de0",
+    "identityNote": "These are the dated official bytes, not the repository draft schema."
+  },
+  "publisherRelease": {
+    "tag": "v1.8.1",
+    "repository": "https://github.com/modelcontextprotocol/registry",
+    "commit": "f52dc8525a441a3abf5fedc9912152d95af5aab1",
+    "asset": "mcp-publisher_linux_amd64.tar.gz",
+    "archiveSha256": "a06c9096dcb9727c13555b6be26c7effa707b01f06a4c561ba7a3635443cf2cc"
+  },
+  "distributionBinding": "Exact versions and integrities are published in npm-shrinkwrap.json. The fresh npm exec receiver checks every runtime dependency version and installed-file tree hash against DEPENDENCIES.json; this is qualified npm acquisition, not an assertion about every package manager or caller override."
+}

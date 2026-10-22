@@ -678,3 +678,5 @@ unauthenticated unless the integrating caller supplies a separate trust layer.
 The paid response must still be validated against the independently authorized
 output contract after settlement. Complex JSON Schema composition remains
 `partial` instead of receiving invented coverage.
+
+The optional [MCP stdio integration](integrations/mcp/README.md) is a separate package.
