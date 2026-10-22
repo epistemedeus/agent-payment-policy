@@ -1,0 +1,12 @@
+{
+  "name": "agent-payment-policy-a2a-request-example",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "start": "node server.mjs",
+    "client": "node client.mjs",
+    "test": "node --test --test-concurrency=1 *.test.mjs"
+  },
+  "dependencies": { "@a2a-js/sdk": "1.3.0" }
+}
