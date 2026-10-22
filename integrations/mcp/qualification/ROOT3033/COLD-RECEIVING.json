@@ -1,0 +1,1543 @@
+{
+  "schema": "policy-mcp.root3033.cold-sdk-receiving.v1",
+  "ok": true,
+  "implementationCommit": "ed519c8b2f3391f59085b5453405e59bf66d4fab",
+  "archiveSha256": "f45615114494fc7167234743d5a2ff4cda54d20e07de72c49c9e42e6b629c439",
+  "acquisition": "private local tarball via actual npm exec; public name not acquired",
+  "steps": [
+    {
+      "label": "client-acquire",
+      "argv": [
+        "npm",
+        "install",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund",
+        "--engine-strict",
+        "--cache",
+        "/tmp/policy-mcp-cold-9jwkbw3v/client-cache"
+      ],
+      "cwd": "/tmp/policy-mcp-cold-9jwkbw3v/client",
+      "exit": 0,
+      "elapsedSeconds": 0.926
+    },
+    {
+      "label": "tarball-acquire",
+      "argv": [
+        "npm",
+        "exec",
+        "--yes",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund",
+        "--cache",
+        "/tmp/policy-mcp-cold-9jwkbw3v/npm-cache",
+        "--package=/tmp/root3033-qualification/pack/epistemedeus-agent-payment-policy-mcp-0.1.0.tgz",
+        "--",
+        "node",
+        "--version"
+      ],
+      "cwd": "/tmp/policy-mcp-cold-9jwkbw3v/consumer",
+      "exit": 0,
+      "elapsedSeconds": 1.007
+    },
+    {
+      "label": "useful",
+      "argv": [
+        "/usr/bin/python3",
+        "/home/ubuntu/ae14-work/root3033-policy-mcp-native-compatibility-root3040-20261022/integrations/mcp/scripts/no-egress.py",
+        "node",
+        "--max-old-space-size=256",
+        "/tmp/policy-mcp-cold-9jwkbw3v/client/tests/cold.mjs"
+      ],
+      "cwd": "/tmp/policy-mcp-cold-9jwkbw3v/client",
+      "exit": 0,
+      "elapsedSeconds": 7.354
+    },
+    {
+      "label": "variant",
+      "argv": [
+        "/usr/bin/python3",
+        "/home/ubuntu/ae14-work/root3033-policy-mcp-native-compatibility-root3040-20261022/integrations/mcp/scripts/no-egress.py",
+        "node",
+        "--max-old-space-size=256",
+        "/tmp/policy-mcp-cold-9jwkbw3v/client/tests/variant.mjs"
+      ],
+      "cwd": "/tmp/policy-mcp-cold-9jwkbw3v/client",
+      "exit": 0,
+      "elapsedSeconds": 2.048
+    },
+    {
+      "label": "wire",
+      "argv": [
+        "/usr/bin/python3",
+        "/home/ubuntu/ae14-work/root3033-policy-mcp-native-compatibility-root3040-20261022/integrations/mcp/scripts/no-egress.py",
+        "node",
+        "--max-old-space-size=256",
+        "/tmp/policy-mcp-cold-9jwkbw3v/client/tests/wire.mjs"
+      ],
+      "cwd": "/tmp/policy-mcp-cold-9jwkbw3v/client",
+      "exit": 0,
+      "elapsedSeconds": 1.605
+    },
+    {
+      "label": "dual-era",
+      "argv": [
+        "/usr/bin/python3",
+        "/home/ubuntu/ae14-work/root3033-policy-mcp-native-compatibility-root3040-20261022/integrations/mcp/scripts/no-egress.py",
+        "node",
+        "--max-old-space-size=256",
+        "/tmp/policy-mcp-cold-9jwkbw3v/client/tests/dual-era.mjs"
+      ],
+      "cwd": "/tmp/policy-mcp-cold-9jwkbw3v/client",
+      "exit": 0,
+      "elapsedSeconds": 11.139
+    },
+    {
+      "label": "era-wire",
+      "argv": [
+        "/usr/bin/python3",
+        "/home/ubuntu/ae14-work/root3033-policy-mcp-native-compatibility-root3040-20261022/integrations/mcp/scripts/no-egress.py",
+        "node",
+        "--max-old-space-size=256",
+        "/tmp/policy-mcp-cold-9jwkbw3v/client/tests/era-wire.mjs"
+      ],
+      "cwd": "/tmp/policy-mcp-cold-9jwkbw3v/client",
+      "exit": 0,
+      "elapsedSeconds": 2.815
+    },
+    {
+      "label": "runtime",
+      "argv": [
+        "/usr/bin/python3",
+        "/home/ubuntu/ae14-work/root3033-policy-mcp-native-compatibility-root3040-20261022/integrations/mcp/scripts/no-egress.py",
+        "node",
+        "--max-old-space-size=256",
+        "/tmp/policy-mcp-cold-9jwkbw3v/client/tests/runtime-controls.mjs"
+      ],
+      "cwd": "/tmp/policy-mcp-cold-9jwkbw3v/client",
+      "exit": 0,
+      "elapsedSeconds": 3.155
+    }
+  ],
+  "runtimeDependencyInventory": [
+    {
+      "name": "@modelcontextprotocol/core",
+      "version": "2.3.1",
+      "path": "/tmp/policy-mcp-cold-9jwkbw3v/npm-cache/_npx/e914f6c31673c78c/node_modules/@modelcontextprotocol/core/package.json",
+      "installedTreeSha256": "f59208e5f005e64228f8d61983d0c22012fe834059b2d9ad9d628b528efedfbc"
+    },
+    {
+      "name": "@modelcontextprotocol/server",
+      "version": "2.3.1",
+      "path": "/tmp/policy-mcp-cold-9jwkbw3v/npm-cache/_npx/e914f6c31673c78c/node_modules/@modelcontextprotocol/server/package.json",
+      "installedTreeSha256": "db81738ed48f756521eb114d8c988e2c4fa70197d4dd97497c19487cde669e89"
+    },
+    {
+      "name": "agent-payment-policy",
+      "version": "0.15.1",
+      "path": "/tmp/policy-mcp-cold-9jwkbw3v/npm-cache/_npx/e914f6c31673c78c/node_modules/agent-payment-policy/package.json",
+      "installedTreeSha256": "2070ee1368795e8daff9d0c490b21d0958c8f065a841200c55479e1004b2545a"
+    },
+    {
+      "name": "ajv",
+      "version": "8.20.0",
+      "path": "/tmp/policy-mcp-cold-9jwkbw3v/npm-cache/_npx/e914f6c31673c78c/node_modules/ajv/package.json",
+      "installedTreeSha256": "9bf13d80af688544be948c46f3603adfc761c0a8e63ae4185e9f3202d9d2da14"
+    },
+    {
+      "name": "ajv-formats",
+      "version": "3.0.1",
+      "path": "/tmp/policy-mcp-cold-9jwkbw3v/npm-cache/_npx/e914f6c31673c78c/node_modules/ajv-formats/package.json",
+      "installedTreeSha256": "ebf7b1afd4bbdff2c03703301845083111436fcf2015435f939324808a2f0a3d"
+    },
+    {
+      "name": "fast-deep-equal",
+      "version": "3.1.3",
+      "path": "/tmp/policy-mcp-cold-9jwkbw3v/npm-cache/_npx/e914f6c31673c78c/node_modules/fast-deep-equal/package.json",
+      "installedTreeSha256": "4f3b31d2d7e7944c12ec56f6bd2ea1de9cabbf79974a624d8d76ca4ccc0b024e"
+    },
+    {
+      "name": "fast-uri",
+      "version": "3.1.9",
+      "path": "/tmp/policy-mcp-cold-9jwkbw3v/npm-cache/_npx/e914f6c31673c78c/node_modules/fast-uri/package.json",
+      "installedTreeSha256": "66c7f72534c6b0f920005565b5d1d19c0d499bc2ffce534a52d173777e5d8ed9"
+    },
+    {
+      "name": "json-schema-traverse",
+      "version": "1.0.0",
+      "path": "/tmp/policy-mcp-cold-9jwkbw3v/npm-cache/_npx/e914f6c31673c78c/node_modules/json-schema-traverse/package.json",
+      "installedTreeSha256": "1b72257ad7ded5e4f616b8538159862e7b625e8f54518d1ac36a615827f9ad23"
+    },
+    {
+      "name": "require-from-string",
+      "version": "2.0.2",
+      "path": "/tmp/policy-mcp-cold-9jwkbw3v/npm-cache/_npx/e914f6c31673c78c/node_modules/require-from-string/package.json",
+      "installedTreeSha256": "acae06d3e34484c6be4e61bc083e5ba4f59e39e6c4548107eb6b1e81172f668d"
+    },
+    {
+      "name": "zod",
+      "version": "4.6.7",
+      "path": "/tmp/policy-mcp-cold-9jwkbw3v/npm-cache/_npx/e914f6c31673c78c/node_modules/zod/package.json",
+      "installedTreeSha256": "d2b0ca1a4c175ee7900c3b1e5b805e0a2aa6361ce97ca84c67bc68df0e6db441"
+    }
+  ],
+  "clientLockSha256": "921f41373a52610a897cf012ab8f52290f693f33f2f8db7f1bfa2ce3545b4912",
+  "modernPinnedAndAuto": {
+    "ok": true,
+    "checks": [
+      "finite_truthful_discovery",
+      "normalize_body",
+      "normalize_reordered",
+      "normalize_changed",
+      "schema_digest_and_required_paths",
+      "accept_valid",
+      "accept_missing",
+      "accept_wrongType",
+      "accept_wrong_digest",
+      "accept_unsupported_schema",
+      "accept_malformed_schema",
+      "receipt_reconciled_valid",
+      "receipt_reconciled_invalid",
+      "receipt_partial_unverified",
+      "receipt_conflict_valid",
+      "receipt_insufficient_unverified",
+      "missing_post_body",
+      "recovery_missing_post_body",
+      "scalar_body",
+      "recovery_scalar_body",
+      "get_body",
+      "recovery_get_body",
+      "invalid_method",
+      "recovery_invalid_method",
+      "invalid_media_type",
+      "recovery_invalid_media_type",
+      "credential_target",
+      "recovery_credential_target",
+      "userinfo_target",
+      "recovery_userinfo_target",
+      "private_target",
+      "recovery_private_target",
+      "local_target",
+      "recovery_local_target",
+      "insecure_target",
+      "recovery_insecure_target",
+      "missing_argument",
+      "recovery_missing_argument",
+      "extra_argument",
+      "recovery_extra_argument",
+      "wrong_argument_type",
+      "recovery_wrong_argument_type",
+      "unknown_tool",
+      "recovery_unknown_tool",
+      "schema_missing_guarantee",
+      "recovery_schema_missing_guarantee",
+      "schema_external_ref",
+      "recovery_schema_external_ref",
+      "schema_unsupported_keyword",
+      "recovery_schema_unsupported_keyword",
+      "oversize_arguments",
+      "recovery_oversize_arguments",
+      "oversize_string",
+      "recovery_oversize_string",
+      "oversize_array",
+      "recovery_oversize_array",
+      "overdeep_arguments",
+      "recovery_overdeep_arguments",
+      "bounded_sync_schema_work",
+      "recovery_bounded_sync_schema_work",
+      "schema_work_client_cancellation",
+      "recovery_after_cancellation",
+      "cold_restart_same_useful_result"
+    ],
+    "refusals": [
+      {
+        "label": "missing_post_body",
+        "surface": "tool",
+        "code": "POLICY_REFUSAL"
+      },
+      {
+        "label": "scalar_body",
+        "surface": "tool",
+        "code": "POLICY_REFUSAL"
+      },
+      {
+        "label": "get_body",
+        "surface": "tool",
+        "code": "POLICY_REFUSAL"
+      },
+      {
+        "label": "invalid_method",
+        "surface": "tool",
+        "code": "POLICY_REFUSAL"
+      },
+      {
+        "label": "invalid_media_type",
+        "surface": "tool",
+        "code": "POLICY_REFUSAL"
+      },
+      {
+        "label": "credential_target",
+        "surface": "tool",
+        "code": "POLICY_REFUSAL"
+      },
+      {
+        "label": "userinfo_target",
+        "surface": "tool",
+        "code": "POLICY_REFUSAL"
+      },
+      {
+        "label": "private_target",
+        "surface": "tool",
+        "code": "POLICY_REFUSAL"
+      },
+      {
+        "label": "local_target",
+        "surface": "tool",
+        "code": "POLICY_REFUSAL"
+      },
+      {
+        "label": "insecure_target",
+        "surface": "tool",
+        "code": "POLICY_REFUSAL"
+      },
+      {
+        "label": "missing_argument",
+        "surface": "tool",
+        "code": "INVALID_ARGUMENTS"
+      },
+      {
+        "label": "extra_argument",
+        "surface": "tool",
+        "code": "INVALID_ARGUMENTS"
+      },
+      {
+        "label": "wrong_argument_type",
+        "surface": "tool",
+        "code": "INVALID_ARGUMENTS"
+      },
+      {
+        "label": "unknown_tool",
+        "surface": "protocol",
+        "code": -32602
+      },
+      {
+        "label": "schema_missing_guarantee",
+        "surface": "tool",
+        "code": "POLICY_REFUSAL"
+      },
+      {
+        "label": "schema_external_ref",
+        "surface": "tool",
+        "code": "POLICY_REFUSAL"
+      },
+      {
+        "label": "schema_unsupported_keyword",
+        "surface": "tool",
+        "code": "POLICY_REFUSAL"
+      },
+      {
+        "label": "oversize_arguments",
+        "surface": "tool",
+        "code": "ARGUMENT_LIMIT"
+      },
+      {
+        "label": "oversize_string",
+        "surface": "tool",
+        "code": "ARGUMENT_LIMIT"
+      },
+      {
+        "label": "oversize_array",
+        "surface": "tool",
+        "code": "ARGUMENT_LIMIT"
+      },
+      {
+        "label": "overdeep_arguments",
+        "surface": "tool",
+        "code": "ARGUMENT_LIMIT"
+      },
+      {
+        "label": "bounded_sync_schema_work",
+        "surface": "tool",
+        "code": "WORK_LIMIT"
+      }
+    ],
+    "sessions": [
+      {
+        "era": "modern",
+        "protocol": "2026-07-28",
+        "server": {
+          "name": "agent-payment-policy-mcp",
+          "version": "0.1.0"
+        },
+        "discover": {
+          "_meta": {
+            "io.modelcontextprotocol/serverInfo": {
+              "name": "agent-payment-policy-mcp",
+              "version": "0.1.0"
+            }
+          },
+          "ttlMs": 0,
+          "cacheScope": "private",
+          "supportedVersions": [
+            "2026-07-28"
+          ],
+          "capabilities": {
+            "tools": {
+              "listChanged": true
+            }
+          },
+          "resultType": "complete"
+        },
+        "mode": {
+          "pin": "2026-07-28"
+        }
+      },
+      {
+        "lifecycle": {
+          "sampledMaximumAggregateKiB": 309924,
+          "sampleIntervalMs": 20,
+          "observedProcesses": [
+            {
+              "pid": 21988,
+              "startTicks": "596052"
+            },
+            {
+              "pid": 21989,
+              "startTicks": "596054"
+            },
+            {
+              "pid": 22001,
+              "startTicks": "596080"
+            },
+            {
+              "pid": 22002,
+              "startTicks": "596080"
+            },
+            {
+              "pid": 22009,
+              "startTicks": "596100"
+            },
+            {
+              "pid": 22010,
+              "startTicks": "596101"
+            },
+            {
+              "pid": 22022,
+              "startTicks": "596126"
+            },
+            {
+              "pid": 22023,
+              "startTicks": "596127"
+            }
+          ],
+          "survivors": [],
+          "currentChildren": []
+        }
+      },
+      {
+        "era": "modern",
+        "protocol": "2026-07-28",
+        "server": {
+          "name": "agent-payment-policy-mcp",
+          "version": "0.1.0"
+        },
+        "discover": {
+          "_meta": {
+            "io.modelcontextprotocol/serverInfo": {
+              "name": "agent-payment-policy-mcp",
+              "version": "0.1.0"
+            }
+          },
+          "ttlMs": 0,
+          "cacheScope": "private",
+          "supportedVersions": [
+            "2026-07-28"
+          ],
+          "capabilities": {
+            "tools": {
+              "listChanged": true
+            }
+          },
+          "resultType": "complete"
+        },
+        "mode": "auto"
+      },
+      {
+        "lifecycle": {
+          "sampledMaximumAggregateKiB": 297920,
+          "sampleIntervalMs": 20,
+          "observedProcesses": [
+            {
+              "pid": 22086,
+              "startTicks": "596665"
+            },
+            {
+              "pid": 22087,
+              "startTicks": "596667"
+            },
+            {
+              "pid": 22099,
+              "startTicks": "596693"
+            },
+            {
+              "pid": 22100,
+              "startTicks": "596693"
+            },
+            {
+              "pid": 22107,
+              "startTicks": "596713"
+            },
+            {
+              "pid": 22108,
+              "startTicks": "596715"
+            },
+            {
+              "pid": 22120,
+              "startTicks": "596741"
+            },
+            {
+              "pid": 22121,
+              "startTicks": "596741"
+            }
+          ],
+          "survivors": [],
+          "currentChildren": []
+        }
+      }
+    ],
+    "sdkErrors": 0,
+    "stderrBytes": 0,
+    "elapsedMs": 7211
+  },
+  "independentVariant": {
+    "ok": true,
+    "checks": [
+      "independent_body_and_exact_binding",
+      "changed_quantity_changes_binding",
+      "independent_schema_digest_paths",
+      "valid_stock",
+      "negative_bounds_type_extra",
+      "credential_refusal_redacted",
+      "same_process_useful_recovery"
+    ]
+  },
+  "modernWire": {
+    "ok": true,
+    "cases": [
+      "malformed_json_line",
+      "unsupported_protocol",
+      "same_process_modern_discovery_recovery",
+      "stdout_protocol_only"
+    ],
+    "unsupportedCode": -32022,
+    "stdoutBytes": 418,
+    "stderrBytes": 30,
+    "lifecycle": {
+      "sampledMaximumAggregateKiB": 233884,
+      "sampleIntervalMs": 20,
+      "observedProcesses": [
+        {
+          "pid": 22206,
+          "startTicks": "596984"
+        },
+        {
+          "pid": 22207,
+          "startTicks": "596986"
+        },
+        {
+          "pid": 22219,
+          "startTicks": "597014"
+        },
+        {
+          "pid": 22220,
+          "startTicks": "597014"
+        }
+      ],
+      "survivors": [],
+      "currentChildren": []
+    }
+  },
+  "dualEra": {
+    "ok": true,
+    "sessions": [
+      {
+        "era": "modern",
+        "restart": false,
+        "checks": [
+          "exact_inventory_annotations_input_output_schemas",
+          "supplier_post_body_binding",
+          "changed_quantity_binding",
+          "independent_schema_digest_required_paths",
+          "valid_stock",
+          "wrong_stock_type",
+          "extra_stock_field",
+          "negative_stock",
+          "wrong_schema_digest",
+          "supplied_receipt_reconciled_valid",
+          "supplied_receipt_reconciled_invalid",
+          "supplied_receipt_partial_unverified",
+          "supplied_receipt_conflict_valid",
+          "supplied_receipt_insufficient_unverified",
+          "bounded_refusals_then_useful_recovery",
+          "hostile_sync_worker_timeout_and_recovery",
+          "real_cancellation_and_useful_recovery",
+          "inflight_disconnect_before_worker_timeout"
+        ],
+        "refusals": [
+          {
+            "label": "credential_target",
+            "surface": "tool",
+            "code": "POLICY_REFUSAL"
+          },
+          {
+            "label": "missing_argument",
+            "surface": "tool",
+            "code": "INVALID_ARGUMENTS"
+          },
+          {
+            "label": "wrong_argument_type",
+            "surface": "tool",
+            "code": "INVALID_ARGUMENTS"
+          },
+          {
+            "label": "unknown_tool",
+            "surface": "protocol",
+            "code": -32602
+          },
+          {
+            "label": "schema_refusal",
+            "surface": "tool",
+            "code": "POLICY_REFUSAL"
+          }
+        ],
+        "negotiated": "2026-07-28",
+        "requested": "2026-07-28",
+        "workerTimeoutMs": 1510,
+        "cancellationRecoveryMs": 219,
+        "disconnectMs": 33,
+        "lifecycle": {
+          "sampledMaximumAggregateKiB": 306884,
+          "sampleIntervalMs": 20,
+          "observedProcesses": [
+            {
+              "pid": 22239,
+              "startTicks": "597154"
+            },
+            {
+              "pid": 22240,
+              "startTicks": "597155"
+            },
+            {
+              "pid": 22252,
+              "startTicks": "597182"
+            },
+            {
+              "pid": 22253,
+              "startTicks": "597183"
+            },
+            {
+              "pid": 22260,
+              "startTicks": "597205"
+            },
+            {
+              "pid": 22261,
+              "startTicks": "597206"
+            },
+            {
+              "pid": 22273,
+              "startTicks": "597233"
+            },
+            {
+              "pid": 22274,
+              "startTicks": "597233"
+            }
+          ],
+          "survivors": [],
+          "currentChildren": []
+        }
+      },
+      {
+        "era": "modern",
+        "restart": true,
+        "checks": [
+          "exact_inventory_annotations_input_output_schemas",
+          "supplier_post_body_binding",
+          "valid_stock"
+        ],
+        "refusals": [],
+        "negotiated": "2026-07-28",
+        "requested": "2026-07-28",
+        "lifecycle": {
+          "sampledMaximumAggregateKiB": 310056,
+          "sampleIntervalMs": 20,
+          "observedProcesses": [
+            {
+              "pid": 22310,
+              "startTicks": "597627"
+            },
+            {
+              "pid": 22311,
+              "startTicks": "597629"
+            },
+            {
+              "pid": 22323,
+              "startTicks": "597656"
+            },
+            {
+              "pid": 22324,
+              "startTicks": "597656"
+            },
+            {
+              "pid": 22331,
+              "startTicks": "597678"
+            },
+            {
+              "pid": 22332,
+              "startTicks": "597680"
+            },
+            {
+              "pid": 22344,
+              "startTicks": "597706"
+            },
+            {
+              "pid": 22345,
+              "startTicks": "597706"
+            }
+          ],
+          "survivors": [],
+          "currentChildren": []
+        }
+      },
+      {
+        "era": "legacy",
+        "restart": false,
+        "checks": [
+          "exact_inventory_annotations_input_output_schemas",
+          "supplier_post_body_binding",
+          "changed_quantity_binding",
+          "independent_schema_digest_required_paths",
+          "valid_stock",
+          "wrong_stock_type",
+          "extra_stock_field",
+          "negative_stock",
+          "wrong_schema_digest",
+          "supplied_receipt_reconciled_valid",
+          "supplied_receipt_reconciled_invalid",
+          "supplied_receipt_partial_unverified",
+          "supplied_receipt_conflict_valid",
+          "supplied_receipt_insufficient_unverified",
+          "bounded_refusals_then_useful_recovery",
+          "hostile_sync_worker_timeout_and_recovery",
+          "real_cancellation_and_useful_recovery",
+          "inflight_disconnect_before_worker_timeout"
+        ],
+        "refusals": [
+          {
+            "label": "credential_target",
+            "surface": "tool",
+            "code": "POLICY_REFUSAL"
+          },
+          {
+            "label": "missing_argument",
+            "surface": "tool",
+            "code": "INVALID_ARGUMENTS"
+          },
+          {
+            "label": "wrong_argument_type",
+            "surface": "tool",
+            "code": "INVALID_ARGUMENTS"
+          },
+          {
+            "label": "unknown_tool",
+            "surface": "protocol",
+            "code": -32602
+          },
+          {
+            "label": "schema_refusal",
+            "surface": "tool",
+            "code": "POLICY_REFUSAL"
+          }
+        ],
+        "negotiated": "2025-06-18",
+        "requested": "2025-06-18",
+        "workerTimeoutMs": 1509,
+        "cancellationRecoveryMs": 230,
+        "disconnectMs": 33,
+        "lifecycle": {
+          "sampledMaximumAggregateKiB": 314652,
+          "sampleIntervalMs": 20,
+          "observedProcesses": [
+            {
+              "pid": 22356,
+              "startTicks": "597753"
+            },
+            {
+              "pid": 22357,
+              "startTicks": "597755"
+            },
+            {
+              "pid": 22369,
+              "startTicks": "597782"
+            },
+            {
+              "pid": 22370,
+              "startTicks": "597782"
+            }
+          ],
+          "survivors": [],
+          "currentChildren": []
+        }
+      },
+      {
+        "era": "legacy",
+        "restart": true,
+        "checks": [
+          "exact_inventory_annotations_input_output_schemas",
+          "supplier_post_body_binding",
+          "valid_stock"
+        ],
+        "refusals": [],
+        "negotiated": "2025-06-18",
+        "requested": "2025-06-18",
+        "lifecycle": {
+          "sampledMaximumAggregateKiB": 314960,
+          "sampleIntervalMs": 20,
+          "observedProcesses": [
+            {
+              "pid": 22402,
+              "startTicks": "598171"
+            },
+            {
+              "pid": 22403,
+              "startTicks": "598172"
+            },
+            {
+              "pid": 22415,
+              "startTicks": "598202"
+            },
+            {
+              "pid": 22416,
+              "startTicks": "598202"
+            }
+          ],
+          "survivors": [],
+          "currentChildren": []
+        }
+      }
+    ],
+    "inventory": [
+      {
+        "name": "normalize_request",
+        "description": "Normalize and bind a supplied HTTPS request and JSON POST body offline. Never fetches the target; no DNS safety or payment authorization is established.",
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "method",
+            "target"
+          ],
+          "properties": {
+            "method": {
+              "type": "string"
+            },
+            "target": {
+              "type": "string"
+            },
+            "options": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "body": {},
+                "mediaType": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "method",
+            "origin",
+            "pathname",
+            "queryKeys",
+            "publicRoute",
+            "bodyBinding",
+            "bindingDigest"
+          ],
+          "properties": {
+            "method": {
+              "type": "string"
+            },
+            "origin": {
+              "type": "string"
+            },
+            "pathname": {
+              "type": "string"
+            },
+            "queryKeys": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "publicRoute": {
+              "type": "string"
+            },
+            "bodyBinding": {
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "mediaType",
+                    "bytes",
+                    "digest"
+                  ],
+                  "properties": {
+                    "mediaType": {
+                      "const": "application/json"
+                    },
+                    "bytes": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "digest": {
+                      "type": "string",
+                      "pattern": "^sha256:[0-9a-f]{64}$"
+                    }
+                  }
+                }
+              ]
+            },
+            "bindingDigest": {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$"
+            }
+          }
+        },
+        "annotations": {
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        }
+      },
+      {
+        "name": "inspect_output_schema",
+        "description": "Inspect a supplied self-contained JSON acceptance schema and required paths using the policy core. Returns its exact digest and guaranteed paths, without retaining the schema.",
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schema"
+          ],
+          "properties": {
+            "schema": {
+              "type": "object"
+            },
+            "requiredFields": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schemaDigest",
+            "canonicalBytes",
+            "requiredPaths",
+            "decision",
+            "schemaRetained",
+            "credentialsUsed",
+            "walletAccessed",
+            "paymentSigned",
+            "paymentSent"
+          ],
+          "properties": {
+            "schemaDigest": {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$"
+            },
+            "canonicalBytes": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "requiredPaths": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "decision": {
+              "const": "admissible"
+            },
+            "schemaRetained": {
+              "const": false
+            },
+            "credentialsUsed": {
+              "const": false
+            },
+            "walletAccessed": {
+              "const": false
+            },
+            "paymentSigned": {
+              "const": false
+            },
+            "paymentSent": {
+              "const": false
+            }
+          }
+        },
+        "annotations": {
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        }
+      },
+      {
+        "name": "accept_output",
+        "description": "Accept supplied JSON against its exact schema digest using the unchanged CLI sequence. Returns valid:false for rejection; returns only validity and digests, never the supplied body. No settlement is proved.",
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schema",
+            "schemaDigest",
+            "output"
+          ],
+          "properties": {
+            "schema": {
+              "type": "object"
+            },
+            "schemaDigest": {
+              "type": "string"
+            },
+            "output": {}
+          }
+        },
+        "outputSchema": {
+          "type": "object",
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "valid",
+                "responseDigest",
+                "schemaDigest"
+              ],
+              "properties": {
+                "valid": {
+                  "const": true
+                },
+                "responseDigest": {
+                  "type": "string",
+                  "pattern": "^sha256:[0-9a-f]{64}$"
+                },
+                "schemaDigest": {
+                  "type": "string",
+                  "pattern": "^sha256:[0-9a-f]{64}$"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "valid"
+              ],
+              "properties": {
+                "valid": {
+                  "const": false
+                }
+              }
+            }
+          ]
+        },
+        "annotations": {
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        }
+      },
+      {
+        "name": "classify_receipt",
+        "description": "Classify caller-supplied controlled receipt, transaction, balance and output observations. Completeness and delivery validity stay independent. Does not verify transactions, signatures, payment authority or factual truth.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schemaVersion",
+            "protocol",
+            "receipt",
+            "transaction",
+            "balance",
+            "outputValidation"
+          ],
+          "properties": {
+            "schemaVersion": {
+              "type": "string",
+              "const": "agent-payment-policy.receipt-completeness-observation.v1"
+            },
+            "protocol": {
+              "type": "string",
+              "enum": [
+                "x402",
+                "mpp",
+                "other"
+              ]
+            },
+            "receipt": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "present",
+                "success",
+                "transactionReference",
+                "amount",
+                "network",
+                "asset",
+                "recipient",
+                "payer"
+              ],
+              "properties": {
+                "present": {
+                  "type": "boolean"
+                },
+                "success": {
+                  "type": "string",
+                  "enum": [
+                    "confirmed",
+                    "rejected",
+                    "unknown"
+                  ]
+                },
+                "transactionReference": {
+                  "type": "string",
+                  "enum": [
+                    "match",
+                    "mismatch",
+                    "missing",
+                    "not_checked"
+                  ]
+                },
+                "amount": {
+                  "type": "string",
+                  "enum": [
+                    "match",
+                    "mismatch",
+                    "missing",
+                    "not_checked"
+                  ]
+                },
+                "network": {
+                  "type": "string",
+                  "enum": [
+                    "match",
+                    "mismatch",
+                    "missing",
+                    "not_checked"
+                  ]
+                },
+                "asset": {
+                  "type": "string",
+                  "enum": [
+                    "match",
+                    "mismatch",
+                    "missing",
+                    "not_checked"
+                  ]
+                },
+                "recipient": {
+                  "type": "string",
+                  "enum": [
+                    "match",
+                    "mismatch",
+                    "missing",
+                    "not_checked"
+                  ]
+                },
+                "payer": {
+                  "type": "string",
+                  "enum": [
+                    "match",
+                    "mismatch",
+                    "missing",
+                    "not_checked"
+                  ]
+                }
+              }
+            },
+            "transaction": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "checked",
+                "success",
+                "transactionReference",
+                "amount",
+                "network",
+                "asset",
+                "recipient",
+                "payer"
+              ],
+              "properties": {
+                "checked": {
+                  "type": "boolean"
+                },
+                "success": {
+                  "type": "string",
+                  "enum": [
+                    "confirmed",
+                    "rejected",
+                    "unknown"
+                  ]
+                },
+                "transactionReference": {
+                  "type": "string",
+                  "enum": [
+                    "match",
+                    "mismatch",
+                    "missing",
+                    "not_checked"
+                  ]
+                },
+                "amount": {
+                  "type": "string",
+                  "enum": [
+                    "match",
+                    "mismatch",
+                    "missing",
+                    "not_checked"
+                  ]
+                },
+                "network": {
+                  "type": "string",
+                  "enum": [
+                    "match",
+                    "mismatch",
+                    "missing",
+                    "not_checked"
+                  ]
+                },
+                "asset": {
+                  "type": "string",
+                  "enum": [
+                    "match",
+                    "mismatch",
+                    "missing",
+                    "not_checked"
+                  ]
+                },
+                "recipient": {
+                  "type": "string",
+                  "enum": [
+                    "match",
+                    "mismatch",
+                    "missing",
+                    "not_checked"
+                  ]
+                },
+                "payer": {
+                  "type": "string",
+                  "enum": [
+                    "match",
+                    "mismatch",
+                    "missing",
+                    "not_checked"
+                  ]
+                }
+              }
+            },
+            "balance": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "checked",
+                "delta",
+                "asset",
+                "payer"
+              ],
+              "properties": {
+                "checked": {
+                  "type": "boolean"
+                },
+                "delta": {
+                  "type": "string",
+                  "enum": [
+                    "match",
+                    "mismatch",
+                    "missing",
+                    "not_checked"
+                  ]
+                },
+                "asset": {
+                  "type": "string",
+                  "enum": [
+                    "match",
+                    "mismatch",
+                    "missing",
+                    "not_checked"
+                  ]
+                },
+                "payer": {
+                  "type": "string",
+                  "enum": [
+                    "match",
+                    "mismatch",
+                    "missing",
+                    "not_checked"
+                  ]
+                }
+              }
+            },
+            "outputValidation": {
+              "type": "string",
+              "enum": [
+                "passed",
+                "failed",
+                "not_checked"
+              ]
+            }
+          }
+        },
+        "outputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schemaVersion",
+            "protocol",
+            "state",
+            "receiptPresent",
+            "successProven",
+            "transactionReferenceProven",
+            "provenDimensions",
+            "missingDimensions",
+            "conflicts",
+            "supplementedBy",
+            "deliveryState",
+            "evidenceBoundary",
+            "rawEvidenceRetained",
+            "credentialsUsed",
+            "walletAccessed",
+            "paymentSigned",
+            "paymentSent"
+          ],
+          "properties": {
+            "schemaVersion": {
+              "type": "string",
+              "const": "agent-payment-policy.receipt-completeness-report.v1"
+            },
+            "protocol": {
+              "type": "string",
+              "enum": [
+                "x402",
+                "mpp",
+                "other"
+              ]
+            },
+            "state": {
+              "type": "string",
+              "enum": [
+                "reconciled",
+                "partial",
+                "conflict",
+                "insufficient"
+              ]
+            },
+            "receiptPresent": {
+              "type": "boolean"
+            },
+            "successProven": {
+              "type": "boolean"
+            },
+            "transactionReferenceProven": {
+              "type": "boolean"
+            },
+            "provenDimensions": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "amount",
+                  "network",
+                  "asset",
+                  "recipient",
+                  "payer"
+                ]
+              }
+            },
+            "missingDimensions": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "amount",
+                  "network",
+                  "asset",
+                  "recipient",
+                  "payer"
+                ]
+              }
+            },
+            "conflicts": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string"
+              }
+            },
+            "supplementedBy": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "transaction",
+                  "balance"
+                ]
+              }
+            },
+            "deliveryState": {
+              "type": "string",
+              "enum": [
+                "valid",
+                "invalid",
+                "unverified"
+              ]
+            },
+            "evidenceBoundary": {
+              "type": "string"
+            },
+            "rawEvidenceRetained": {
+              "const": false
+            },
+            "credentialsUsed": {
+              "const": false
+            },
+            "walletAccessed": {
+              "const": false
+            },
+            "paymentSigned": {
+              "const": false
+            },
+            "paymentSent": {
+              "const": false
+            }
+          }
+        },
+        "annotations": {
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        }
+      }
+    ]
+  },
+  "eraWire": {
+    "ok": true,
+    "results": [
+      {
+        "era": "modern",
+        "checks": [
+          "malformed_and_unsupported_opening_then_recovery",
+          "no_midconnection_cross_era_switch",
+          "same_era_useful_recovery_after_malformed_and_cross_era_refusal",
+          "EOF_clean_exit"
+        ],
+        "crossEraCode": -32022,
+        "lifecycle": {
+          "sampledMaximumAggregateKiB": 247968,
+          "sampleIntervalMs": 20,
+          "observedProcesses": [
+            {
+              "pid": 22439,
+              "startTicks": "598261"
+            },
+            {
+              "pid": 22440,
+              "startTicks": "598263"
+            },
+            {
+              "pid": 22452,
+              "startTicks": "598290"
+            },
+            {
+              "pid": 22453,
+              "startTicks": "598290"
+            }
+          ],
+          "survivors": [],
+          "currentChildren": []
+        }
+      },
+      {
+        "era": "legacy",
+        "checks": [
+          "malformed_and_unsupported_opening_then_recovery",
+          "official_legacy_unsupported_offer_counteroffer",
+          "no_midconnection_cross_era_switch",
+          "same_era_useful_recovery_after_malformed_and_cross_era_refusal",
+          "EOF_clean_exit"
+        ],
+        "requested": "2099-01-01",
+        "negotiated": "2025-11-25",
+        "crossEraCode": -32601,
+        "lifecycle": {
+          "sampledMaximumAggregateKiB": 256772,
+          "sampleIntervalMs": 20,
+          "observedProcesses": [
+            {
+              "pid": 22461,
+              "startTicks": "598324"
+            },
+            {
+              "pid": 22462,
+              "startTicks": "598326"
+            },
+            {
+              "pid": 22474,
+              "startTicks": "598352"
+            },
+            {
+              "pid": 22475,
+              "startTicks": "598353"
+            }
+          ],
+          "survivors": [],
+          "currentChildren": []
+        }
+      }
+    ]
+  },
+  "runtime": {
+    "ok": true,
+    "checks": [
+      "oversize_wire_closes_with_bounded_diagnostic",
+      "oversize_wire_restart_useful_recovery",
+      "disconnect_interrupts_inflight_schema_worker"
+    ],
+    "unsupportedNode": null,
+    "unsupportedNodeChecked": false
+  },
+  "networkIsolation": "scripts/no-egress.py inherited by client and descendants",
+  "sameTarballForAllCases": true
+}

@@ -1,0 +1,206 @@
+{
+  "schema": "policy-mcp.root3033.source-identity.v1",
+  "operation": "ROOT-SOL-ROOT3033-ROOT3040-261022",
+  "product": {
+    "repository": "epistemedeus/agent-payment-policy",
+    "base": "a6fb83f3abfa5c028b2356fa9665e24212505727",
+    "owningDirectory": "integrations/mcp",
+    "branch": "codex/root3033-policy-mcp-native-compatibility-20261022"
+  },
+  "operating": {
+    "repository": "epistemedeus/pilot",
+    "commit": "8dda961413b50b8b765cb81c7ba2e013855789e2",
+    "receiptSha256": "40f1fef667260b0dcdf918990e4f17ce5974af1d9b179e20912f0f6c56bee217",
+    "allStagedMemberHashesVerified": true
+  },
+  "assignment": {
+    "repository": "epistemedeus/pilot",
+    "commit": "8dda961413b50b8b765cb81c7ba2e013855789e2",
+    "blob": "cb69171662cb4c36b12a4570ad017bb9e872796f"
+  },
+  "selectedExecutionKernel": {
+    "path": "/home/ubuntu/pilot-native-expand-u-receive-20261022/controller-8c04",
+    "commit": "8c04c6e19aba544612d78f692fd66014c870d244",
+    "verifiedHead": "8c04c6e19aba544612d78f692fd66014c870d244",
+    "launcherMembers": [
+      {
+        "name": "remote-sol-window-runner.mjs",
+        "sha256": "422a95f737377bec0c2a3549a6dcc159ab14a2bd26dd8903b2977454dddd24cc"
+      },
+      {
+        "name": "remote-sol-job-context.mjs",
+        "sha256": "2e81de4f8f6bd214127844c42f615254c0d0fcc2a85033ce1f00d25c22d1bd02"
+      },
+      {
+        "name": "native-job-inputs.mjs",
+        "sha256": "90f18817fa787e457a2a608e05343d0cf273f51f85b1baee07ca84449de75857"
+      },
+      {
+        "name": "native-sol-protocol.mjs",
+        "sha256": "e73dc97d8bd9535278ad7e7ae35e2a83298627486950d52b53ab6ffda4fd6cf6"
+      }
+    ],
+    "role": "Selected read-only execution kernel; not product, operating, assignment or auth source"
+  },
+  "nativeParent": {
+    "model": "gpt-6.1-sol",
+    "effort": "max",
+    "source": "Admitted RUN.json plus actual ancestor -m and model_reasoning_effort controls",
+    "nativeModelProcessPid": 15493,
+    "nativeModelProcessExecutableSha256": "399ff69c431c066e40de318fba45c2b07f45a76b19939d247ee4828fc70c4215",
+    "noModelChildren": true,
+    "nativeSessionObservedInRun": false
+  },
+  "host": {
+    "provider": "cursor",
+    "agentId": "bc-ae4fc10f-8fd4-4bea-9034-c4d5027b0f91",
+    "bootId": "b7db0d0e-7e9d-4582-89a2-2046283b674d"
+  },
+  "lifetime": {
+    "host": {
+      "provider": "cursor",
+      "agentId": "bc-ae4fc10f-8fd4-4bea-9034-c4d5027b0f91",
+      "bootId": "b7db0d0e-7e9d-4582-89a2-2046283b674d"
+    },
+    "enrollment": {
+      "path": "/home/ubuntu/root-sol-window100337/root3040-cohort-preparation-20261022/LIFETIME-ENROLLMENT.json",
+      "sha256": "d4830a217ec8ceac3d4fffe0a5ff005714f927c0c2cdc275594729bf0ceef5b4"
+    },
+    "checkpointBy": "2026-10-22T16:28:33.686Z",
+    "requiredUntil": "2026-10-22T16:55:00.000Z"
+  },
+  "gitHelper": {
+    "configuration": "Existing process-scoped enrolled helper; unchanged",
+    "command": "!/exec-daemon/gh auth git-credential",
+    "pointers": {
+      "configDir": "/home/ubuntu/.config/pilot-gh",
+      "cli": "/exec-daemon/gh"
+    },
+    "credentialsReadOrCopied": false,
+    "canonicalOriginEqualityVerified": true
+  },
+  "inputPointers": {
+    "selectedExecution": {
+      "path": "/home/ubuntu/pilot-native-expand-u-receive-20261022/ROOT-EXPAND-U-SELECTED-EXECUTION.json",
+      "sha256": "7115c2798aef888032f3fea0e78f94093ca287be6c0038db718e3fe26e14f2a9"
+    },
+    "bootstrap": {
+      "path": "/home/ubuntu/pilot-native-expand-u-receive-20261022/ROOT-EXPAND-U-BOOTSTRAP.json",
+      "sha256": "8eb11f3afe2846b335f5e8f2fbed272938316688d461ff0cc198cf8df5338994"
+    },
+    "nativeCli": "/home/ubuntu/pilot-native-expand-u-receive-20261022/runtime/node_modules/.bin/codex",
+    "nativeHomePointerReadOnly": "/home/ubuntu/.codex",
+    "authContentsRead": false
+  },
+  "sdk": {
+    "commit": "fcef852f6cdafea07f36cf6fae69b37c8adf85be",
+    "version": "2.3.1",
+    "files": [
+      {
+        "path": "packages/server/src/server/serveStdio.ts",
+        "blob": "1cabf8ed9b356a5b6aeaa13c90f5e1988a1b10cb",
+        "sha256": "6e644c2bd0958412ebda1d0dd9f992b4099418ef760e8c982530a03354180bdd"
+      },
+      {
+        "path": "packages/server/src/server/mcp.ts",
+        "blob": "57b7c132eb792f37571e5e2c772215fab87003d4",
+        "sha256": "538940da3683b86fda1666c621536c4570b0e42aa7a3d2490948741946998ecd"
+      },
+      {
+        "path": "packages/server/src/server/server.ts",
+        "blob": "032fdc9c7f1802d01d836945e9dec5ac76c9b9b6",
+        "sha256": "fa5495359c9a1d51beb47ac99dd539bbd329fd09236f0cd468db60fefdb0b52c"
+      },
+      {
+        "path": "docs/serving/stdio.md",
+        "blob": "bc328fffdbd84f4b2026055ec6616c00f50e02ad",
+        "sha256": "79b64f8c0fb0e18081ea18a8ce1c8a4f859dbbc22519def35de6c39d28d3e602"
+      },
+      {
+        "path": "docs/serving/legacy-clients.md",
+        "blob": "9c26d29080fd3dca84ba03f71ab5aa285f9bdb9e",
+        "sha256": "8040a5e5580f4924552905e7519be2f475178ea4d70962f201e1e3dafb466ce2"
+      }
+    ]
+  },
+  "pilotReadOnlyMembers": [
+    {
+      "commit": "8dda961413b50b8b765cb81c7ba2e013855789e2",
+      "path": "overview/self-evaluations/2026-10-22-commercial-scale/GRAND-PLAN.md",
+      "blob": "131cfb4e5302d6b316a6fec04261af65eaac0007",
+      "sha256": "640b4bd28b6103131005a78e961dd76b3295dde8a1e7cb78e5a5cb0d930c53bb"
+    },
+    {
+      "commit": "8dda961413b50b8b765cb81c7ba2e013855789e2",
+      "path": "overview/self-evaluations/2026-10-22-commercial-scale/INTEGRATED-DECISIONS.md",
+      "blob": "52bfc51bf53a88a3802c7dd04996d92f13a94a45",
+      "sha256": "afe12cbc1b1c9aca1e8c38102044cb282c65c3102851590c0a90d249d5d574d7"
+    },
+    {
+      "commit": "23bb53fb8806ea3d84514914a307b7a3557a2088",
+      "path": "tools/ops/native-sol-mcp-profile/README.md",
+      "blob": "cbb1c92bd60a94cf878513f968f39c0af3853d9a",
+      "sha256": "3d6ad293f8197c3c27c9dc36e05730c46ba149c251b17c983910bd4d242b24c4"
+    },
+    {
+      "commit": "23bb53fb8806ea3d84514914a307b7a3557a2088",
+      "path": "tools/ops/native-sol-mcp-profile/profile.py",
+      "blob": "1644289bcaf9423acb8b440ec2d2171a28683420",
+      "sha256": "22de3d0b803168537e0db0184e8769d46aa9aea4e9c8a6d7a210f7f3eb4a58a8"
+    },
+    {
+      "commit": "23bb53fb8806ea3d84514914a307b7a3557a2088",
+      "path": "tools/ops/native-sol-mcp-profile/schema-v2.json",
+      "blob": "78931a72a26ab411cb13e982e01e035350d87bf1",
+      "sha256": "3574289506c80be9d201c1d355edccc4c8b2206c2992e2871c6c27983b5fcf28"
+    },
+    {
+      "commit": "23bb53fb8806ea3d84514914a307b7a3557a2088",
+      "path": "tools/ops/native-sol-mcp-profile/test_stdio_native.py",
+      "blob": "fb5dd9d177d6243efbee2071e0eda89eddb27ffb",
+      "sha256": "2f49d064b9ccdb58e5445a66f1545194c78fbb1b53d80d69165bfba442b94471"
+    },
+    {
+      "commit": "23bb53fb8806ea3d84514914a307b7a3557a2088",
+      "path": "tools/ops/native-sol-mcp-profile/probe_ownership.py",
+      "blob": "75512daf51b7a42a547efb681de0ba18679fbf6f",
+      "sha256": "d1f49054e211056e94508b580273bc8c669050ac11e795fd742f39431664b573"
+    },
+    {
+      "commit": "23bb53fb8806ea3d84514914a307b7a3557a2088",
+      "path": "tools/ops/native-sol-mcp-profile/no_network.py",
+      "blob": "c54e48bd338a2aec841acf434f542ed21bbb46db",
+      "sha256": "d6b66c4a2dd4dd396b9b4a3600f60127bc8b4dc4dd965e1cbe622e48c3d8eacc"
+    },
+    {
+      "commit": "23bb53fb8806ea3d84514914a307b7a3557a2088",
+      "path": "tools/ops/native-sol-mcp-profile/fixture/server.mjs",
+      "blob": "7d5cfe41a9bf5b1b92c0fef137b0f08b90026e75",
+      "sha256": "574299b982d82526a75a2d9655fdf281ae2183f56c242132adddbe34218821a5"
+    },
+    {
+      "commit": "23bb53fb8806ea3d84514914a307b7a3557a2088",
+      "path": "tools/ops/native-sol-mcp-profile/qualification/ROOT2960/RESULT.md",
+      "blob": "d99bedaf1533988237007bd29a080418d4849852",
+      "sha256": "ea0b14217f4ade7c8d7e75867bcdb92e3209fdcfd218fa1761b9f8bb6b2d7dec"
+    },
+    {
+      "commit": "23bb53fb8806ea3d84514914a307b7a3557a2088",
+      "path": "tools/ops/native-sol-mcp-profile/qualification/ROOT2960/NATIVE-RECEIVING.json",
+      "blob": "e4e7ff9e196eb0b3aca4f419cea04f1dba5eff1e",
+      "sha256": "a748934b58e7cc148e89ad27e4b8ac6d7adf92e16ce382195dc387c84b413451"
+    }
+  ],
+  "missingOperatingReference": {
+    "path": "overview/remote-worker/CURSOR-PROJECTS-CLOUD-START.md",
+    "exactOperatingCommit": "8dda961413b50b8b765cb81c7ba2e013855789e2",
+    "observed": "Path absent at exact source; no similarly named product path substituted"
+  },
+  "noRoleRelabelling": true,
+  "verificationNode": {
+    "path": "/exec-daemon/node",
+    "version": "v22.23.4",
+    "sha256": "94efd062ed066c1a0b332e18249859c905e920eeada5df55d24c99b919629a90",
+    "role": "Owning test process runtime; canonical native profile runtime is separately bound in NATIVE-RECEIVING.json"
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "schema": "policy-mcp.root3033.checkpoint.v1",
+  "operation": "ROOT-SOL-ROOT3033-ROOT3040-261022",
+  "productBase": "a6fb83f3abfa5c028b2356fa9665e24212505727",
+  "operatingAndAssignment": "8dda961413b50b8b765cb81c7ba2e013855789e2",
+  "branch": "codex/root3033-policy-mcp-native-compatibility-20261022",
+  "implementation": "Single official legacy:serve option; same existing factory and boundaries",
+  "completedCommands": [
+    {
+      "label": "author-install",
+      "exit": 0,
+      "peakTotalKiB": 554932
+    },
+    {
+      "label": "original-baseline",
+      "exit": 0,
+      "peakTotalKiB": 655396
+    },
+    {
+      "label": "original-modern",
+      "exit": 0,
+      "peakTotalKiB": 673988
+    },
+    {
+      "label": "dual-era-first",
+      "exit": 0,
+      "peakTotalKiB": 614032
+    },
+    {
+      "label": "era-wire-first",
+      "exit": 0,
+      "peakTotalKiB": 558984
+    },
+    {
+      "label": "modern-after",
+      "exit": 0,
+      "peakTotalKiB": 684372
+    },
+    {
+      "label": "variant-after",
+      "exit": 0,
+      "peakTotalKiB": 673172
+    },
+    {
+      "label": "wire-after",
+      "exit": 0,
+      "peakTotalKiB": 612712
+    },
+    {
+      "label": "release-structure",
+      "exit": 0,
+      "peakTotalKiB": 545008
+    },
+    {
+      "label": "pack",
+      "exit": 0,
+      "peakTotalKiB": 505380
+    },
+    {
+      "label": "pack-inspection",
+      "exit": 0,
+      "peakTotalKiB": 425136
+    },
+    {
+      "label": "cold-packed",
+      "exit": 0,
+      "peakTotalKiB": 746596
+    },
+    {
+      "label": "native-first",
+      "exit": 0,
+      "peakTotalKiB": 805144
+    }
+  ],
+  "packedSha256": "f45615114494fc7167234743d5a2ff4cda54d20e07de72c49c9e42e6b629c439",
+  "coldModernLegacyPassed": true,
+  "native": {
+    "ok": true,
+    "version": "codex-cli 0.163.0",
+    "negotiatedProtocol": "2025-06-18",
+    "evidence": "Native rmcp Service initialized as client peer_info; all four actual useful calls",
+    "sessions": 5,
+    "liveAfterCleanup": []
+  },
+  "exportDeadline": "2026-10-22T16:55:00.000Z",
+  "children": 0,
+  "installedAdoption": false,
+  "peakTotalKiB": 805912,
+  "nativeRequestedProtocol": "2025-06-18",
+  "requestedEvidence": "Observed current binary refusal data against exact unmodified product base; candidate actual negotiation separately succeeds",
+  "firstCheckpointAt": "2026-10-22T16:24:42.140218+00:00",
+  "nativeSuccessCheckpointAt": "2026-10-22T16:25:45.979947+00:00",
+  "checkpointDeadline": "2026-10-22T16:28:33.686Z",
+  "firstCheckpointBeforeDeadline": true,
+  "latestUpdateAt": "2026-10-22T16:28:33.921079+00:00"
+}
