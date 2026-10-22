@@ -18,6 +18,7 @@ parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('tarball')
 parser.add_argument('--public-version', choices=['@epistemedeus/agent-payment-policy-mcp@0.1.0'],
                     help='Root-only later receiving: acquire this exact published name/version and compare to the received tarball')
+parser.add_argument('--focused', action='store_true', help='Only existing useful/refusal/recovery/restart SDK cases; avoid replaying the qualified full matrix')
 parser.add_argument('--keep-scratch', action='store_true', help='Retain this new consumer for disposable native configuration; caller must remove it')
 parser.add_argument('--unsupported-node', help='Optional checked Node20 binary for packed engine refusal; packed lifecycle controls always run')
 arguments = parser.parse_args()
@@ -31,7 +32,9 @@ cache = scratch/'npm-cache'
 for path in [client, consumer, cache]:
     path.mkdir()
 env = {'PATH': os.environ['PATH'], 'HOME': str(scratch), 'NODE_OPTIONS': '--max-old-space-size=192',
-       'npm_config_userconfig': str(scratch/'empty.npmrc'), 'npm_config_registry': 'https://registry.npmjs.org'}
+       'npm_config_userconfig': str(scratch/'empty.npmrc'), 'npm_config_registry': 'https://registry.npmjs.org',
+       'npm_config_globalconfig': str(scratch/'absent-global.npmrc'), 'npm_config_fetch_retries': '0',
+       'npm_config_fetch_timeout': '20000', 'npm_config_update_notifier': 'false'}
 (scratch/'empty.npmrc').write_text('')
 steps = []
 def run(label, argv, cwd, run_env=None):
@@ -99,19 +102,26 @@ try:
             rel=Path(member.name).relative_to('package')
             assert (installed/rel).read_bytes()==tar.extractfile(member).read(), 'cold pack file drift '+str(rel)
             members.append(str(rel))
+    if arguments.public_version:
+        receipt['registryVerification'] = run('registry-signatures',
+            ['npm', 'audit', 'signatures', '--registry=https://registry.npmjs.org'], installed.parents[2])
     audit=client/'processes.jsonl'
     shutil.copy(root/'scripts/npm-stdio.py',client/'npm-stdio.py')
     runtime_env={**env,'MCP_COMMAND':sys.executable,'MCP_ARGS':json.dumps([str(client/'npm-stdio.py'),'npm',*npm_args,'--offline','--','agent-payment-policy-mcp']),
         'MCP_CWD':str(consumer),'MCP_BIN':str(installed/'bin/agent-payment-policy-mcp.mjs'),'MCP_ENV':json.dumps({**env,'NODE_OPTIONS':'--max-old-space-size=192 --import '+str(client/'audit.mjs'),
             'MCP_PROCESS_AUDIT':str(audit)})}
-    for label, script in [('useful','cold.mjs'),('variant','variant.mjs'),('wire','wire.mjs'),
-                          ('dual-era','dual-era.mjs'),('era-wire','era-wire.mjs')]:
+    suites = [('useful','cold.mjs')]
+    if not arguments.focused:
+        suites += [('variant','variant.mjs'),('wire','wire.mjs'),('dual-era','dual-era.mjs'),('era-wire','era-wire.mjs')]
+    for label, script in suites:
         output=run(label,[sys.executable,str(root/'scripts/no-egress.py'),'node','--max-old-space-size=256',str(client/'tests'/script)],client,runtime_env)
         receipt[label]=json.loads(output)
     runtime_argv=[sys.executable,str(root/'scripts/no-egress.py'),'node','--max-old-space-size=256',str(client/'tests/runtime-controls.mjs')]
     if arguments.unsupported_node:
         runtime_argv.append(str(Path(arguments.unsupported_node).resolve(strict=True)))
-    receipt['runtime']=json.loads(run('runtime',runtime_argv,client,runtime_env))
+    if not arguments.focused:
+        receipt['runtime']=json.loads(run('runtime',runtime_argv,client,runtime_env))
+    receipt['focused'] = arguments.focused
     receipt.update(ok=True,inventory=inventory,packedFiles=members,
                    clientLockSha256=hashlib.sha256((client/'package-lock.json').read_bytes()).hexdigest(),
                    processAudit=[json.loads(line) for line in audit.read_text().splitlines()])
