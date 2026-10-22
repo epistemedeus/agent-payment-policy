@@ -40,45 +40,40 @@ inputs; they are not universal hostile-schema safety certification. Timeout and
 cancellation permit a subsequent supported call; disconnect/restart reacquires
 the pure computation without a business replay guarantee.
 
-## Install the optional candidate
+## Install and launch
 
-The npm name is not published by this feature. Build a local tarball from
-`integrations/mcp/` in the owning repository:
-
-```sh
-npm ci --ignore-scripts --no-audit --no-fund --engine-strict
-POLICY_CLI=./node_modules/agent-payment-policy/cli.mjs \
-  POLICY_CORE=./node_modules/agent-payment-policy/core.mjs npm run baseline
-mkdir -p artifacts
-npm pack --ignore-scripts --pack-destination artifacts
-```
-
-In a separate consumer directory, install that exact archive:
+With Node.js 22+ and npm, configure your MCP client to launch this command over
+stdio from an empty consumer directory:
 
 ```sh
-npm install --ignore-scripts --save-exact /absolute/path/epistemedeus-agent-payment-policy-mcp-0.1.0.tgz
-./node_modules/.bin/agent-payment-policy-mcp
+npm exec --yes --ignore-scripts --no-audit --no-fund --engine-strict \
+  --package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz \
+  -- agent-payment-policy-mcp
 ```
 
-Configure a compatible MCP client to launch the resolved executable over stdio.
-The process waits for protocol input; running it alone is not a handshake. Use
-a client supporting modern `2026-07-28` or official legacy initialization.
-Configuration inventory alone does not establish native protocol support.
-ROOT3033 qualifies actual `mcpServer/tool/call` calls for all four policy tools
-through an ephemeral app-server thread in a disposable empty profile, without
-authentication or a model turn. ROOT2981's historical native refusal was a
-correct observation of the earlier modern-only package, superseded by this
-extension. Model-mediated use and installed adoption remain separate future
-receiving. See [release receiving](release/ROOT-RELEASE.md).
+This immutable GitHub-hosted archive installs
+`@epistemedeus/agent-payment-policy-mcp@0.1.0` and its shrinkwrapped runtime.
+The optional npm name is still unpublished. A repository-source archive selects
+the separate root CLI package. Initial acquisition downloads dependencies;
+policy tool execution is offline. Keep lifecycle scripts disabled.
 
-The source-only `scripts/cold-receive.py` prepares a fresh client directory and empty npm cache,
-acquires that exact local tarball with bounded `npm exec`, then repeats official
-modern and legacy discovery/useful/adverse/restart calls without egress. Set `MCP_EVIDENCE_DIR` to an external receipt directory and pass
-the exact tarball path; its receipt distinguishes tarball acquisition from a
-future public-name install. Linux verification uses libseccomp; other platforms
-can use the same official client under their own network isolation.
-The finite source-only `scripts/npm-stdio.py` launcher owns and reaps the npm
-intermediary's shell descendants during probe, disconnect and restart.
+The process waits for MCP messages; starting it alone does not exercise a tool.
+Use a client supporting modern `2026-07-28` or official legacy initialization,
+then discover schemas with `tools/list` and invoke the four tools above.
+
+To check the archive independently on a system with curl and sha256sum:
+
+```sh
+curl --fail --silent --show-error --location --proto '=https' --proto-redir '=https' \
+  --connect-timeout 10 --max-time 30 --output candidate.tgz \
+  https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz
+echo 'f45615114494fc7167234743d5a2ff4cda54d20e07de72c49c9e42e6b629c439  candidate.tgz' | sha256sum --check
+```
+
+The archive is 18,633 bytes. [Acquisition and useful SDK checks](qualification/ROOT3124/RESULT.md)
+record the tested commands, exact runtime, refusal/recovery, restart and direct
+policy comparison. Source-only `scripts/npm-stdio.py` provides finite cleanup of
+npm's intermediary descendants for clients that need it.
 
 `npm-shrinkwrap.json` is published intentionally: it binds the downstream runtime
 dependency graph, unlike an unpublished package-lock. The cold receiver checks

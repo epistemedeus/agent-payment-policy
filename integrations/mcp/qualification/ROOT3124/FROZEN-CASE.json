@@ -1,0 +1,308 @@
+{
+  "purpose": "Owner QA: synthetic packing response and controlled receipt facts; no outside use or money.",
+  "oracle": "Independent JSON/SHA256 and documented controlled-fact rules; no imported expected outputs.",
+  "inventoryNames": [
+    "accept_output",
+    "classify_receipt",
+    "inspect_output_schema",
+    "normalize_request"
+  ],
+  "cases": [
+    {
+      "label": "packing_request_binding",
+      "name": "normalize_request",
+      "args": {
+        "method": "POST",
+        "target": "https://supplier.example/packing?region=eu&batch=24",
+        "options": {
+          "body": {
+            "sku": "gasket-24",
+            "cartons": 6,
+            "unitsPerCarton": 8
+          }
+        }
+      },
+      "expected": {
+        "method": "POST",
+        "origin": "https://supplier.example",
+        "pathname": "/packing",
+        "queryKeys": [
+          "batch",
+          "region"
+        ],
+        "publicRoute": "POST https://supplier.example/packing",
+        "bodyBinding": {
+          "mediaType": "application/json",
+          "bytes": 50,
+          "digest": "sha256:d05dc8bca8b1b2e80411c730dab1c0c0ad01c921bb7f41f66a0fd825269cc2fe"
+        },
+        "bindingDigest": "sha256:e44f2560b6eb1738b32052763ab08c4382982837fab16d763bd836a04de4b696"
+      }
+    },
+    {
+      "label": "packing_schema",
+      "name": "inspect_output_schema",
+      "args": {
+        "schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "units",
+            "ready"
+          ],
+          "properties": {
+            "units": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "ready": {
+              "type": "boolean"
+            }
+          }
+        },
+        "requiredFields": [
+          "units",
+          "ready"
+        ]
+      },
+      "expected": {
+        "schemaDigest": "sha256:3b42772b9133098b0f05c0f10245ccfea38496c1ea50f4569addf88676e4cae9",
+        "canonicalBytes": 156,
+        "requiredPaths": [
+          "ready",
+          "units"
+        ],
+        "decision": "admissible",
+        "schemaRetained": false,
+        "credentialsUsed": false,
+        "walletAccessed": false,
+        "paymentSigned": false,
+        "paymentSent": false
+      }
+    },
+    {
+      "label": "packing_accepted",
+      "name": "accept_output",
+      "args": {
+        "schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "units",
+            "ready"
+          ],
+          "properties": {
+            "units": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "ready": {
+              "type": "boolean"
+            }
+          }
+        },
+        "schemaDigest": "sha256:3b42772b9133098b0f05c0f10245ccfea38496c1ea50f4569addf88676e4cae9",
+        "output": {
+          "units": 48,
+          "ready": true
+        }
+      },
+      "expected": {
+        "valid": true,
+        "schemaDigest": "sha256:3b42772b9133098b0f05c0f10245ccfea38496c1ea50f4569addf88676e4cae9",
+        "responseDigest": "sha256:4c0602e0a65fe976956a482a43a1d5108261a90807999aa03f27bd1a9ecb0dbb"
+      }
+    },
+    {
+      "label": "wrong_units_type",
+      "name": "accept_output",
+      "args": {
+        "schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "units",
+            "ready"
+          ],
+          "properties": {
+            "units": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "ready": {
+              "type": "boolean"
+            }
+          }
+        },
+        "schemaDigest": "sha256:3b42772b9133098b0f05c0f10245ccfea38496c1ea50f4569addf88676e4cae9",
+        "output": {
+          "units": "48",
+          "ready": true
+        }
+      },
+      "expected": {
+        "valid": false
+      }
+    },
+    {
+      "label": "wrong_schema_digest",
+      "name": "accept_output",
+      "args": {
+        "schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "units",
+            "ready"
+          ],
+          "properties": {
+            "units": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "ready": {
+              "type": "boolean"
+            }
+          }
+        },
+        "schemaDigest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "output": {
+          "units": 48,
+          "ready": true
+        }
+      },
+      "expected": {
+        "valid": false
+      }
+    },
+    {
+      "label": "partial_receipt_invalid",
+      "name": "classify_receipt",
+      "args": {
+        "schemaVersion": "agent-payment-policy.receipt-completeness-observation.v1",
+        "protocol": "x402",
+        "receipt": {
+          "present": true,
+          "success": "confirmed",
+          "transactionReference": "match",
+          "amount": "match",
+          "network": "match",
+          "asset": "match",
+          "recipient": "missing",
+          "payer": "match"
+        },
+        "transaction": {
+          "checked": false,
+          "success": "unknown",
+          "transactionReference": "not_checked",
+          "amount": "not_checked",
+          "network": "not_checked",
+          "asset": "not_checked",
+          "recipient": "not_checked",
+          "payer": "not_checked"
+        },
+        "balance": {
+          "checked": false,
+          "delta": "not_checked",
+          "asset": "not_checked",
+          "payer": "not_checked"
+        },
+        "outputValidation": "failed"
+      },
+      "expected": {
+        "schemaVersion": "agent-payment-policy.receipt-completeness-report.v1",
+        "protocol": "x402",
+        "state": "partial",
+        "receiptPresent": true,
+        "successProven": true,
+        "transactionReferenceProven": true,
+        "provenDimensions": [
+          "amount",
+          "network",
+          "asset",
+          "payer"
+        ],
+        "missingDimensions": [
+          "recipient"
+        ],
+        "conflicts": [],
+        "supplementedBy": [],
+        "deliveryState": "invalid",
+        "evidenceBoundary": "Classifies caller-verified normalized facts. It does not parse raw receipts, verify signatures or transactions, authorize payment, or prove independent demand.",
+        "rawEvidenceRetained": false,
+        "credentialsUsed": false,
+        "walletAccessed": false,
+        "paymentSigned": false,
+        "paymentSent": false
+      }
+    },
+    {
+      "label": "partial_receipt_valid",
+      "name": "classify_receipt",
+      "args": {
+        "schemaVersion": "agent-payment-policy.receipt-completeness-observation.v1",
+        "protocol": "x402",
+        "receipt": {
+          "present": true,
+          "success": "confirmed",
+          "transactionReference": "match",
+          "amount": "match",
+          "network": "match",
+          "asset": "match",
+          "recipient": "missing",
+          "payer": "match"
+        },
+        "transaction": {
+          "checked": false,
+          "success": "unknown",
+          "transactionReference": "not_checked",
+          "amount": "not_checked",
+          "network": "not_checked",
+          "asset": "not_checked",
+          "recipient": "not_checked",
+          "payer": "not_checked"
+        },
+        "balance": {
+          "checked": false,
+          "delta": "not_checked",
+          "asset": "not_checked",
+          "payer": "not_checked"
+        },
+        "outputValidation": "passed"
+      },
+      "expected": {
+        "schemaVersion": "agent-payment-policy.receipt-completeness-report.v1",
+        "protocol": "x402",
+        "state": "partial",
+        "receiptPresent": true,
+        "successProven": true,
+        "transactionReferenceProven": true,
+        "provenDimensions": [
+          "amount",
+          "network",
+          "asset",
+          "payer"
+        ],
+        "missingDimensions": [
+          "recipient"
+        ],
+        "conflicts": [],
+        "supplementedBy": [],
+        "deliveryState": "valid",
+        "evidenceBoundary": "Classifies caller-verified normalized facts. It does not parse raw receipts, verify signatures or transactions, authorize payment, or prove independent demand.",
+        "rawEvidenceRetained": false,
+        "credentialsUsed": false,
+        "walletAccessed": false,
+        "paymentSigned": false,
+        "paymentSent": false
+      }
+    }
+  ],
+  "refusal": {
+    "name": "normalize_request",
+    "args": {
+      "method": "GET",
+      "target": "https://supplier.example/?api_key=root3124-synthetic-do-not-echo"
+    }
+  }
+}

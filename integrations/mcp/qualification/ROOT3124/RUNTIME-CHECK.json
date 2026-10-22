@@ -1,0 +1,421 @@
+{
+  "ok": true,
+  "allPackedAndRuntimeBytesUnchanged": true,
+  "clientLockedPackageInventory": [
+    {
+      "name": "@modelcontextprotocol/client",
+      "version": "2.3.1",
+      "installedTreeSha256": "9ae52a51fda85d67b32379077abfc197957599005de1cfd69a25a49517034527"
+    },
+    {
+      "name": "@modelcontextprotocol/core",
+      "version": "2.3.1",
+      "installedTreeSha256": "f59208e5f005e64228f8d61983d0c22012fe834059b2d9ad9d628b528efedfbc"
+    },
+    {
+      "name": "@modelcontextprotocol/server",
+      "version": "2.3.1",
+      "installedTreeSha256": "db81738ed48f756521eb114d8c988e2c4fa70197d4dd97497c19487cde669e89"
+    },
+    {
+      "name": "agent-payment-policy",
+      "version": "0.15.1",
+      "installedTreeSha256": "2070ee1368795e8daff9d0c490b21d0958c8f065a841200c55479e1004b2545a"
+    },
+    {
+      "name": "ajv",
+      "version": "8.20.0",
+      "installedTreeSha256": "9bf13d80af688544be948c46f3603adfc761c0a8e63ae4185e9f3202d9d2da14"
+    },
+    {
+      "name": "ajv-formats",
+      "version": "3.0.1",
+      "installedTreeSha256": "ebf7b1afd4bbdff2c03703301845083111436fcf2015435f939324808a2f0a3d"
+    },
+    {
+      "name": "cross-spawn",
+      "version": "7.0.6",
+      "installedTreeSha256": "4d8562320d312e387171284981096ce387dd7ea73a6245e4e3c091caec478163"
+    },
+    {
+      "name": "eventsource",
+      "version": "3.0.7",
+      "installedTreeSha256": "7ac7edf6b6332424b9735d2fdeff10ef550571af56bc021774880e73c9b9b006"
+    },
+    {
+      "name": "eventsource-parser",
+      "version": "3.1.1",
+      "installedTreeSha256": "47ad7b95bcbfaf9b31e84fa5fc0ff5ee7ee5948132221ca5bd45285582c8110c"
+    },
+    {
+      "name": "fast-deep-equal",
+      "version": "3.1.3",
+      "installedTreeSha256": "4f3b31d2d7e7944c12ec56f6bd2ea1de9cabbf79974a624d8d76ca4ccc0b024e"
+    },
+    {
+      "name": "fast-uri",
+      "version": "3.1.9",
+      "installedTreeSha256": "66c7f72534c6b0f920005565b5d1d19c0d499bc2ffce534a52d173777e5d8ed9"
+    },
+    {
+      "name": "isexe",
+      "version": "2.0.0",
+      "installedTreeSha256": "2e1c45190203f247735ac04f3894a7f8004eb098d91e974a84b6bc8f18f1d091"
+    },
+    {
+      "name": "jose",
+      "version": "6.2.13",
+      "installedTreeSha256": "9745d3547cf087067dc9fd6d8263f2143656fcf718fbb532ef64998d7f64be9c"
+    },
+    {
+      "name": "json-schema-traverse",
+      "version": "1.0.0",
+      "installedTreeSha256": "1b72257ad7ded5e4f616b8538159862e7b625e8f54518d1ac36a615827f9ad23"
+    },
+    {
+      "name": "path-key",
+      "version": "3.1.1",
+      "installedTreeSha256": "53b77b1b5e1009c133c5a23da24e82fc637903e07fef43745df6214410a88bdb"
+    },
+    {
+      "name": "pkce-challenge",
+      "version": "5.0.1",
+      "installedTreeSha256": "b730cf314a42d13f42cf392377b4f0cab3b041be0e1e932a3cd6e33d1c50df2c"
+    },
+    {
+      "name": "require-from-string",
+      "version": "2.0.2",
+      "installedTreeSha256": "acae06d3e34484c6be4e61bc083e5ba4f59e39e6c4548107eb6b1e81172f668d"
+    },
+    {
+      "name": "shebang-command",
+      "version": "2.0.0",
+      "installedTreeSha256": "79602f512da3ec2ca672658c0598e9218427db616bd38421249cb0a581d8b080"
+    },
+    {
+      "name": "shebang-regex",
+      "version": "3.0.0",
+      "installedTreeSha256": "2822290977d296842e48ffcf2fa22ff2048593c1e5738ec46df5d252d3d98818"
+    },
+    {
+      "name": "which",
+      "version": "2.0.2",
+      "installedTreeSha256": "ce3c5b134d760006003465b3dbd493e103cf16058e4443a092838df3cab2073a"
+    },
+    {
+      "name": "zod",
+      "version": "4.6.7",
+      "installedTreeSha256": "d2b0ca1a4c175ee7900c3b1e5b805e0a2aa6361ce97ca84c67bc68df0e6db441"
+    }
+  ],
+  "sameFrozenCaseMatchesAllSdkSessionsAndDirectCli": true,
+  "runtimeCommandProcesses": [
+    {
+      "pid": 361317,
+      "startTicks": 7145508,
+      "executable": "/exec-daemon/node",
+      "argv": [
+        "node",
+        "--max-old-space-size=192",
+        "integrations/mcp/qualification/ROOT3124/sdk.mjs"
+      ]
+    },
+    {
+      "pid": 361330,
+      "startTicks": 7145527,
+      "executable": "/usr/bin/python3.12",
+      "argv": [
+        "python3",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/scripts/npm-stdio.py",
+        "npm",
+        "exec",
+        "--yes",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund",
+        "--engine-strict",
+        "--cache",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/npm-cache",
+        "--package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz",
+        "--offline",
+        "--",
+        "agent-payment-policy-mcp"
+      ]
+    },
+    {
+      "pid": 361344,
+      "startTicks": 7145550,
+      "executable": "/exec-daemon/node",
+      "argv": [
+        "node",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/npm-cache/_npx/5dbce4b621437f70/node_modules/.bin/agent-payment-policy-mcp"
+      ]
+    },
+    {
+      "pid": 361343,
+      "startTicks": 7145550,
+      "executable": "/usr/bin/dash",
+      "argv": [
+        "sh",
+        "-c",
+        "agent-payment-policy-mcp"
+      ]
+    },
+    {
+      "pid": 361352,
+      "startTicks": 7145572,
+      "executable": "/exec-daemon/node",
+      "argv": [
+        "npm exec agent-payment-policy-mcp"
+      ]
+    },
+    {
+      "pid": 361351,
+      "startTicks": 7145571,
+      "executable": "/usr/bin/python3.12",
+      "argv": [
+        "python3",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/scripts/npm-stdio.py",
+        "npm",
+        "exec",
+        "--yes",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund",
+        "--engine-strict",
+        "--cache",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/npm-cache",
+        "--package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz",
+        "--offline",
+        "--",
+        "agent-payment-policy-mcp"
+      ]
+    },
+    {
+      "pid": 361364,
+      "startTicks": 7145594,
+      "executable": "/usr/bin/dash",
+      "argv": [
+        "sh",
+        "-c",
+        "agent-payment-policy-mcp"
+      ]
+    },
+    {
+      "pid": 361365,
+      "startTicks": 7145594,
+      "executable": "/exec-daemon/node",
+      "argv": [
+        "node",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/npm-cache/_npx/5dbce4b621437f70/node_modules/.bin/agent-payment-policy-mcp"
+      ]
+    },
+    {
+      "pid": 361382,
+      "startTicks": 7145697,
+      "executable": "/usr/bin/python3.12",
+      "argv": [
+        "python3",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/scripts/npm-stdio.py",
+        "npm",
+        "exec",
+        "--yes",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund",
+        "--engine-strict",
+        "--cache",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/npm-cache",
+        "--package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz",
+        "--offline",
+        "--",
+        "agent-payment-policy-mcp"
+      ]
+    },
+    {
+      "pid": 361383,
+      "startTicks": 7145699,
+      "executable": "/exec-daemon/node",
+      "argv": [
+        "npm exec agent-payment-policy-mcp"
+      ]
+    },
+    {
+      "pid": 361395,
+      "startTicks": 7145721,
+      "executable": "/usr/bin/dash",
+      "argv": [
+        "sh",
+        "-c",
+        "agent-payment-policy-mcp"
+      ]
+    },
+    {
+      "pid": 361396,
+      "startTicks": 7145721,
+      "executable": "/exec-daemon/node",
+      "argv": [
+        "node",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/npm-cache/_npx/5dbce4b621437f70/node_modules/.bin/agent-payment-policy-mcp"
+      ]
+    },
+    {
+      "pid": 361405,
+      "startTicks": 7145740,
+      "executable": "/usr/bin/python3.12",
+      "argv": [
+        "python3",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/scripts/npm-stdio.py",
+        "npm",
+        "exec",
+        "--yes",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund",
+        "--engine-strict",
+        "--cache",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/npm-cache",
+        "--package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz",
+        "--offline",
+        "--",
+        "agent-payment-policy-mcp"
+      ]
+    },
+    {
+      "pid": 361406,
+      "startTicks": 7145742,
+      "executable": "/exec-daemon/node",
+      "argv": [
+        "npm exec agent-payment-policy-mcp"
+      ]
+    },
+    {
+      "pid": 361418,
+      "startTicks": 7145763,
+      "executable": "/usr/bin/dash",
+      "argv": [
+        "sh",
+        "-c",
+        "agent-payment-policy-mcp"
+      ]
+    },
+    {
+      "pid": 361419,
+      "startTicks": 7145763,
+      "executable": "/exec-daemon/node",
+      "argv": [
+        "node",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/npm-cache/_npx/5dbce4b621437f70/node_modules/.bin/agent-payment-policy-mcp"
+      ]
+    },
+    {
+      "pid": 361433,
+      "startTicks": 7145853,
+      "executable": "/usr/bin/python3.12",
+      "argv": [
+        "python3",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/scripts/npm-stdio.py",
+        "npm",
+        "exec",
+        "--yes",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund",
+        "--engine-strict",
+        "--cache",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/npm-cache",
+        "--package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz",
+        "--offline",
+        "--",
+        "agent-payment-policy-mcp"
+      ]
+    },
+    {
+      "pid": 361434,
+      "startTicks": 7145855,
+      "executable": "/exec-daemon/node",
+      "argv": [
+        "npm exec agent-payment-policy-mcp"
+      ]
+    },
+    {
+      "pid": 361446,
+      "startTicks": 7145876,
+      "executable": "/usr/bin/dash",
+      "argv": [
+        "sh",
+        "-c",
+        "agent-payment-policy-mcp"
+      ]
+    },
+    {
+      "pid": 361447,
+      "startTicks": 7145876,
+      "executable": "/exec-daemon/node",
+      "argv": [
+        "node",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/npm-cache/_npx/5dbce4b621437f70/node_modules/.bin/agent-payment-policy-mcp"
+      ]
+    },
+    {
+      "pid": 361464,
+      "startTicks": 7145980,
+      "executable": "/exec-daemon/node",
+      "argv": [
+        "npm exec agent-payment-policy-mcp"
+      ]
+    },
+    {
+      "pid": 361463,
+      "startTicks": 7145979,
+      "executable": "/usr/bin/python3.12",
+      "argv": [
+        "python3",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/scripts/npm-stdio.py",
+        "npm",
+        "exec",
+        "--yes",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund",
+        "--engine-strict",
+        "--cache",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/npm-cache",
+        "--package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz",
+        "--offline",
+        "--",
+        "agent-payment-policy-mcp"
+      ]
+    },
+    {
+      "pid": 361476,
+      "startTicks": 7146001,
+      "executable": "/usr/bin/dash",
+      "argv": [
+        "sh",
+        "-c",
+        "agent-payment-policy-mcp"
+      ]
+    },
+    {
+      "pid": 361477,
+      "startTicks": 7146002,
+      "executable": "/exec-daemon/node",
+      "argv": [
+        "node",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/npm-cache/_npx/5dbce4b621437f70/node_modules/.bin/agent-payment-policy-mcp"
+      ]
+    }
+  ],
+  "samplingRaces": [
+    {
+      "pid": 361331,
+      "reason": "process exited during metadata sampling"
+    }
+  ],
+  "runtimeInternetSocketObservations": 0,
+  "networkAuthority": "Existing no-egress.py denies Internet socket/connect syscalls in client and all descendants",
+  "observationLimit": "50ms process/socket sampling is not a complete syscall trace; short-lived metadata can be missed",
+  "unexpectedObservedCommands": [],
+  "ownedLiveResiduals": []
+}
