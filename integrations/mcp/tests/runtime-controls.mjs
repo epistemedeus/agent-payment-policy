@@ -7,16 +7,20 @@ import { StdioClientTransport } from '@modelcontextprotocol/client/stdio';
 import { monitorOwnedProcesses } from './processes.mjs';
 import { expectedNormalize, fixtures, sha256, canonical } from './oracle.mjs';
 
-const bin = new URL('../bin/agent-payment-policy-mcp.mjs', import.meta.url).pathname;
+const bin = process.env.MCP_BIN || new URL('../bin/agent-payment-policy-mcp.mjs', import.meta.url).pathname;
 const unsupportedNode = process.argv[2];
-assert.ok(unsupportedNode, 'pass a checked official Node20 binary');
-const old = spawnSync(unsupportedNode, [bin], { encoding: 'utf8', timeout: 3000, maxBuffer: 4096,
-  env: { PATH: process.env.PATH } });
-assert.ifError(old.error);
-assert.equal(old.status, 1);
-assert.equal(old.stdout, '');
-assert.equal(old.stderr, 'agent-payment-policy-mcp requires Node.js >=22.\n');
-const checks = ['actual_Node20_fails_before_import_or_use'];
+const checks = [];
+let unsupportedDiagnostic = null;
+if (unsupportedNode) {
+  const old = spawnSync(unsupportedNode, [bin], { encoding: 'utf8', timeout: 3000, maxBuffer: 4096,
+    env: { PATH: process.env.PATH } });
+  assert.ifError(old.error);
+  assert.equal(old.status, 1);
+  assert.equal(old.stdout, '');
+  assert.equal(old.stderr, 'agent-payment-policy-mcp requires Node.js >=22.\n');
+  checks.push('actual_Node20_fails_before_import_or_use');
+  unsupportedDiagnostic = old.stderr.trim();
+}
 
 const monitor = monitorOwnedProcesses();
 const child = spawn(process.execPath, ['--max-old-space-size=128', bin], { stdio: ['pipe','pipe','pipe'],
@@ -74,4 +78,4 @@ try {
   assert.deepEqual(lifecycle.survivors, []);
   assert.deepEqual(lifecycle.currentChildren, []);
 }
-console.log(JSON.stringify({ ok: true, checks, unsupportedNode: old.stderr.trim() }));
+console.log(JSON.stringify({ ok: true, checks, unsupportedNode: unsupportedDiagnostic, unsupportedNodeChecked: Boolean(unsupportedNode) }));

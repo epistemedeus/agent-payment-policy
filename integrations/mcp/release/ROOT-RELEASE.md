@@ -29,8 +29,10 @@ MCP_EVIDENCE_DIR=/absolute/disposable/receipts \
 
 The cold receiver uses a new npm cache and official SDK client, verifies every
 packed file and all ten runtime dependency trees, then denies network syscalls
-for useful, refusal, recovery and wire calls. It never falls back to a public
-package name. The optional `--keep-scratch` retains only its new consumer for a
+for useful, refusal, recovery, wire-buffer close/restart and in-flight disconnect calls.
+Pass `--unsupported-node /absolute/checked/node20` to also verify engine refusal
+from packed bytes; without it that one engine check is explicitly unrun.
+It never falls back to a public package name. The optional `--keep-scratch` retains only its new consumer for a
 subsequent disposable native configuration; the caller must remove that scratch.
 An exact pinned publisher binary may be passed to `scripts/validate-release.mjs`
 for structural validation. Structural validity does not prove namespace control.
