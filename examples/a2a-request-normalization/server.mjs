@@ -4,6 +4,7 @@ import { AgentCard, Task, A2A_PROTOCOL_VERSION, AGENT_CARD_PATH } from '@a2a-js/
 import {
   AgentEvent, DefaultRequestHandler, JsonRpcTransportHandler, ServerCallContext, validateVersion,
 } from '@a2a-js/sdk/server';
+import { ContentTypeNotSupportedError, PushNotificationNotSupportedError, UnsupportedOperationError } from '@a2a-js/sdk/errors';
 import { normalizeRequest } from '../../core.mjs';
 
 export const MAX_WIRE_BYTES = 64 * 1024;
@@ -40,10 +41,10 @@ function checkSend(params) {
   }
   const part = message.parts[0];
   // Check before SDK oneof decoding, which would otherwise choose one ambiguous field.
-  if (!object(part) || !only(part, ['data', 'mediaType']) || !Object.hasOwn(part, 'data') ||
-      part.mediaType !== 'application/json') {
+  if (!object(part) || !only(part, ['data', 'mediaType']) || !Object.hasOwn(part, 'data')) {
     throw bad('Only one application/json data part is supported; text, URL and file parts are refused');
   }
+  if (part.mediaType !== 'application/json') throw new ContentTypeNotSupportedError('Use an application/json data part');
   const input = part.data;
   if (!object(input) || !only(input, ['method', 'target', 'options']) ||
       typeof input.target !== 'string' || (input.method !== undefined && typeof input.method !== 'string') ||
@@ -53,10 +54,12 @@ function checkSend(params) {
   if (Buffer.byteLength(JSON.stringify(input)) > MAX_DATA_BYTES) throw bad('Data exceeds example limit');
   bounded(input);
   const config = params.configuration;
-  if (config !== undefined && (!object(config) || config.returnImmediately || config.taskPushNotificationConfig ||
-      (config.acceptedOutputModes !== undefined && (!Array.isArray(config.acceptedOutputModes) ||
-       !config.acceptedOutputModes.includes('application/json'))))) {
-    throw bad('Only blocking JSON output without push notifications is supported');
+  if (config !== undefined && !object(config)) throw bad('Configuration must be an object');
+  if (config?.taskPushNotificationConfig) throw new PushNotificationNotSupportedError();
+  if (config?.returnImmediately) throw bad('Only blocking requests are supported');
+  if (config?.acceptedOutputModes !== undefined && (!Array.isArray(config.acceptedOutputModes) ||
+      !config.acceptedOutputModes.includes('application/json'))) {
+    throw new ContentTypeNotSupportedError('Only application/json output is supported');
   }
 }
 
@@ -147,10 +150,14 @@ export async function startServer({ port = 0 } = {}) {
       }
       id = wire.id;
       validateVersion(req.headers['a2a-version'] ?? '0.3', card, 'JSONRPC');
-      if (wire.method !== 'SendMessage') return rpcError(res, id, -32601, 'Only SendMessage is supported');
-      checkSend(wire.params);
-      // The protocol permits a server to apply a lower history limit. Never echo inputs.
-      wire.params.configuration = { ...wire.params.configuration, historyLength: 0 };
+      if (['SendStreamingMessage', 'SubscribeToTask'].includes(wire.method)) {
+        throw new UnsupportedOperationError('Streaming is not supported');
+      }
+      if (wire.method === 'SendMessage') {
+        checkSend(wire.params);
+        // The protocol permits a server to apply a lower history limit. Never echo inputs.
+        wire.params.configuration = { ...wire.params.configuration, historyLength: 0 };
+      }
       reply(res, 200, await transport.handle(wire, new ServerCallContext({ requestedVersion: req.headers['a2a-version'] })));
     } catch (error) {
       const mapped = error.rpcCode ? { code: error.rpcCode, message: error.message } : JsonRpcTransportHandler.mapToJSONRPCError(error);
@@ -166,7 +173,7 @@ export async function startServer({ port = 0 } = {}) {
   card = cardFor(url);
   // Single terminal task event: the SDK has no reason to load a saved task.
   // Do not retain tasks, raw messages, history, or caller metadata between requests.
-  const discardStore = { async save() {}, async load() { return undefined; }, async list() { return { tasks: [] }; } };
+  const discardStore = { async save() {}, async load() { return undefined; }, async list() { return { tasks: [], nextPageToken: '', pageSize: 0, totalSize: 0 }; } };
   transport = new JsonRpcTransportHandler(new DefaultRequestHandler(card, discardStore, new NormalizationExecutor()));
   return { url, async stop() {
     const closed = new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));

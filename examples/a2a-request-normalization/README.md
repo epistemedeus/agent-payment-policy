@@ -112,17 +112,21 @@ The returned task has one artifact containing one JSON data part:
 - Core refusal: `{"ok":false,"error":{"name":<exact name>,"message":<exact message>}}`
   with `TASK_STATE_REJECTED`. Host-specific JavaScript stacks are omitted.
 - Invalid transport/skill envelopes: JSON-RPC errors; invalid JSON is `-32700`,
-  invalid request form `-32600`, invalid skill parameters `-32602`, unsupported
-  methods `-32601`. Version errors use the SDK's mapping. HTTP media/size/path/
+  invalid request form `-32600`, invalid skill parameters `-32602`, unknown
+  methods `-32601`. Known disabled operations retain A2A errors: streaming/extended
+  card `-32004`, push notifications `-32003`, unsupported media `-32005`.
+  Discarded or unknown tasks return `-32001`; task listing is empty. Version
+  errors use the SDK's mapping. HTTP media, size, path and
   local-origin failures use 415/413/404/403, and overlapping calls receive 429.
 
 `message/send`, `role: "user"`, REST `/message:send`, legacy 0.3, streaming,
-batches, notifications, follow-up task calls, task retrieval, push notifications,
+batches, notifications, follow-up task calls, push notifications,
 URL/file/raw/text parts, compressed input and non-JSON output are unsupported.
-This is a synchronous, single-turn example. The card disables streaming, push
-notifications and extended cards. It has no authentication and must stay local.
+This is a synchronous, single-turn example with zero task retention. `GetTask`
+returns task-not-found after completion and `ListTasks` returns an empty list.
+The card disables streaming, push notifications and extended cards. It has no authentication and must stay local.
 
-## Bounds and side effects
+## Threat model, bounds and side effects
 
 The server binds only `127.0.0.1` on an ephemeral port, checks Host, rejects browser
 Origin headers, admits one request at a time, and limits connections to four.

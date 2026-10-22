@@ -124,21 +124,24 @@ const negative = [
   ['notification', () => { const w = wire(); delete w.id; return w; }, -32600],
   ['unknown A2A method', () => ({ ...wire(), method: 'NoSuchMethod' }), -32601],
   ['legacy message/send', () => ({ ...wire(), method: 'message/send' }), -32601],
-  ['streaming', () => ({ ...wire(), method: 'SendStreamingMessage' }), -32601],
-  ['task retrieval', () => ({ ...wire(), method: 'GetTask', params: { id: 'not-retained' } }), -32601],
+  ['streaming', () => ({ ...wire(), method: 'SendStreamingMessage' }), -32004],
+  ['task retrieval after zero retention', () => ({ ...wire(), method: 'GetTask', params: { id: 'not-retained' } }), -32001],
+  ['subscription disabled', () => ({ ...wire(), method: 'SubscribeToTask', params: { id: 'not-retained' } }), -32004],
+  ['extended card disabled', () => ({ ...wire(), method: 'GetExtendedAgentCard', params: {} }), -32004],
+  ['push API disabled', () => ({ ...wire(), method: 'CreateTaskPushNotificationConfig', params: {} }), -32003],
   ['legacy role', () => { const w = wire(); w.params.message.role = 'user'; return w; }, -32602],
   ['missing parts', () => { const w = wire(); delete w.params.message.parts; return w; }, -32602],
   ['multiple data parts', () => { const w = wire(); w.params.message.parts.push(w.params.message.parts[0]); return w; }, -32602],
   ['ambiguous data and URL', () => { const w = wire(); w.params.message.parts[0].url = 'file:///etc/passwd'; return w; }, -32602],
   ['text JSON', () => { const w = wire(); w.params.message.parts = [{ text: JSON.stringify(input), mediaType: 'application/json' }]; return w; }, -32602],
-  ['unsupported part media', () => { const w = wire(); w.params.message.parts[0].mediaType = 'text/plain'; return w; }, -32602],
+  ['unsupported part media', () => { const w = wire(); w.params.message.parts[0].mediaType = 'text/plain'; return w; }, -32005],
   ['array input', () => wire([]), -32602],
   ['unknown input option', () => wire({ ...input, options: { filename: '/etc/passwd' } }), -32602],
   ['oversized data', () => wire({ ...input, target: `https://seller.example/?q=${'x'.repeat(MAX_DATA_BYTES)}` }), -32602],
   ['excessive depth', () => { let body = {}; for (let i = 0; i < MAX_DEPTH + 1; i++) body = { body }; return wire({ method: 'POST', target: input.target, options: { body } }); }, -32602],
-  ['push notification request', () => { const w = wire(); w.params.configuration = { taskPushNotificationConfig: { url: 'https://never-resolve.invalid' } }; return w; }, -32602],
+  ['push notification request', () => { const w = wire(); w.params.configuration = { taskPushNotificationConfig: { url: 'https://never-resolve.invalid' } }; return w; }, -32003],
   ['async request', () => { const w = wire(); w.params.configuration = { returnImmediately: true }; return w; }, -32602],
-  ['unsupported output media', () => { const w = wire(); w.params.configuration = { acceptedOutputModes: ['text/plain'] }; return w; }, -32602],
+  ['unsupported output media', () => { const w = wire(); w.params.configuration = { acceptedOutputModes: ['text/plain'] }; return w; }, -32005],
 ];
 for (const [label, make, code] of negative) {
   test(`protocol refusal and same-process recovery: ${label}`, async () => {
@@ -244,5 +247,17 @@ test('runtime traps observe no DNS, external fetch, arbitrary file read or signi
     }
     assert.deepEqual(attempted, []);
   } finally { mock.restoreAll(); syncBuiltinESMExports(); }
+  await recovered();
+});
+
+test('completed task inputs are not retained or listed', async () => {
+  const value = { ...input, target: 'https://seller.example/data?q=SYNTHETIC_NEVER_RETAIN' };
+  const received = await callNormalization(server.url, value);
+  const lookup = await raw({ ...wire(), method: 'GetTask', params: { id: received.task.id } });
+  assert.equal(lookup.body.error.code, -32001);
+  const listed = await raw({ ...wire(), method: 'ListTasks', params: {} });
+  assert.deepEqual(listed.body.result.tasks, []);
+  assert.equal(listed.body.result.totalSize, 0);
+  assert.doesNotMatch(JSON.stringify(listed.body), /SYNTHETIC_NEVER_RETAIN/);
   await recovered();
 });
