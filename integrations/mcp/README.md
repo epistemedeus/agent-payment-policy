@@ -16,9 +16,11 @@ unchanged core `receiptCompletenessInputSchema()` shape. `reconciled`, `partial`
 classify supplied output observations. They do not verify transactions,
 signatures, balances or factual truth, authorize payment, or establish demand.
 
-The qualified client selects modern revision `2026-07-28` explicitly. The server
-uses official `serveStdio`; legacy sessions are refused. No untested client matrix
-or performance advantage is claimed.
+Official `serveStdio(factory, {legacy: 'serve'})` serves modern revision
+`2026-07-28` and legacy initialization from the same four-tool factory. The SDK
+negotiates and pins one era per connection. Modern discovery advertises modern
+revisions only. Qualified callers include the official modern SDK client and
+canonical Codex CLI 0.163.0 app-server's legacy `2025-06-18` consumer.
 
 Arguments are JSON data, including instruction-like strings. The adapter loads
 no argument files, URLs, remote schemas, modules, credentials or environment
@@ -60,16 +62,18 @@ npm install --ignore-scripts --save-exact /absolute/path/epistemedeus-agent-paym
 
 Configure a compatible MCP client to launch the resolved executable over stdio.
 The process waits for protocol input; running it alone is not a handshake. Use
-a client supporting revision `2026-07-28`. Configuration inventory alone does
-not establish native protocol support. Codex CLI 0.163.0 can store/read this
-configuration, but its non-inference app-server discovery requests revision
-`2025-06-18` and is refused by this modern-only server. No native useful-result
-support is claimed for that version. Do not reuse an existing account profile
-for a configuration experiment. See [release receiving](release/ROOT-RELEASE.md).
+a client supporting modern `2026-07-28` or official legacy initialization.
+Configuration inventory alone does not establish native protocol support.
+ROOT3033 qualifies actual `mcpServer/tool/call` calls for all four policy tools
+through an ephemeral app-server thread in a disposable empty profile, without
+authentication or a model turn. ROOT2981's historical native refusal was a
+correct observation of the earlier modern-only package, superseded by this
+extension. Model-mediated use and installed adoption remain separate future
+receiving. See [release receiving](release/ROOT-RELEASE.md).
 
 The source-only `scripts/cold-receive.py` prepares a fresh client directory and empty npm cache,
 acquires that exact local tarball with bounded `npm exec`, then repeats official
-modern discovery/useful/adverse/restart calls without egress. Set `MCP_EVIDENCE_DIR` to an external receipt directory and pass
+modern and legacy discovery/useful/adverse/restart calls without egress. Set `MCP_EVIDENCE_DIR` to an external receipt directory and pass
 the exact tarball path; its receipt distinguishes tarball acquisition from a
 future public-name install. Linux verification uses libseccomp; other platforms
 can use the same official client under their own network isolation.

@@ -34,6 +34,20 @@
     "role": "owning source projection",
     "status": "Feature source; final commit/tree/archive binding is external. No npm publication or registry listing is asserted."
   },
+  "compatibility": {
+    "owningProductBase": "a6fb83f3abfa5c028b2356fa9665e24212505727",
+    "operatingAndAssignment": "8dda961413b50b8b765cb81c7ba2e013855789e2",
+    "serving": "Official public serveStdio factory with legacy:serve; one era pinned per connection",
+    "modernRevision": "2026-07-28",
+    "qualifiedLegacyRevision": "2025-06-18",
+    "nativeProfileProducer": {
+      "repository": "https://github.com/epistemedeus/pilot",
+      "commit": "23bb53fb8806ea3d84514914a307b7a3557a2088",
+      "directory": "tools/ops/native-sol-mcp-profile",
+      "role": "Read-only v2 profile and no-turn receiving helpers; not policy implementation"
+    },
+    "receiving": "qualification/ROOT3033; exact packed bytes, actual runtime identities and export binding in receipts; no installed adoption or model turn"
+  },
   "producer": {
     "repository": "https://github.com/epistemedeus/pilot",
     "commit": "db118fd53df418cd9059195ba148b17b3165840c",

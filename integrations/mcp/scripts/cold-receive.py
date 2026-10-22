@@ -104,7 +104,8 @@ try:
     runtime_env={**env,'MCP_COMMAND':sys.executable,'MCP_ARGS':json.dumps([str(client/'npm-stdio.py'),'npm',*npm_args,'--offline','--','agent-payment-policy-mcp']),
         'MCP_CWD':str(consumer),'MCP_BIN':str(installed/'bin/agent-payment-policy-mcp.mjs'),'MCP_ENV':json.dumps({**env,'NODE_OPTIONS':'--max-old-space-size=192 --import '+str(client/'audit.mjs'),
             'MCP_PROCESS_AUDIT':str(audit)})}
-    for label, script in [('useful','cold.mjs'),('variant','variant.mjs'),('wire','wire.mjs')]:
+    for label, script in [('useful','cold.mjs'),('variant','variant.mjs'),('wire','wire.mjs'),
+                          ('dual-era','dual-era.mjs'),('era-wire','era-wire.mjs')]:
         output=run(label,[sys.executable,str(root/'scripts/no-egress.py'),'node','--max-old-space-size=256',str(client/'tests'/script)],client,runtime_env)
         receipt[label]=json.loads(output)
     runtime_argv=[sys.executable,str(root/'scripts/no-egress.py'),'node','--max-old-space-size=256',str(client/'tests/runtime-controls.mjs')]

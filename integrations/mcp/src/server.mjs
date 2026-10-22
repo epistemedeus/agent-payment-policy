@@ -62,7 +62,7 @@ const handle = serveStdio(() => {
   }
   server.server.onclose = () => { void stopWorkers(); };
   return server;
-}, { legacy: 'reject', transport, onerror: diagnostic });
+}, { legacy: 'serve', transport, onerror: diagnostic });
 
 async function shutdown() { await stopWorkers(); await handle.close(); }
 for (const signal of ['SIGINT', 'SIGTERM']) process.once(signal, () => { void shutdown(); });

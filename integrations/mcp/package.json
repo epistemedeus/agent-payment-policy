@@ -28,7 +28,10 @@
     "baseline": "node --max-old-space-size=256 tests/baseline.mjs",
     "check:release": "node scripts/validate-release.mjs",
     "test:wire": "node --max-old-space-size=256 tests/wire.mjs",
-    "test:variant": "node --max-old-space-size=256 tests/variant.mjs"
+    "test:variant": "node --max-old-space-size=256 tests/variant.mjs",
+    "test:dual-era": "node --max-old-space-size=256 tests/dual-era.mjs",
+    "test:era-wire": "node --max-old-space-size=256 tests/era-wire.mjs",
+    "test:runtime": "node --max-old-space-size=256 tests/runtime-controls.mjs"
   },
   "dependencies": {
     "agent-payment-policy": "0.15.1",
