@@ -1,0 +1,1439 @@
+{
+  "ok": true,
+  "inventory": [
+    {
+      "name": "normalize_request",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "method",
+          "target"
+        ],
+        "properties": {
+          "method": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string"
+          },
+          "options": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "body": {},
+              "mediaType": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "method",
+          "origin",
+          "pathname",
+          "queryKeys",
+          "publicRoute",
+          "bodyBinding",
+          "bindingDigest"
+        ],
+        "properties": {
+          "method": {
+            "type": "string"
+          },
+          "origin": {
+            "type": "string"
+          },
+          "pathname": {
+            "type": "string"
+          },
+          "queryKeys": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "publicRoute": {
+            "type": "string"
+          },
+          "bodyBinding": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "mediaType",
+                  "bytes",
+                  "digest"
+                ],
+                "properties": {
+                  "mediaType": {
+                    "const": "application/json"
+                  },
+                  "bytes": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "digest": {
+                    "type": "string",
+                    "pattern": "^sha256:[0-9a-f]{64}$"
+                  }
+                }
+              }
+            ]
+          },
+          "bindingDigest": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "inspect_output_schema",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "schema"
+        ],
+        "properties": {
+          "schema": {
+            "type": "object"
+          },
+          "requiredFields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "schemaDigest",
+          "canonicalBytes",
+          "requiredPaths",
+          "decision",
+          "schemaRetained",
+          "credentialsUsed",
+          "walletAccessed",
+          "paymentSigned",
+          "paymentSent"
+        ],
+        "properties": {
+          "schemaDigest": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+          },
+          "canonicalBytes": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "requiredPaths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "decision": {
+            "const": "admissible"
+          },
+          "schemaRetained": {
+            "const": false
+          },
+          "credentialsUsed": {
+            "const": false
+          },
+          "walletAccessed": {
+            "const": false
+          },
+          "paymentSigned": {
+            "const": false
+          },
+          "paymentSent": {
+            "const": false
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "accept_output",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "schema",
+          "schemaDigest",
+          "output"
+        ],
+        "properties": {
+          "schema": {
+            "type": "object"
+          },
+          "schemaDigest": {
+            "type": "string"
+          },
+          "output": {}
+        }
+      },
+      "outputSchema": {
+        "type": "object",
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "valid",
+              "responseDigest",
+              "schemaDigest"
+            ],
+            "properties": {
+              "valid": {
+                "const": true
+              },
+              "responseDigest": {
+                "type": "string",
+                "pattern": "^sha256:[0-9a-f]{64}$"
+              },
+              "schemaDigest": {
+                "type": "string",
+                "pattern": "^sha256:[0-9a-f]{64}$"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "valid"
+            ],
+            "properties": {
+              "valid": {
+                "const": false
+              }
+            }
+          }
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "classify_receipt",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "schemaVersion",
+          "protocol",
+          "receipt",
+          "transaction",
+          "balance",
+          "outputValidation"
+        ],
+        "properties": {
+          "schemaVersion": {
+            "type": "string",
+            "const": "agent-payment-policy.receipt-completeness-observation.v1"
+          },
+          "protocol": {
+            "type": "string",
+            "enum": [
+              "x402",
+              "mpp",
+              "other"
+            ]
+          },
+          "receipt": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "present",
+              "success",
+              "transactionReference",
+              "amount",
+              "network",
+              "asset",
+              "recipient",
+              "payer"
+            ],
+            "properties": {
+              "present": {
+                "type": "boolean"
+              },
+              "success": {
+                "type": "string",
+                "enum": [
+                  "confirmed",
+                  "rejected",
+                  "unknown"
+                ]
+              },
+              "transactionReference": {
+                "type": "string",
+                "enum": [
+                  "match",
+                  "mismatch",
+                  "missing",
+                  "not_checked"
+                ]
+              },
+              "amount": {
+                "type": "string",
+                "enum": [
+                  "match",
+                  "mismatch",
+                  "missing",
+                  "not_checked"
+                ]
+              },
+              "network": {
+                "type": "string",
+                "enum": [
+                  "match",
+                  "mismatch",
+                  "missing",
+                  "not_checked"
+                ]
+              },
+              "asset": {
+                "type": "string",
+                "enum": [
+                  "match",
+                  "mismatch",
+                  "missing",
+                  "not_checked"
+                ]
+              },
+              "recipient": {
+                "type": "string",
+                "enum": [
+                  "match",
+                  "mismatch",
+                  "missing",
+                  "not_checked"
+                ]
+              },
+              "payer": {
+                "type": "string",
+                "enum": [
+                  "match",
+                  "mismatch",
+                  "missing",
+                  "not_checked"
+                ]
+              }
+            }
+          },
+          "transaction": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "checked",
+              "success",
+              "transactionReference",
+              "amount",
+              "network",
+              "asset",
+              "recipient",
+              "payer"
+            ],
+            "properties": {
+              "checked": {
+                "type": "boolean"
+              },
+              "success": {
+                "type": "string",
+                "enum": [
+                  "confirmed",
+                  "rejected",
+                  "unknown"
+                ]
+              },
+              "transactionReference": {
+                "type": "string",
+                "enum": [
+                  "match",
+                  "mismatch",
+                  "missing",
+                  "not_checked"
+                ]
+              },
+              "amount": {
+                "type": "string",
+                "enum": [
+                  "match",
+                  "mismatch",
+                  "missing",
+                  "not_checked"
+                ]
+              },
+              "network": {
+                "type": "string",
+                "enum": [
+                  "match",
+                  "mismatch",
+                  "missing",
+                  "not_checked"
+                ]
+              },
+              "asset": {
+                "type": "string",
+                "enum": [
+                  "match",
+                  "mismatch",
+                  "missing",
+                  "not_checked"
+                ]
+              },
+              "recipient": {
+                "type": "string",
+                "enum": [
+                  "match",
+                  "mismatch",
+                  "missing",
+                  "not_checked"
+                ]
+              },
+              "payer": {
+                "type": "string",
+                "enum": [
+                  "match",
+                  "mismatch",
+                  "missing",
+                  "not_checked"
+                ]
+              }
+            }
+          },
+          "balance": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "checked",
+              "delta",
+              "asset",
+              "payer"
+            ],
+            "properties": {
+              "checked": {
+                "type": "boolean"
+              },
+              "delta": {
+                "type": "string",
+                "enum": [
+                  "match",
+                  "mismatch",
+                  "missing",
+                  "not_checked"
+                ]
+              },
+              "asset": {
+                "type": "string",
+                "enum": [
+                  "match",
+                  "mismatch",
+                  "missing",
+                  "not_checked"
+                ]
+              },
+              "payer": {
+                "type": "string",
+                "enum": [
+                  "match",
+                  "mismatch",
+                  "missing",
+                  "not_checked"
+                ]
+              }
+            }
+          },
+          "outputValidation": {
+            "type": "string",
+            "enum": [
+              "passed",
+              "failed",
+              "not_checked"
+            ]
+          }
+        }
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "schemaVersion",
+          "protocol",
+          "state",
+          "receiptPresent",
+          "successProven",
+          "transactionReferenceProven",
+          "provenDimensions",
+          "missingDimensions",
+          "conflicts",
+          "supplementedBy",
+          "deliveryState",
+          "evidenceBoundary",
+          "rawEvidenceRetained",
+          "credentialsUsed",
+          "walletAccessed",
+          "paymentSigned",
+          "paymentSent"
+        ],
+        "properties": {
+          "schemaVersion": {
+            "type": "string",
+            "const": "agent-payment-policy.receipt-completeness-report.v1"
+          },
+          "protocol": {
+            "type": "string",
+            "enum": [
+              "x402",
+              "mpp",
+              "other"
+            ]
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "reconciled",
+              "partial",
+              "conflict",
+              "insufficient"
+            ]
+          },
+          "receiptPresent": {
+            "type": "boolean"
+          },
+          "successProven": {
+            "type": "boolean"
+          },
+          "transactionReferenceProven": {
+            "type": "boolean"
+          },
+          "provenDimensions": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "enum": [
+                "amount",
+                "network",
+                "asset",
+                "recipient",
+                "payer"
+              ]
+            }
+          },
+          "missingDimensions": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "enum": [
+                "amount",
+                "network",
+                "asset",
+                "recipient",
+                "payer"
+              ]
+            }
+          },
+          "conflicts": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string"
+            }
+          },
+          "supplementedBy": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "enum": [
+                "transaction",
+                "balance"
+              ]
+            }
+          },
+          "deliveryState": {
+            "type": "string",
+            "enum": [
+              "valid",
+              "invalid",
+              "unverified"
+            ]
+          },
+          "evidenceBoundary": {
+            "type": "string"
+          },
+          "rawEvidenceRetained": {
+            "const": false
+          },
+          "credentialsUsed": {
+            "const": false
+          },
+          "walletAccessed": {
+            "const": false
+          },
+          "paymentSigned": {
+            "const": false
+          },
+          "paymentSent": {
+            "const": false
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    }
+  ],
+  "sessions": [
+    {
+      "era": "modern",
+      "restart": false,
+      "checks": [
+        {
+          "label": "packing_request_binding",
+          "tool": "normalize_request",
+          "actual": {
+            "method": "POST",
+            "origin": "https://supplier.example",
+            "pathname": "/packing",
+            "queryKeys": [
+              "batch",
+              "region"
+            ],
+            "publicRoute": "POST https://supplier.example/packing",
+            "bodyBinding": {
+              "mediaType": "application/json",
+              "bytes": 50,
+              "digest": "sha256:d05dc8bca8b1b2e80411c730dab1c0c0ad01c921bb7f41f66a0fd825269cc2fe"
+            },
+            "bindingDigest": "sha256:e44f2560b6eb1738b32052763ab08c4382982837fab16d763bd836a04de4b696"
+          },
+          "matchesFrozenExpected": true
+        },
+        {
+          "label": "packing_schema",
+          "tool": "inspect_output_schema",
+          "actual": {
+            "schemaDigest": "sha256:3b42772b9133098b0f05c0f10245ccfea38496c1ea50f4569addf88676e4cae9",
+            "canonicalBytes": 156,
+            "requiredPaths": [
+              "ready",
+              "units"
+            ],
+            "decision": "admissible",
+            "schemaRetained": false,
+            "credentialsUsed": false,
+            "walletAccessed": false,
+            "paymentSigned": false,
+            "paymentSent": false
+          },
+          "matchesFrozenExpected": true
+        },
+        {
+          "label": "packing_accepted",
+          "tool": "accept_output",
+          "actual": {
+            "valid": true,
+            "responseDigest": "sha256:4c0602e0a65fe976956a482a43a1d5108261a90807999aa03f27bd1a9ecb0dbb",
+            "schemaDigest": "sha256:3b42772b9133098b0f05c0f10245ccfea38496c1ea50f4569addf88676e4cae9"
+          },
+          "matchesFrozenExpected": true
+        },
+        {
+          "label": "wrong_units_type",
+          "tool": "accept_output",
+          "actual": {
+            "valid": false
+          },
+          "matchesFrozenExpected": true
+        },
+        {
+          "label": "wrong_schema_digest",
+          "tool": "accept_output",
+          "actual": {
+            "valid": false
+          },
+          "matchesFrozenExpected": true
+        },
+        {
+          "label": "partial_receipt_invalid",
+          "tool": "classify_receipt",
+          "actual": {
+            "schemaVersion": "agent-payment-policy.receipt-completeness-report.v1",
+            "protocol": "x402",
+            "state": "partial",
+            "receiptPresent": true,
+            "successProven": true,
+            "transactionReferenceProven": true,
+            "provenDimensions": [
+              "amount",
+              "network",
+              "asset",
+              "payer"
+            ],
+            "missingDimensions": [
+              "recipient"
+            ],
+            "conflicts": [],
+            "supplementedBy": [],
+            "deliveryState": "invalid",
+            "evidenceBoundary": "Classifies caller-verified normalized facts. It does not parse raw receipts, verify signatures or transactions, authorize payment, or prove independent demand.",
+            "rawEvidenceRetained": false,
+            "credentialsUsed": false,
+            "walletAccessed": false,
+            "paymentSigned": false,
+            "paymentSent": false
+          },
+          "matchesFrozenExpected": true
+        },
+        {
+          "label": "partial_receipt_valid",
+          "tool": "classify_receipt",
+          "actual": {
+            "schemaVersion": "agent-payment-policy.receipt-completeness-report.v1",
+            "protocol": "x402",
+            "state": "partial",
+            "receiptPresent": true,
+            "successProven": true,
+            "transactionReferenceProven": true,
+            "provenDimensions": [
+              "amount",
+              "network",
+              "asset",
+              "payer"
+            ],
+            "missingDimensions": [
+              "recipient"
+            ],
+            "conflicts": [],
+            "supplementedBy": [],
+            "deliveryState": "valid",
+            "evidenceBoundary": "Classifies caller-verified normalized facts. It does not parse raw receipts, verify signatures or transactions, authorize payment, or prove independent demand.",
+            "rawEvidenceRetained": false,
+            "credentialsUsed": false,
+            "walletAccessed": false,
+            "paymentSigned": false,
+            "paymentSent": false
+          },
+          "matchesFrozenExpected": true
+        }
+      ],
+      "argv": [
+        "python3",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/scripts/npm-stdio.py",
+        "npm",
+        "exec",
+        "--yes",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund",
+        "--engine-strict",
+        "--cache",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/npm-cache",
+        "--package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz",
+        "--offline",
+        "--",
+        "agent-payment-policy-mcp"
+      ],
+      "negotiated": "2026-07-28",
+      "exactSchemasAnnotations": true,
+      "refusal": {
+        "output": {
+          "_meta": {
+            "io.modelcontextprotocol/serverInfo": {
+              "name": "agent-payment-policy-mcp",
+              "version": "0.1.0"
+            }
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "{\"error\":{\"code\":\"POLICY_REFUSAL\",\"message\":\"The supplied tool request was refused or could not complete within its bounds.\"}}"
+            }
+          ],
+          "isError": true
+        },
+        "bytes": 291,
+        "sentinelAbsent": true
+      },
+      "recovery": {
+        "method": "POST",
+        "origin": "https://supplier.example",
+        "pathname": "/packing",
+        "queryKeys": [
+          "batch",
+          "region"
+        ],
+        "publicRoute": "POST https://supplier.example/packing",
+        "bodyBinding": {
+          "mediaType": "application/json",
+          "bytes": 50,
+          "digest": "sha256:d05dc8bca8b1b2e80411c730dab1c0c0ad01c921bb7f41f66a0fd825269cc2fe"
+        },
+        "bindingDigest": "sha256:e44f2560b6eb1738b32052763ab08c4382982837fab16d763bd836a04de4b696"
+      },
+      "ok": true,
+      "lifecycle": {
+        "sampledMaximumAggregateKiB": 310372,
+        "sampleIntervalMs": 20,
+        "observedProcesses": [
+          {
+            "pid": 361330,
+            "startTicks": "7145527"
+          },
+          {
+            "pid": 361331,
+            "startTicks": "7145528"
+          },
+          {
+            "pid": 361343,
+            "startTicks": "7145550"
+          },
+          {
+            "pid": 361344,
+            "startTicks": "7145550"
+          },
+          {
+            "pid": 361351,
+            "startTicks": "7145571"
+          },
+          {
+            "pid": 361352,
+            "startTicks": "7145572"
+          },
+          {
+            "pid": 361364,
+            "startTicks": "7145594"
+          },
+          {
+            "pid": 361365,
+            "startTicks": "7145594"
+          }
+        ],
+        "survivors": [],
+        "currentChildren": []
+      },
+      "stderrBytes": 0
+    },
+    {
+      "era": "modern",
+      "restart": true,
+      "checks": [
+        {
+          "label": "packing_request_binding",
+          "tool": "normalize_request",
+          "actual": {
+            "method": "POST",
+            "origin": "https://supplier.example",
+            "pathname": "/packing",
+            "queryKeys": [
+              "batch",
+              "region"
+            ],
+            "publicRoute": "POST https://supplier.example/packing",
+            "bodyBinding": {
+              "mediaType": "application/json",
+              "bytes": 50,
+              "digest": "sha256:d05dc8bca8b1b2e80411c730dab1c0c0ad01c921bb7f41f66a0fd825269cc2fe"
+            },
+            "bindingDigest": "sha256:e44f2560b6eb1738b32052763ab08c4382982837fab16d763bd836a04de4b696"
+          },
+          "matchesFrozenExpected": true
+        },
+        {
+          "label": "packing_schema",
+          "tool": "inspect_output_schema",
+          "actual": {
+            "schemaDigest": "sha256:3b42772b9133098b0f05c0f10245ccfea38496c1ea50f4569addf88676e4cae9",
+            "canonicalBytes": 156,
+            "requiredPaths": [
+              "ready",
+              "units"
+            ],
+            "decision": "admissible",
+            "schemaRetained": false,
+            "credentialsUsed": false,
+            "walletAccessed": false,
+            "paymentSigned": false,
+            "paymentSent": false
+          },
+          "matchesFrozenExpected": true
+        },
+        {
+          "label": "packing_accepted",
+          "tool": "accept_output",
+          "actual": {
+            "valid": true,
+            "responseDigest": "sha256:4c0602e0a65fe976956a482a43a1d5108261a90807999aa03f27bd1a9ecb0dbb",
+            "schemaDigest": "sha256:3b42772b9133098b0f05c0f10245ccfea38496c1ea50f4569addf88676e4cae9"
+          },
+          "matchesFrozenExpected": true
+        },
+        {
+          "label": "wrong_units_type",
+          "tool": "accept_output",
+          "actual": {
+            "valid": false
+          },
+          "matchesFrozenExpected": true
+        },
+        {
+          "label": "wrong_schema_digest",
+          "tool": "accept_output",
+          "actual": {
+            "valid": false
+          },
+          "matchesFrozenExpected": true
+        },
+        {
+          "label": "partial_receipt_invalid",
+          "tool": "classify_receipt",
+          "actual": {
+            "schemaVersion": "agent-payment-policy.receipt-completeness-report.v1",
+            "protocol": "x402",
+            "state": "partial",
+            "receiptPresent": true,
+            "successProven": true,
+            "transactionReferenceProven": true,
+            "provenDimensions": [
+              "amount",
+              "network",
+              "asset",
+              "payer"
+            ],
+            "missingDimensions": [
+              "recipient"
+            ],
+            "conflicts": [],
+            "supplementedBy": [],
+            "deliveryState": "invalid",
+            "evidenceBoundary": "Classifies caller-verified normalized facts. It does not parse raw receipts, verify signatures or transactions, authorize payment, or prove independent demand.",
+            "rawEvidenceRetained": false,
+            "credentialsUsed": false,
+            "walletAccessed": false,
+            "paymentSigned": false,
+            "paymentSent": false
+          },
+          "matchesFrozenExpected": true
+        },
+        {
+          "label": "partial_receipt_valid",
+          "tool": "classify_receipt",
+          "actual": {
+            "schemaVersion": "agent-payment-policy.receipt-completeness-report.v1",
+            "protocol": "x402",
+            "state": "partial",
+            "receiptPresent": true,
+            "successProven": true,
+            "transactionReferenceProven": true,
+            "provenDimensions": [
+              "amount",
+              "network",
+              "asset",
+              "payer"
+            ],
+            "missingDimensions": [
+              "recipient"
+            ],
+            "conflicts": [],
+            "supplementedBy": [],
+            "deliveryState": "valid",
+            "evidenceBoundary": "Classifies caller-verified normalized facts. It does not parse raw receipts, verify signatures or transactions, authorize payment, or prove independent demand.",
+            "rawEvidenceRetained": false,
+            "credentialsUsed": false,
+            "walletAccessed": false,
+            "paymentSigned": false,
+            "paymentSent": false
+          },
+          "matchesFrozenExpected": true
+        }
+      ],
+      "argv": [
+        "python3",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/scripts/npm-stdio.py",
+        "npm",
+        "exec",
+        "--yes",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund",
+        "--engine-strict",
+        "--cache",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/npm-cache",
+        "--package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz",
+        "--offline",
+        "--",
+        "agent-payment-policy-mcp"
+      ],
+      "negotiated": "2026-07-28",
+      "exactSchemasAnnotations": true,
+      "ok": true,
+      "lifecycle": {
+        "sampledMaximumAggregateKiB": 312536,
+        "sampleIntervalMs": 20,
+        "observedProcesses": [
+          {
+            "pid": 361382,
+            "startTicks": "7145697"
+          },
+          {
+            "pid": 361383,
+            "startTicks": "7145699"
+          },
+          {
+            "pid": 361395,
+            "startTicks": "7145721"
+          },
+          {
+            "pid": 361396,
+            "startTicks": "7145721"
+          },
+          {
+            "pid": 361405,
+            "startTicks": "7145740"
+          },
+          {
+            "pid": 361406,
+            "startTicks": "7145742"
+          },
+          {
+            "pid": 361418,
+            "startTicks": "7145763"
+          },
+          {
+            "pid": 361419,
+            "startTicks": "7145763"
+          }
+        ],
+        "survivors": [],
+        "currentChildren": []
+      },
+      "stderrBytes": 0
+    },
+    {
+      "era": "legacy",
+      "restart": false,
+      "checks": [
+        {
+          "label": "packing_request_binding",
+          "tool": "normalize_request",
+          "actual": {
+            "method": "POST",
+            "origin": "https://supplier.example",
+            "pathname": "/packing",
+            "queryKeys": [
+              "batch",
+              "region"
+            ],
+            "publicRoute": "POST https://supplier.example/packing",
+            "bodyBinding": {
+              "mediaType": "application/json",
+              "bytes": 50,
+              "digest": "sha256:d05dc8bca8b1b2e80411c730dab1c0c0ad01c921bb7f41f66a0fd825269cc2fe"
+            },
+            "bindingDigest": "sha256:e44f2560b6eb1738b32052763ab08c4382982837fab16d763bd836a04de4b696"
+          },
+          "matchesFrozenExpected": true
+        },
+        {
+          "label": "packing_schema",
+          "tool": "inspect_output_schema",
+          "actual": {
+            "schemaDigest": "sha256:3b42772b9133098b0f05c0f10245ccfea38496c1ea50f4569addf88676e4cae9",
+            "canonicalBytes": 156,
+            "requiredPaths": [
+              "ready",
+              "units"
+            ],
+            "decision": "admissible",
+            "schemaRetained": false,
+            "credentialsUsed": false,
+            "walletAccessed": false,
+            "paymentSigned": false,
+            "paymentSent": false
+          },
+          "matchesFrozenExpected": true
+        },
+        {
+          "label": "packing_accepted",
+          "tool": "accept_output",
+          "actual": {
+            "valid": true,
+            "responseDigest": "sha256:4c0602e0a65fe976956a482a43a1d5108261a90807999aa03f27bd1a9ecb0dbb",
+            "schemaDigest": "sha256:3b42772b9133098b0f05c0f10245ccfea38496c1ea50f4569addf88676e4cae9"
+          },
+          "matchesFrozenExpected": true
+        },
+        {
+          "label": "wrong_units_type",
+          "tool": "accept_output",
+          "actual": {
+            "valid": false
+          },
+          "matchesFrozenExpected": true
+        },
+        {
+          "label": "wrong_schema_digest",
+          "tool": "accept_output",
+          "actual": {
+            "valid": false
+          },
+          "matchesFrozenExpected": true
+        },
+        {
+          "label": "partial_receipt_invalid",
+          "tool": "classify_receipt",
+          "actual": {
+            "schemaVersion": "agent-payment-policy.receipt-completeness-report.v1",
+            "protocol": "x402",
+            "state": "partial",
+            "receiptPresent": true,
+            "successProven": true,
+            "transactionReferenceProven": true,
+            "provenDimensions": [
+              "amount",
+              "network",
+              "asset",
+              "payer"
+            ],
+            "missingDimensions": [
+              "recipient"
+            ],
+            "conflicts": [],
+            "supplementedBy": [],
+            "deliveryState": "invalid",
+            "evidenceBoundary": "Classifies caller-verified normalized facts. It does not parse raw receipts, verify signatures or transactions, authorize payment, or prove independent demand.",
+            "rawEvidenceRetained": false,
+            "credentialsUsed": false,
+            "walletAccessed": false,
+            "paymentSigned": false,
+            "paymentSent": false
+          },
+          "matchesFrozenExpected": true
+        },
+        {
+          "label": "partial_receipt_valid",
+          "tool": "classify_receipt",
+          "actual": {
+            "schemaVersion": "agent-payment-policy.receipt-completeness-report.v1",
+            "protocol": "x402",
+            "state": "partial",
+            "receiptPresent": true,
+            "successProven": true,
+            "transactionReferenceProven": true,
+            "provenDimensions": [
+              "amount",
+              "network",
+              "asset",
+              "payer"
+            ],
+            "missingDimensions": [
+              "recipient"
+            ],
+            "conflicts": [],
+            "supplementedBy": [],
+            "deliveryState": "valid",
+            "evidenceBoundary": "Classifies caller-verified normalized facts. It does not parse raw receipts, verify signatures or transactions, authorize payment, or prove independent demand.",
+            "rawEvidenceRetained": false,
+            "credentialsUsed": false,
+            "walletAccessed": false,
+            "paymentSigned": false,
+            "paymentSent": false
+          },
+          "matchesFrozenExpected": true
+        }
+      ],
+      "argv": [
+        "python3",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/scripts/npm-stdio.py",
+        "npm",
+        "exec",
+        "--yes",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund",
+        "--engine-strict",
+        "--cache",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/npm-cache",
+        "--package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz",
+        "--offline",
+        "--",
+        "agent-payment-policy-mcp"
+      ],
+      "negotiated": "2025-06-18",
+      "exactSchemasAnnotations": true,
+      "refusal": {
+        "output": {
+          "content": [
+            {
+              "type": "text",
+              "text": "{\"error\":{\"code\":\"POLICY_REFUSAL\",\"message\":\"The supplied tool request was refused or could not complete within its bounds.\"}}"
+            }
+          ],
+          "isError": true
+        },
+        "bytes": 190,
+        "sentinelAbsent": true
+      },
+      "recovery": {
+        "method": "POST",
+        "origin": "https://supplier.example",
+        "pathname": "/packing",
+        "queryKeys": [
+          "batch",
+          "region"
+        ],
+        "publicRoute": "POST https://supplier.example/packing",
+        "bodyBinding": {
+          "mediaType": "application/json",
+          "bytes": 50,
+          "digest": "sha256:d05dc8bca8b1b2e80411c730dab1c0c0ad01c921bb7f41f66a0fd825269cc2fe"
+        },
+        "bindingDigest": "sha256:e44f2560b6eb1738b32052763ab08c4382982837fab16d763bd836a04de4b696"
+      },
+      "ok": true,
+      "lifecycle": {
+        "sampledMaximumAggregateKiB": 314288,
+        "sampleIntervalMs": 20,
+        "observedProcesses": [
+          {
+            "pid": 361433,
+            "startTicks": "7145853"
+          },
+          {
+            "pid": 361434,
+            "startTicks": "7145855"
+          },
+          {
+            "pid": 361446,
+            "startTicks": "7145876"
+          },
+          {
+            "pid": 361447,
+            "startTicks": "7145876"
+          }
+        ],
+        "survivors": [],
+        "currentChildren": []
+      },
+      "stderrBytes": 0
+    },
+    {
+      "era": "legacy",
+      "restart": true,
+      "checks": [
+        {
+          "label": "packing_request_binding",
+          "tool": "normalize_request",
+          "actual": {
+            "method": "POST",
+            "origin": "https://supplier.example",
+            "pathname": "/packing",
+            "queryKeys": [
+              "batch",
+              "region"
+            ],
+            "publicRoute": "POST https://supplier.example/packing",
+            "bodyBinding": {
+              "mediaType": "application/json",
+              "bytes": 50,
+              "digest": "sha256:d05dc8bca8b1b2e80411c730dab1c0c0ad01c921bb7f41f66a0fd825269cc2fe"
+            },
+            "bindingDigest": "sha256:e44f2560b6eb1738b32052763ab08c4382982837fab16d763bd836a04de4b696"
+          },
+          "matchesFrozenExpected": true
+        },
+        {
+          "label": "packing_schema",
+          "tool": "inspect_output_schema",
+          "actual": {
+            "schemaDigest": "sha256:3b42772b9133098b0f05c0f10245ccfea38496c1ea50f4569addf88676e4cae9",
+            "canonicalBytes": 156,
+            "requiredPaths": [
+              "ready",
+              "units"
+            ],
+            "decision": "admissible",
+            "schemaRetained": false,
+            "credentialsUsed": false,
+            "walletAccessed": false,
+            "paymentSigned": false,
+            "paymentSent": false
+          },
+          "matchesFrozenExpected": true
+        },
+        {
+          "label": "packing_accepted",
+          "tool": "accept_output",
+          "actual": {
+            "valid": true,
+            "responseDigest": "sha256:4c0602e0a65fe976956a482a43a1d5108261a90807999aa03f27bd1a9ecb0dbb",
+            "schemaDigest": "sha256:3b42772b9133098b0f05c0f10245ccfea38496c1ea50f4569addf88676e4cae9"
+          },
+          "matchesFrozenExpected": true
+        },
+        {
+          "label": "wrong_units_type",
+          "tool": "accept_output",
+          "actual": {
+            "valid": false
+          },
+          "matchesFrozenExpected": true
+        },
+        {
+          "label": "wrong_schema_digest",
+          "tool": "accept_output",
+          "actual": {
+            "valid": false
+          },
+          "matchesFrozenExpected": true
+        },
+        {
+          "label": "partial_receipt_invalid",
+          "tool": "classify_receipt",
+          "actual": {
+            "schemaVersion": "agent-payment-policy.receipt-completeness-report.v1",
+            "protocol": "x402",
+            "state": "partial",
+            "receiptPresent": true,
+            "successProven": true,
+            "transactionReferenceProven": true,
+            "provenDimensions": [
+              "amount",
+              "network",
+              "asset",
+              "payer"
+            ],
+            "missingDimensions": [
+              "recipient"
+            ],
+            "conflicts": [],
+            "supplementedBy": [],
+            "deliveryState": "invalid",
+            "evidenceBoundary": "Classifies caller-verified normalized facts. It does not parse raw receipts, verify signatures or transactions, authorize payment, or prove independent demand.",
+            "rawEvidenceRetained": false,
+            "credentialsUsed": false,
+            "walletAccessed": false,
+            "paymentSigned": false,
+            "paymentSent": false
+          },
+          "matchesFrozenExpected": true
+        },
+        {
+          "label": "partial_receipt_valid",
+          "tool": "classify_receipt",
+          "actual": {
+            "schemaVersion": "agent-payment-policy.receipt-completeness-report.v1",
+            "protocol": "x402",
+            "state": "partial",
+            "receiptPresent": true,
+            "successProven": true,
+            "transactionReferenceProven": true,
+            "provenDimensions": [
+              "amount",
+              "network",
+              "asset",
+              "payer"
+            ],
+            "missingDimensions": [
+              "recipient"
+            ],
+            "conflicts": [],
+            "supplementedBy": [],
+            "deliveryState": "valid",
+            "evidenceBoundary": "Classifies caller-verified normalized facts. It does not parse raw receipts, verify signatures or transactions, authorize payment, or prove independent demand.",
+            "rawEvidenceRetained": false,
+            "credentialsUsed": false,
+            "walletAccessed": false,
+            "paymentSigned": false,
+            "paymentSent": false
+          },
+          "matchesFrozenExpected": true
+        }
+      ],
+      "argv": [
+        "python3",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/scripts/npm-stdio.py",
+        "npm",
+        "exec",
+        "--yes",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund",
+        "--engine-strict",
+        "--cache",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/npm-cache",
+        "--package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz",
+        "--offline",
+        "--",
+        "agent-payment-policy-mcp"
+      ],
+      "negotiated": "2025-06-18",
+      "exactSchemasAnnotations": true,
+      "ok": true,
+      "lifecycle": {
+        "sampledMaximumAggregateKiB": 317444,
+        "sampleIntervalMs": 20,
+        "observedProcesses": [
+          {
+            "pid": 361463,
+            "startTicks": "7145979"
+          },
+          {
+            "pid": 361464,
+            "startTicks": "7145980"
+          },
+          {
+            "pid": 361476,
+            "startTicks": "7146001"
+          },
+          {
+            "pid": 361477,
+            "startTicks": "7146002"
+          }
+        ],
+        "survivors": [],
+        "currentChildren": []
+      },
+      "stderrBytes": 0
+    }
+  ],
+  "networkIsolation": "Existing no-egress.py inherited by client, npm and server descendants"
+}

@@ -1,0 +1,205 @@
+{
+  "ok": true,
+  "policyCliResolvedFromInventory": "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/npm-cache/_npx/5dbce4b621437f70/node_modules/agent-payment-policy/cli.mjs",
+  "checks": [
+    {
+      "label": "packing_request_binding",
+      "argv": [
+        "/exec-daemon/node",
+        "--max-old-space-size=192",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/npm-cache/_npx/5dbce4b621437f70/node_modules/agent-payment-policy/cli.mjs",
+        "inspect-json-request",
+        "https://supplier.example/packing?region=eu&batch=24",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/direct/body.json"
+      ],
+      "exit": 0,
+      "expectedExit": 0,
+      "elapsedSeconds": 0.078,
+      "actual": {
+        "method": "POST",
+        "origin": "https://supplier.example",
+        "pathname": "/packing",
+        "queryKeys": [
+          "batch",
+          "region"
+        ],
+        "publicRoute": "POST https://supplier.example/packing",
+        "bodyBinding": {
+          "mediaType": "application/json",
+          "bytes": 50,
+          "digest": "sha256:d05dc8bca8b1b2e80411c730dab1c0c0ad01c921bb7f41f66a0fd825269cc2fe"
+        },
+        "bindingDigest": "sha256:e44f2560b6eb1738b32052763ab08c4382982837fab16d763bd836a04de4b696"
+      },
+      "stderrBytes": 0
+    },
+    {
+      "label": "packing_schema",
+      "argv": [
+        "/exec-daemon/node",
+        "--max-old-space-size=192",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/npm-cache/_npx/5dbce4b621437f70/node_modules/agent-payment-policy/cli.mjs",
+        "output-schema-check",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/direct/schema.json",
+        "units,ready"
+      ],
+      "exit": 0,
+      "expectedExit": 0,
+      "elapsedSeconds": 0.1,
+      "actual": {
+        "schemaDigest": "sha256:3b42772b9133098b0f05c0f10245ccfea38496c1ea50f4569addf88676e4cae9",
+        "canonicalBytes": 156,
+        "requiredPaths": [
+          "ready",
+          "units"
+        ],
+        "decision": "admissible",
+        "schemaRetained": false,
+        "credentialsUsed": false,
+        "walletAccessed": false,
+        "paymentSigned": false,
+        "paymentSent": false
+      },
+      "stderrBytes": 0
+    },
+    {
+      "label": "packing_accepted",
+      "argv": [
+        "/exec-daemon/node",
+        "--max-old-space-size=192",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/npm-cache/_npx/5dbce4b621437f70/node_modules/agent-payment-policy/cli.mjs",
+        "output-accept",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/direct/schema.json",
+        "sha256:3b42772b9133098b0f05c0f10245ccfea38496c1ea50f4569addf88676e4cae9",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/direct/output.json"
+      ],
+      "exit": 0,
+      "expectedExit": 0,
+      "elapsedSeconds": 0.137,
+      "actual": {
+        "valid": true,
+        "responseDigest": "sha256:4c0602e0a65fe976956a482a43a1d5108261a90807999aa03f27bd1a9ecb0dbb",
+        "schemaDigest": "sha256:3b42772b9133098b0f05c0f10245ccfea38496c1ea50f4569addf88676e4cae9"
+      },
+      "stderrBytes": 0
+    },
+    {
+      "label": "wrong_units_type",
+      "argv": [
+        "/exec-daemon/node",
+        "--max-old-space-size=192",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/npm-cache/_npx/5dbce4b621437f70/node_modules/agent-payment-policy/cli.mjs",
+        "output-accept",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/direct/schema.json",
+        "sha256:3b42772b9133098b0f05c0f10245ccfea38496c1ea50f4569addf88676e4cae9",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/direct/output.json"
+      ],
+      "exit": 1,
+      "expectedExit": 1,
+      "elapsedSeconds": 0.137,
+      "actual": {
+        "valid": false
+      },
+      "stderrBytes": 0
+    },
+    {
+      "label": "wrong_schema_digest",
+      "argv": [
+        "/exec-daemon/node",
+        "--max-old-space-size=192",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/npm-cache/_npx/5dbce4b621437f70/node_modules/agent-payment-policy/cli.mjs",
+        "output-accept",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/direct/schema.json",
+        "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/direct/output.json"
+      ],
+      "exit": 1,
+      "expectedExit": 1,
+      "elapsedSeconds": 0.103,
+      "actual": {
+        "valid": false
+      },
+      "stderrBytes": 0
+    },
+    {
+      "label": "partial_receipt_invalid",
+      "argv": [
+        "/exec-daemon/node",
+        "--max-old-space-size=192",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/npm-cache/_npx/5dbce4b621437f70/node_modules/agent-payment-policy/cli.mjs",
+        "receipt-completeness-check",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/direct/receipt.json"
+      ],
+      "exit": 0,
+      "expectedExit": 0,
+      "elapsedSeconds": 0.062,
+      "actual": {
+        "schemaVersion": "agent-payment-policy.receipt-completeness-report.v1",
+        "protocol": "x402",
+        "state": "partial",
+        "receiptPresent": true,
+        "successProven": true,
+        "transactionReferenceProven": true,
+        "provenDimensions": [
+          "amount",
+          "network",
+          "asset",
+          "payer"
+        ],
+        "missingDimensions": [
+          "recipient"
+        ],
+        "conflicts": [],
+        "supplementedBy": [],
+        "deliveryState": "invalid",
+        "evidenceBoundary": "Classifies caller-verified normalized facts. It does not parse raw receipts, verify signatures or transactions, authorize payment, or prove independent demand.",
+        "rawEvidenceRetained": false,
+        "credentialsUsed": false,
+        "walletAccessed": false,
+        "paymentSigned": false,
+        "paymentSent": false
+      },
+      "stderrBytes": 0
+    },
+    {
+      "label": "partial_receipt_valid",
+      "argv": [
+        "/exec-daemon/node",
+        "--max-old-space-size=192",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/npm-cache/_npx/5dbce4b621437f70/node_modules/agent-payment-policy/cli.mjs",
+        "receipt-completeness-check",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/direct/receipt.json"
+      ],
+      "exit": 0,
+      "expectedExit": 0,
+      "elapsedSeconds": 0.063,
+      "actual": {
+        "schemaVersion": "agent-payment-policy.receipt-completeness-report.v1",
+        "protocol": "x402",
+        "state": "partial",
+        "receiptPresent": true,
+        "successProven": true,
+        "transactionReferenceProven": true,
+        "provenDimensions": [
+          "amount",
+          "network",
+          "asset",
+          "payer"
+        ],
+        "missingDimensions": [
+          "recipient"
+        ],
+        "conflicts": [],
+        "supplementedBy": [],
+        "deliveryState": "valid",
+        "evidenceBoundary": "Classifies caller-verified normalized facts. It does not parse raw receipts, verify signatures or transactions, authorize payment, or prove independent demand.",
+        "rawEvidenceRetained": false,
+        "credentialsUsed": false,
+        "walletAccessed": false,
+        "paymentSigned": false,
+        "paymentSent": false
+      },
+      "stderrBytes": 0
+    }
+  ]
+}
