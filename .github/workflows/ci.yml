@@ -33,7 +33,6 @@ jobs:
         working-directory: integrations/mcp
     env:
       NODE_OPTIONS: --max-old-space-size=384
-      MCP_EVIDENCE_DIR: ${{ runner.temp }}/policy-mcp-receipts
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -41,6 +40,9 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: integrations/mcp/npm-shrinkwrap.json
+      - name: Set task-owned MCP receipt directory
+        shell: bash
+        run: printf 'MCP_EVIDENCE_DIR=%s/policy-mcp-receipts\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
       - run: npm ci --ignore-scripts --engine-strict
       - run: npm run baseline
       - run: npm test
