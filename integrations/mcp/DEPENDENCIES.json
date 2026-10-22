@@ -1,0 +1,236 @@
+{
+  "lock": "npm-shrinkwrap.json",
+  "packages": [
+    {
+      "path": "node_modules/@modelcontextprotocol/client",
+      "name": "@modelcontextprotocol/client",
+      "version": "2.3.1",
+      "resolved": "https://registry.npmjs.org/@modelcontextprotocol/client/-/client-2.3.1.tgz",
+      "integrity": "sha512-mIGZXpHsjnZ6lD+gD/WCMpR5k8yVQQ8nNFH1N0Srf7AvnwTUMYD6pvTY8ng2+He5FfV7YMZLmrjL7cLa/cc3dQ==",
+      "license": "Apache-2.0",
+      "developmentOnly": true,
+      "installedTreeSha256": "9ae52a51fda85d67b32379077abfc197957599005de1cfd69a25a49517034527",
+      "installedFileCount": 85
+    },
+    {
+      "path": "node_modules/@modelcontextprotocol/core",
+      "name": "@modelcontextprotocol/core",
+      "version": "2.3.1",
+      "resolved": "https://registry.npmjs.org/@modelcontextprotocol/core/-/core-2.3.1.tgz",
+      "integrity": "sha512-laVmIhPGpWi7rG9q+0UigblRN0Hws/Yjlb6qLFtVqryXVLkc4h+yN8z731POD2LnAGQlFe7/tXhUm7Bi0YB91g==",
+      "license": "Apache-2.0",
+      "developmentOnly": false,
+      "installedTreeSha256": "f59208e5f005e64228f8d61983d0c22012fe834059b2d9ad9d628b528efedfbc",
+      "installedFileCount": 21
+    },
+    {
+      "path": "node_modules/@modelcontextprotocol/server",
+      "name": "@modelcontextprotocol/server",
+      "version": "2.3.1",
+      "resolved": "https://registry.npmjs.org/@modelcontextprotocol/server/-/server-2.3.1.tgz",
+      "integrity": "sha512-e59MfWuSssj6DoQ96JCTqdW1AXT5/XtnTl0WWd6MU1Ka434fFUGGosCLJbGNySDhHGvxQWoRWK137FXYFkYNWw==",
+      "license": "Apache-2.0",
+      "developmentOnly": false,
+      "installedTreeSha256": "db81738ed48f756521eb114d8c988e2c4fa70197d4dd97497c19487cde669e89",
+      "installedFileCount": 85
+    },
+    {
+      "path": "node_modules/agent-payment-policy",
+      "name": "agent-payment-policy",
+      "version": "0.15.1",
+      "resolved": "https://registry.npmjs.org/agent-payment-policy/-/agent-payment-policy-0.15.1.tgz",
+      "integrity": "sha512-25GlNXX2JnhFo5pO5/0BQcyUmQYr/l0/aD+pmTCo/4mjdVsfNKtH9DySgzEzJ3WmprqXtShLgbiodQ5xnVi1AA==",
+      "license": "MIT",
+      "developmentOnly": false,
+      "installedTreeSha256": "2070ee1368795e8daff9d0c490b21d0958c8f065a841200c55479e1004b2545a",
+      "installedFileCount": 14
+    },
+    {
+      "path": "node_modules/ajv",
+      "name": "ajv",
+      "version": "8.20.0",
+      "resolved": "https://registry.npmjs.org/ajv/-/ajv-8.20.0.tgz",
+      "integrity": "sha512-Thbli+OlOj+iMPYFBVBfJ3OmCAnaSyNn4M1vz9T6Gka5Jt9ba/HIR56joy65tY6kx/FCF5VXNB819Y7/GUrBGA==",
+      "license": "MIT",
+      "developmentOnly": false,
+      "installedTreeSha256": "9bf13d80af688544be948c46f3603adfc761c0a8e63ae4185e9f3202d9d2da14",
+      "installedFileCount": 466
+    },
+    {
+      "path": "node_modules/ajv-formats",
+      "name": "ajv-formats",
+      "version": "3.0.1",
+      "resolved": "https://registry.npmjs.org/ajv-formats/-/ajv-formats-3.0.1.tgz",
+      "integrity": "sha512-8iUql50EUR+uUcdRQ3HDqa6EVyo3docL8g5WJ3FNcWmu62IbkGUue/pEyLBW8VGKKucTPgqeks4fIU1DA4yowQ==",
+      "license": "MIT",
+      "developmentOnly": false,
+      "installedTreeSha256": "ebf7b1afd4bbdff2c03703301845083111436fcf2015435f939324808a2f0a3d",
+      "installedFileCount": 15
+    },
+    {
+      "path": "node_modules/cross-spawn",
+      "name": "cross-spawn",
+      "version": "7.0.6",
+      "resolved": "https://registry.npmjs.org/cross-spawn/-/cross-spawn-7.0.6.tgz",
+      "integrity": "sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==",
+      "license": "MIT",
+      "developmentOnly": true,
+      "installedTreeSha256": "4d8562320d312e387171284981096ce387dd7ea73a6245e4e3c091caec478163",
+      "installedFileCount": 9
+    },
+    {
+      "path": "node_modules/eventsource",
+      "name": "eventsource",
+      "version": "3.0.7",
+      "resolved": "https://registry.npmjs.org/eventsource/-/eventsource-3.0.7.tgz",
+      "integrity": "sha512-CRT1WTyuQoD771GW56XEZFQ/ZoSfWid1alKGDYMmkt2yl8UXrVR4pspqWNEcqKvVIzg6PAltWjxcSSPrboA4iA==",
+      "license": "MIT",
+      "developmentOnly": true,
+      "installedTreeSha256": "7ac7edf6b6332424b9735d2fdeff10ef550571af56bc021774880e73c9b9b006",
+      "installedFileCount": 13
+    },
+    {
+      "path": "node_modules/eventsource-parser",
+      "name": "eventsource-parser",
+      "version": "3.1.1",
+      "resolved": "https://registry.npmjs.org/eventsource-parser/-/eventsource-parser-3.1.1.tgz",
+      "integrity": "sha512-EKN1vKAMcZ8MlYMpaNuxN6R9yakzH6uajHcHVTqWJzvu5pWw9DyhbP35HH8MVBQ+dZjAfDxk+A8NiR9KWaXiyQ==",
+      "license": "MIT",
+      "developmentOnly": true,
+      "installedTreeSha256": "47ad7b95bcbfaf9b31e84fa5fc0ff5ee7ee5948132221ca5bd45285582c8110c",
+      "installedFileCount": 21
+    },
+    {
+      "path": "node_modules/fast-deep-equal",
+      "name": "fast-deep-equal",
+      "version": "3.1.3",
+      "resolved": "https://registry.npmjs.org/fast-deep-equal/-/fast-deep-equal-3.1.3.tgz",
+      "integrity": "sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==",
+      "license": "MIT",
+      "developmentOnly": false,
+      "installedTreeSha256": "4f3b31d2d7e7944c12ec56f6bd2ea1de9cabbf79974a624d8d76ca4ccc0b024e",
+      "installedFileCount": 11
+    },
+    {
+      "path": "node_modules/fast-uri",
+      "name": "fast-uri",
+      "version": "3.1.9",
+      "resolved": "https://registry.npmjs.org/fast-uri/-/fast-uri-3.1.9.tgz",
+      "integrity": "sha512-hS/0Wt3Ya043oKXs0sIxrMpKQITXhMLIrVAKKXi4gozGC9v7YRWVnXIZzjNPTO02M9BdxLCWqK1yRXgNziVyJQ==",
+      "license": "BSD-3-Clause",
+      "developmentOnly": false,
+      "installedTreeSha256": "66c7f72534c6b0f920005565b5d1d19c0d499bc2ffce534a52d173777e5d8ed9",
+      "installedFileCount": 47
+    },
+    {
+      "path": "node_modules/isexe",
+      "name": "isexe",
+      "version": "2.0.0",
+      "resolved": "https://registry.npmjs.org/isexe/-/isexe-2.0.0.tgz",
+      "integrity": "sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==",
+      "license": "ISC",
+      "developmentOnly": true,
+      "installedTreeSha256": "2e1c45190203f247735ac04f3894a7f8004eb098d91e974a84b6bc8f18f1d091",
+      "installedFileCount": 8
+    },
+    {
+      "path": "node_modules/jose",
+      "name": "jose",
+      "version": "6.2.13",
+      "resolved": "https://registry.npmjs.org/jose/-/jose-6.2.13.tgz",
+      "integrity": "sha512-7TIg10ZE1x82YediN+lcrPNvGMKge9yFHQD+Qho/b8y2adfugU3AsvvHfxV0fzyFllT6l9xCjf4RWY9g/Z9PJQ==",
+      "license": "MIT",
+      "developmentOnly": true,
+      "installedTreeSha256": "9745d3547cf087067dc9fd6d8263f2143656fcf718fbb532ef64998d7f64be9c",
+      "installedFileCount": 80
+    },
+    {
+      "path": "node_modules/json-schema-traverse",
+      "name": "json-schema-traverse",
+      "version": "1.0.0",
+      "resolved": "https://registry.npmjs.org/json-schema-traverse/-/json-schema-traverse-1.0.0.tgz",
+      "integrity": "sha512-NM8/P9n3XjXhIZn1lLhkFaACTOURQXjWhV4BA/RnOv8xvgqtqpAX9IO4mRQxSx1Rlo4tqzeqb0sOlruaOy3dug==",
+      "license": "MIT",
+      "developmentOnly": false,
+      "installedTreeSha256": "1b72257ad7ded5e4f616b8538159862e7b625e8f54518d1ac36a615827f9ad23",
+      "installedFileCount": 12
+    },
+    {
+      "path": "node_modules/path-key",
+      "name": "path-key",
+      "version": "3.1.1",
+      "resolved": "https://registry.npmjs.org/path-key/-/path-key-3.1.1.tgz",
+      "integrity": "sha512-ojmeN0qd+y0jszEtoY48r0Peq5dwMEkIlCOu6Q5f41lfkswXuKtYrhgoTpLnyIcHm24Uhqx+5Tqm2InSwLhE6Q==",
+      "license": "MIT",
+      "developmentOnly": true,
+      "installedTreeSha256": "53b77b1b5e1009c133c5a23da24e82fc637903e07fef43745df6214410a88bdb",
+      "installedFileCount": 5
+    },
+    {
+      "path": "node_modules/pkce-challenge",
+      "name": "pkce-challenge",
+      "version": "5.0.1",
+      "resolved": "https://registry.npmjs.org/pkce-challenge/-/pkce-challenge-5.0.1.tgz",
+      "integrity": "sha512-wQ0b/W4Fr01qtpHlqSqspcj3EhBvimsdh0KlHhH8HRZnMsEa0ea2fTULOXOS9ccQr3om+GcGRk4e+isrZWV8qQ==",
+      "license": "MIT",
+      "developmentOnly": true,
+      "installedTreeSha256": "b730cf314a42d13f42cf392377b4f0cab3b041be0e1e932a3cd6e33d1c50df2c",
+      "installedFileCount": 10
+    },
+    {
+      "path": "node_modules/require-from-string",
+      "name": "require-from-string",
+      "version": "2.0.2",
+      "resolved": "https://registry.npmjs.org/require-from-string/-/require-from-string-2.0.2.tgz",
+      "integrity": "sha512-Xf0nWe6RseziFMu+Ap9biiUbmplq6S9/p+7w7YXP/JBHhrUDDUhwa+vANyubuqfZWTveU//DYVGsDG7RKL/vEw==",
+      "license": "MIT",
+      "developmentOnly": false,
+      "installedTreeSha256": "acae06d3e34484c6be4e61bc083e5ba4f59e39e6c4548107eb6b1e81172f668d",
+      "installedFileCount": 4
+    },
+    {
+      "path": "node_modules/shebang-command",
+      "name": "shebang-command",
+      "version": "2.0.0",
+      "resolved": "https://registry.npmjs.org/shebang-command/-/shebang-command-2.0.0.tgz",
+      "integrity": "sha512-kHxr2zZpYtdmrN1qDjrrX/Z1rR1kG8Dx+gkpK1G4eXmvXswmcE1hTWBWYUzlraYw1/yZp6YuDY77YtvbN0dmDA==",
+      "license": "MIT",
+      "developmentOnly": true,
+      "installedTreeSha256": "79602f512da3ec2ca672658c0598e9218427db616bd38421249cb0a581d8b080",
+      "installedFileCount": 4
+    },
+    {
+      "path": "node_modules/shebang-regex",
+      "name": "shebang-regex",
+      "version": "3.0.0",
+      "resolved": "https://registry.npmjs.org/shebang-regex/-/shebang-regex-3.0.0.tgz",
+      "integrity": "sha512-7++dFhtcx3353uBaq8DDR4NuxBetBzC7ZQOhmTQInHEd6bSrXdiEyzCvG07Z44UYdLShWUyXt5M/yhz8ekcb1A==",
+      "license": "MIT",
+      "developmentOnly": true,
+      "installedTreeSha256": "2822290977d296842e48ffcf2fa22ff2048593c1e5738ec46df5d252d3d98818",
+      "installedFileCount": 5
+    },
+    {
+      "path": "node_modules/which",
+      "name": "which",
+      "version": "2.0.2",
+      "resolved": "https://registry.npmjs.org/which/-/which-2.0.2.tgz",
+      "integrity": "sha512-BLI3Tl1TW3Pvl70l3yq3Y64i+awpwXqsGBYWkkqMtnbXgrMD+yj7rhW0kuEDxzJaYXGjEW5ogapKNMEKNMjibA==",
+      "license": "ISC",
+      "developmentOnly": true,
+      "installedTreeSha256": "ce3c5b134d760006003465b3dbd493e103cf16058e4443a092838df3cab2073a",
+      "installedFileCount": 6
+    },
+    {
+      "path": "node_modules/zod",
+      "name": "zod",
+      "version": "4.6.7",
+      "resolved": "https://registry.npmjs.org/zod/-/zod-4.6.7.tgz",
+      "integrity": "sha512-g8W2D2kU6a8untc053fX1uVBKzM7yqAxW/3zwk83+6RyF2+SKOuV+c0wBDhUwzV1PaGapmZH+rmcUzPf+3CGwg==",
+      "license": "MIT",
+      "developmentOnly": false,
+      "installedTreeSha256": "d2b0ca1a4c175ee7900c3b1e5b805e0a2aa6361ce97ca84c67bc68df0e6db441",
+      "installedFileCount": 840
+    }
+  ]
+}
