@@ -1,0 +1,91 @@
+name: optional MCP npm release
+
+on:
+  workflow_dispatch:
+    inputs:
+      source:
+        description: Exact reviewed full commit SHA (must equal selected workflow ref HEAD)
+        required: true
+        type: string
+      version:
+        description: Exact optional package version
+        required: true
+        default: '0.1.0'
+        type: string
+      action:
+        description: Prepare by default; publish only after optional npm authority enrollment
+        required: true
+        default: prepare
+        type: choice
+        options: [prepare, publish]
+      sha256:
+        description: Previously reviewed archive SHA256 (required for publish)
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: optional-mcp-npm-release
+  cancel-in-progress: false
+
+env:
+  NODE_OPTIONS: --max-old-space-size=256
+  RELEASE_SOURCE: ${{ inputs.source }}
+  RELEASE_VERSION: ${{ inputs.version }}
+  RELEASE_SHA256: ${{ inputs.sha256 }}
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: integrations/mcp
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Prepare exact optional archive
+        run: python3 scripts/npm-release.py prepare --source "$RELEASE_SOURCE" --version "$RELEASE_VERSION" --output "$RUNNER_TEMP/optional-mcp-release"
+      - run: python3 tests/npm-release.py
+      - run: npm ci --ignore-scripts --engine-strict --no-audit --no-fund
+      - run: node --max-old-space-size=256 tests/baseline.mjs
+      - run: node --max-old-space-size=256 tests/cold.mjs
+      - run: node --max-old-space-size=256 tests/dual-era.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: optional-mcp-release
+          path: ${{ runner.temp }}/optional-mcp-release/
+          if-no-files-found: error
+          retention-days: 7
+  publish:
+    if: ${{ inputs.action == 'publish' }}
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      id-token: write
+    defaults:
+      run:
+        working-directory: integrations/mcp
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: optional-mcp-release
+          path: ${{ runner.temp }}/optional-mcp-release
+      - name: Publish only the reviewed optional archive with OIDC
+        run: python3 scripts/npm-release.py publish --source "$RELEASE_SOURCE" --version "$RELEASE_VERSION" --sha256 "$RELEASE_SHA256" --output "$RUNNER_TEMP/optional-mcp-release"
