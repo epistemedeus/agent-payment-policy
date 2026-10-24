@@ -41,7 +41,7 @@ archive, bin, runtime, core, lock, version, release or acquisition URL changed.
 | Client SIGTERM 20 ms into startup | Client -15; npm can still start its shell/server after client death, then EOF completes; npm zombie remains |
 | Outstanding bounded request, both pipes closed | Exit 0; worker/server/launcher finish before 1,500 ms work deadline |
 | Outstanding bounded request, client SIGTERM | Client -15; no live descendant at bounded observation; npm zombie remains |
-| SIGTERM only to npm, client retains pipes | npm -15; same server still alive at 0.5, 3.5 and 6 seconds; answers the same useful MCP call after npm termination |
+| SIGTERM only to npm, client retains pipes | npm -15; the same connection answers a useful call about 4.063 seconds after the signal; timed PID snapshots did not capture the server |
 | Official SDK legacy, bare npm | Useful/refusal/recovery, request abort and close pass; no surviving captured process |
 | Official SDK modern, bare npm | Functional cases pass; disposable negotiation probe leaves one orphan zombie server per session (three observed) |
 
@@ -57,7 +57,11 @@ than 1,000 ms; pending close also finishes in less than 1,000 ms. Modern and
 legacy useful/refusal results remain distinct from lifecycle completion.
 
 [Npm-only boundary](NPM-SIGNAL-BOUNDARY.json) proves that npm's death is not
-server cancellation when the client's pipe endpoints remain open. The test client
+server cancellation when the client's pipe endpoints remain open.
+Root receiving corrects the original timed-liveness summary: the 0.5/3.5/6-second
+snapshots contain only the Python client, not the server. The matched useful
+reply at monotonic 46344.002222637 after signal 46339.938788507 establishes
+continued service about 4.063 seconds later, not three observed server PID states. The test client
 subsequently exits, releasing its descriptors; only then does the server finish.
 That release is containment of this negative case, not a repaired acquisition.
 [SDK process evidence](SDK-PROCESSES.json) identifies the three modern probe

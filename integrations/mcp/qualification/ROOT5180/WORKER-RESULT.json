@@ -24,15 +24,17 @@
     "officialSdkSessions": 6,
     "officialSdkLegacyResiduals": 0,
     "officialSdkModernZombies": 3,
-    "npmOnlySignalLiveServerAfterSeconds": [
+    "postNpmTerminationUsefulReply": true,
+    "runtimeChecksPassed": 3,
+    "releaseStructuralChecksPassed": 19,
+    "releaseInitialInvocationMissingEvidenceDir": true,
+    "npmOnlySignalRequestedSampleSeconds": [
       0.5,
       3.5,
       6
     ],
-    "postNpmTerminationUsefulReply": true,
-    "runtimeChecksPassed": 3,
-    "releaseStructuralChecksPassed": 19,
-    "releaseInitialInvocationMissingEvidenceDir": true
+    "npmOnlySignalSnapshotsCaptureServer": false,
+    "npmOnlySignalUsefulResponseAfterSeconds": 4.063434129995585
   },
   "resources": {
     "declaredTotalKiB": 2097152,
@@ -71,5 +73,10 @@
     "CHECKS.json",
     "CLEANUP.json"
   ],
-  "finalExportPointer": "canonical job root WORKER-EXPORT.json"
+  "finalExportPointer": "canonical job root WORKER-EXPORT.json",
+  "rootReceiving": {
+    "originalWorkerExport": "e9db2043e8a49c4225bd6903a516b7dbb775af28",
+    "correction": "Timed snapshots capture only Python client; matched fresh RPC proves continued service about4.063seconds after npm signal. Raw receipts, original observations, source/runtime/core/locks unchanged.",
+    "executedTests": false
+  }
 }
