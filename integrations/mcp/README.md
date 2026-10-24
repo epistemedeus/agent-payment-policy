@@ -75,6 +75,14 @@ record the tested commands, exact runtime, refusal/recovery, restart and direct
 policy comparison. Source-only `scripts/npm-stdio.py` provides finite cleanup of
 npm's intermediary descendants for clients that need it.
 
+[Client lifecycle qualification](qualification/ROOT5180/WORKER-HANDBACK.md)
+records bare npm behavior on Linux with Node 22/npm 10. Close the stdio
+transports when cancelling: signalling only npm while retaining its pipes leaves
+the server running. Official SDK 2.3.1 legacy close completes naturally; its
+modern disposable negotiation probe can leave an orphan zombie through npm.
+The source-only helper contains/reaps descendants; it does not repair the frozen
+archive or qualify arbitrary client/OS process ownership.
+
 `npm-shrinkwrap.json` is published intentionally: it binds the downstream runtime
 dependency graph, unlike an unpublished package-lock. The cold receiver checks
 the installed versions and load-bearing bytes. `DEPENDENCIES.json` records the

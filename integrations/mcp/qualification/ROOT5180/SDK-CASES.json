@@ -1,0 +1,376 @@
+{
+  "rows": [
+    {
+      "era": "legacy",
+      "mode": "close",
+      "command": "npm",
+      "args": [
+        "exec",
+        "--offline",
+        "--yes",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund",
+        "--engine-strict",
+        "--package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz",
+        "--",
+        "agent-payment-policy-mcp"
+      ],
+      "cwd": "/tmp/r5180-lat6_ljb/consumer",
+      "negotiated": "2025-06-18",
+      "useful": true,
+      "refusal": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"error\":{\"code\":\"POLICY_REFUSAL\",\"message\":\"The supplied tool request was refused or could not complete within its bounds.\"}}"
+          }
+        ],
+        "isError": true
+      },
+      "ok": true,
+      "lifecycle": {
+        "sampledMaximumAggregateKiB": 270116,
+        "sampleIntervalMs": 20,
+        "observedProcesses": [
+          {
+            "pid": 123011,
+            "startTicks": "4628911"
+          },
+          {
+            "pid": 123023,
+            "startTicks": "4628933"
+          },
+          {
+            "pid": 123024,
+            "startTicks": "4628933"
+          }
+        ],
+        "survivors": [],
+        "currentChildren": []
+      },
+      "stderr": ""
+    },
+    {
+      "era": "legacy",
+      "mode": "pending-close",
+      "command": "npm",
+      "args": [
+        "exec",
+        "--offline",
+        "--yes",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund",
+        "--engine-strict",
+        "--package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz",
+        "--",
+        "agent-payment-policy-mcp"
+      ],
+      "cwd": "/tmp/r5180-lat6_ljb/consumer",
+      "negotiated": "2025-06-18",
+      "useful": true,
+      "refusal": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"error\":{\"code\":\"POLICY_REFUSAL\",\"message\":\"The supplied tool request was refused or could not complete within its bounds.\"}}"
+          }
+        ],
+        "isError": true
+      },
+      "cancelAndRecoveryMs": 228,
+      "pending": "disconnected",
+      "closeMs": 15,
+      "ok": true,
+      "lifecycle": {
+        "sampledMaximumAggregateKiB": 287688,
+        "sampleIntervalMs": 20,
+        "observedProcesses": [
+          {
+            "pid": 123033,
+            "startTicks": "4628974"
+          },
+          {
+            "pid": 123045,
+            "startTicks": "4628995"
+          },
+          {
+            "pid": 123046,
+            "startTicks": "4628995"
+          }
+        ],
+        "survivors": [],
+        "currentChildren": []
+      },
+      "stderr": ""
+    },
+    {
+      "era": "legacy",
+      "mode": "recovery",
+      "command": "npm",
+      "args": [
+        "exec",
+        "--offline",
+        "--yes",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund",
+        "--engine-strict",
+        "--package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz",
+        "--",
+        "agent-payment-policy-mcp"
+      ],
+      "cwd": "/tmp/r5180-lat6_ljb/consumer",
+      "negotiated": "2025-06-18",
+      "useful": true,
+      "refusal": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"error\":{\"code\":\"POLICY_REFUSAL\",\"message\":\"The supplied tool request was refused or could not complete within its bounds.\"}}"
+          }
+        ],
+        "isError": true
+      },
+      "ok": true,
+      "lifecycle": {
+        "sampledMaximumAggregateKiB": 277640,
+        "sampleIntervalMs": 20,
+        "observedProcesses": [
+          {
+            "pid": 123060,
+            "startTicks": "4629068"
+          },
+          {
+            "pid": 123072,
+            "startTicks": "4629088"
+          },
+          {
+            "pid": 123073,
+            "startTicks": "4629089"
+          }
+        ],
+        "survivors": [],
+        "currentChildren": []
+      },
+      "stderr": ""
+    },
+    {
+      "era": "modern",
+      "mode": "close",
+      "command": "npm",
+      "args": [
+        "exec",
+        "--offline",
+        "--yes",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund",
+        "--engine-strict",
+        "--package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz",
+        "--",
+        "agent-payment-policy-mcp"
+      ],
+      "cwd": "/tmp/r5180-lat6_ljb/consumer",
+      "negotiated": "2026-07-28",
+      "useful": true,
+      "refusal": {
+        "_meta": {
+          "io.modelcontextprotocol/serverInfo": {
+            "name": "agent-payment-policy-mcp",
+            "version": "0.1.0"
+          }
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"error\":{\"code\":\"POLICY_REFUSAL\",\"message\":\"The supplied tool request was refused or could not complete within its bounds.\"}}"
+          }
+        ],
+        "isError": true
+      },
+      "ok": true,
+      "lifecycle": {
+        "sampledMaximumAggregateKiB": 281448,
+        "sampleIntervalMs": 20,
+        "observedProcesses": [
+          {
+            "pid": 123082,
+            "startTicks": "4629123"
+          },
+          {
+            "pid": 123094,
+            "startTicks": "4629143"
+          },
+          {
+            "pid": 123095,
+            "startTicks": "4629143"
+          },
+          {
+            "pid": 123102,
+            "startTicks": "4629161"
+          },
+          {
+            "pid": 123114,
+            "startTicks": "4629182"
+          },
+          {
+            "pid": 123115,
+            "startTicks": "4629182"
+          }
+        ],
+        "survivors": [
+          123095
+        ],
+        "currentChildren": []
+      },
+      "stderr": ""
+    },
+    {
+      "era": "modern",
+      "mode": "pending-close",
+      "command": "npm",
+      "args": [
+        "exec",
+        "--offline",
+        "--yes",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund",
+        "--engine-strict",
+        "--package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz",
+        "--",
+        "agent-payment-policy-mcp"
+      ],
+      "cwd": "/tmp/r5180-lat6_ljb/consumer",
+      "negotiated": "2026-07-28",
+      "useful": true,
+      "refusal": {
+        "_meta": {
+          "io.modelcontextprotocol/serverInfo": {
+            "name": "agent-payment-policy-mcp",
+            "version": "0.1.0"
+          }
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"error\":{\"code\":\"POLICY_REFUSAL\",\"message\":\"The supplied tool request was refused or could not complete within its bounds.\"}}"
+          }
+        ],
+        "isError": true
+      },
+      "cancelAndRecoveryMs": 219,
+      "pending": "disconnected",
+      "closeMs": 15,
+      "ok": true,
+      "lifecycle": {
+        "sampledMaximumAggregateKiB": 292716,
+        "sampleIntervalMs": 20,
+        "observedProcesses": [
+          {
+            "pid": 123126,
+            "startTicks": "4629428"
+          },
+          {
+            "pid": 123138,
+            "startTicks": "4629448"
+          },
+          {
+            "pid": 123139,
+            "startTicks": "4629448"
+          },
+          {
+            "pid": 123146,
+            "startTicks": "4629466"
+          },
+          {
+            "pid": 123158,
+            "startTicks": "4629486"
+          },
+          {
+            "pid": 123159,
+            "startTicks": "4629486"
+          }
+        ],
+        "survivors": [
+          123139
+        ],
+        "currentChildren": []
+      },
+      "stderr": ""
+    },
+    {
+      "era": "modern",
+      "mode": "recovery",
+      "command": "npm",
+      "args": [
+        "exec",
+        "--offline",
+        "--yes",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund",
+        "--engine-strict",
+        "--package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz",
+        "--",
+        "agent-payment-policy-mcp"
+      ],
+      "cwd": "/tmp/r5180-lat6_ljb/consumer",
+      "negotiated": "2026-07-28",
+      "useful": true,
+      "refusal": {
+        "_meta": {
+          "io.modelcontextprotocol/serverInfo": {
+            "name": "agent-payment-policy-mcp",
+            "version": "0.1.0"
+          }
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"error\":{\"code\":\"POLICY_REFUSAL\",\"message\":\"The supplied tool request was refused or could not complete within its bounds.\"}}"
+          }
+        ],
+        "isError": true
+      },
+      "ok": true,
+      "lifecycle": {
+        "sampledMaximumAggregateKiB": 283600,
+        "sampleIntervalMs": 20,
+        "observedProcesses": [
+          {
+            "pid": 123172,
+            "startTicks": "4629774"
+          },
+          {
+            "pid": 123184,
+            "startTicks": "4629795"
+          },
+          {
+            "pid": 123185,
+            "startTicks": "4629795"
+          },
+          {
+            "pid": 123192,
+            "startTicks": "4629813"
+          },
+          {
+            "pid": 123204,
+            "startTicks": "4629834"
+          },
+          {
+            "pid": 123205,
+            "startTicks": "4629834"
+          }
+        ],
+        "survivors": [
+          123185
+        ],
+        "currentChildren": []
+      },
+      "stderr": ""
+    }
+  ]
+}

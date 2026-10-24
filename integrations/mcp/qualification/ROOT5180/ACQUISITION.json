@@ -1,0 +1,85 @@
+{
+  "archiveBytes": 18633,
+  "sha256": "f45615114494fc7167234743d5a2ff4cda54d20e07de72c49c9e42e6b629c439",
+  "installed": "/tmp/r5180-lat6_ljb/home/.npm/_npx/5dbce4b621437f70/node_modules/@epistemedeus/agent-payment-policy-mcp",
+  "runtime": [
+    {
+      "name": "@modelcontextprotocol/core",
+      "version": "2.3.1",
+      "treeSha256": "f59208e5f005e64228f8d61983d0c22012fe834059b2d9ad9d628b528efedfbc",
+      "integrity": "sha512-laVmIhPGpWi7rG9q+0UigblRN0Hws/Yjlb6qLFtVqryXVLkc4h+yN8z731POD2LnAGQlFe7/tXhUm7Bi0YB91g=="
+    },
+    {
+      "name": "@modelcontextprotocol/server",
+      "version": "2.3.1",
+      "treeSha256": "db81738ed48f756521eb114d8c988e2c4fa70197d4dd97497c19487cde669e89",
+      "integrity": "sha512-e59MfWuSssj6DoQ96JCTqdW1AXT5/XtnTl0WWd6MU1Ka434fFUGGosCLJbGNySDhHGvxQWoRWK137FXYFkYNWw=="
+    },
+    {
+      "name": "agent-payment-policy",
+      "version": "0.15.1",
+      "treeSha256": "2070ee1368795e8daff9d0c490b21d0958c8f065a841200c55479e1004b2545a",
+      "integrity": "sha512-25GlNXX2JnhFo5pO5/0BQcyUmQYr/l0/aD+pmTCo/4mjdVsfNKtH9DySgzEzJ3WmprqXtShLgbiodQ5xnVi1AA=="
+    },
+    {
+      "name": "ajv",
+      "version": "8.20.0",
+      "treeSha256": "9bf13d80af688544be948c46f3603adfc761c0a8e63ae4185e9f3202d9d2da14",
+      "integrity": "sha512-Thbli+OlOj+iMPYFBVBfJ3OmCAnaSyNn4M1vz9T6Gka5Jt9ba/HIR56joy65tY6kx/FCF5VXNB819Y7/GUrBGA=="
+    },
+    {
+      "name": "ajv-formats",
+      "version": "3.0.1",
+      "treeSha256": "ebf7b1afd4bbdff2c03703301845083111436fcf2015435f939324808a2f0a3d",
+      "integrity": "sha512-8iUql50EUR+uUcdRQ3HDqa6EVyo3docL8g5WJ3FNcWmu62IbkGUue/pEyLBW8VGKKucTPgqeks4fIU1DA4yowQ=="
+    },
+    {
+      "name": "fast-deep-equal",
+      "version": "3.1.3",
+      "treeSha256": "4f3b31d2d7e7944c12ec56f6bd2ea1de9cabbf79974a624d8d76ca4ccc0b024e",
+      "integrity": "sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q=="
+    },
+    {
+      "name": "fast-uri",
+      "version": "3.1.9",
+      "treeSha256": "66c7f72534c6b0f920005565b5d1d19c0d499bc2ffce534a52d173777e5d8ed9",
+      "integrity": "sha512-hS/0Wt3Ya043oKXs0sIxrMpKQITXhMLIrVAKKXi4gozGC9v7YRWVnXIZzjNPTO02M9BdxLCWqK1yRXgNziVyJQ=="
+    },
+    {
+      "name": "json-schema-traverse",
+      "version": "1.0.0",
+      "treeSha256": "1b72257ad7ded5e4f616b8538159862e7b625e8f54518d1ac36a615827f9ad23",
+      "integrity": "sha512-NM8/P9n3XjXhIZn1lLhkFaACTOURQXjWhV4BA/RnOv8xvgqtqpAX9IO4mRQxSx1Rlo4tqzeqb0sOlruaOy3dug=="
+    },
+    {
+      "name": "require-from-string",
+      "version": "2.0.2",
+      "treeSha256": "acae06d3e34484c6be4e61bc083e5ba4f59e39e6c4548107eb6b1e81172f668d",
+      "integrity": "sha512-Xf0nWe6RseziFMu+Ap9biiUbmplq6S9/p+7w7YXP/JBHhrUDDUhwa+vANyubuqfZWTveU//DYVGsDG7RKL/vEw=="
+    },
+    {
+      "name": "zod",
+      "version": "4.6.7",
+      "treeSha256": "d2b0ca1a4c175ee7900c3b1e5b805e0a2aa6361ce97ca84c67bc68df0e6db441",
+      "integrity": "sha512-g8W2D2kU6a8untc053fX1uVBKzM7yqAxW/3zwk83+6RyF2+SKOuV+c0wBDhUwzV1PaGapmZH+rmcUzPf+3CGwg=="
+    }
+  ],
+  "packedFiles": {
+    "LICENSE": "48778414be7220ecf3f9bfbaf1e4d9f462b06e5f035ce3df7cd8d5a488935a11",
+    "DEPENDENCIES.json": "2c1c3ee226536124279329e13e1b2a47f85b434cd16cf3ddddd3e963ecd6131b",
+    "npm-shrinkwrap.json": "0d2274964a1cae97e63490cd04c5af2e2ea349e1edf3421b07eccb10eca924aa",
+    "package.json": "304490cc4460a46f4b60ee90cf0b80480c7f45d5fc6dcab7bd0266b08d0659a1",
+    "SOURCE-MANIFEST.json": "64675a5bdda80d7c6bbc53fc968d35066eeee2a92b7ade4fc84b437d48cb005b",
+    "NOTICE.md": "e9e57e30401f16f4603c2fadd638eed2972c8a24f8b6c2eb8751c31e4040b5c2",
+    "README.md": "90063169d8e935286259c03921d405b80294b15731d0f79ecb6b52f2f94ba946",
+    "bin/agent-payment-policy-mcp.mjs": "f36cb8140f25424c0ca3a45540fc7e4da6345f2494d09408876eab83a7cb8048",
+    "policy/core.mjs": "9b7647903190d0fe5331662803bded1c9d7c81c746957a681dd3e437e9f9b5d7",
+    "src/tools/index.mjs": "906fb74af379c13949ac8833a16d3309cd047a566b5306a4a07d8e4f1d6e6bc1",
+    "src/isolate.mjs": "4b2fb229ab4d7b605c2b1583adf1f3956915c66b0fe143532e31d4991836d267",
+    "src/limits.mjs": "50605105c3b825b818d44004ac745211b4f662d6cb46b29539c9b8fe5fb10716",
+    "src/server.mjs": "f01cf20fcdc810beceec15030d20b7063ef0558b8ca63301f7378fa8040f4e7f",
+    "src/worker.mjs": "cef3b6daa02eecbde0c7d83fc98c344725d0ce010fb8649b3a67e6389ecbe491",
+    "release/SDK-LICENSE.txt": "0382b0057770ca05e9c350a50aa3b1c1fea84da0bc81d723bf00b9aa841be58a"
+  },
+  "allMatched": true
+}

@@ -1,0 +1,335 @@
+{
+  "exit": 0,
+  "firstIdentities": [
+    {
+      "pid": 122997,
+      "startTicks": "4628896",
+      "state": "R",
+      "ppid": 122994,
+      "pgid": 122997,
+      "rssKiB": 320,
+      "cwd": "/home/ubuntu/ae14-work/root5180-policy-client-cancellation-20261024",
+      "command": "python3 /home/ubuntu/ae14-work/root5180-policy-client-cancellation-20261024/integrations/mcp/scripts/no-egress.py node --max-old-space-size=256 /home/ubuntu/ae14-work/root5180-policy-client-cancellation-20261024/integrations/mcp/qualification/ROOT5180/sdk.mjs"
+    },
+    {
+      "pid": 123011,
+      "startTicks": "4628911",
+      "state": "R",
+      "ppid": 122997,
+      "pgid": 122997,
+      "rssKiB": 22292,
+      "cwd": "/tmp/r5180-lat6_ljb/consumer",
+      "command": "node /home/ubuntu/.nvm/versions/node/v22.23.4/bin/npm exec --offline --yes --ignore-scripts --no-audit --no-fund --engine-strict --package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz -- agent-payment-policy-mcp"
+    },
+    {
+      "pid": 123023,
+      "startTicks": "4628933",
+      "state": "S",
+      "ppid": 123011,
+      "pgid": 122997,
+      "rssKiB": 1772,
+      "cwd": "/tmp/r5180-lat6_ljb/consumer",
+      "command": "sh -c agent-payment-policy-mcp"
+    },
+    {
+      "pid": 123024,
+      "startTicks": "4628933",
+      "state": "R",
+      "ppid": 123023,
+      "pgid": 122997,
+      "rssKiB": 29308,
+      "cwd": "/tmp/r5180-lat6_ljb/consumer",
+      "command": "node /tmp/r5180-lat6_ljb/home/.npm/_npx/5dbce4b621437f70/node_modules/.bin/agent-payment-policy-mcp"
+    },
+    {
+      "pid": 123033,
+      "startTicks": "4628974",
+      "state": "R",
+      "ppid": 122997,
+      "pgid": 122997,
+      "rssKiB": 28376,
+      "cwd": "/tmp/r5180-lat6_ljb/consumer",
+      "command": "node /home/ubuntu/.nvm/versions/node/v22.23.4/bin/npm exec --offline --yes --ignore-scripts --no-audit --no-fund --engine-strict --package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz -- agent-payment-policy-mcp"
+    },
+    {
+      "pid": 123045,
+      "startTicks": "4628995",
+      "state": "S",
+      "ppid": 123033,
+      "pgid": 122997,
+      "rssKiB": 1776,
+      "cwd": "/tmp/r5180-lat6_ljb/consumer",
+      "command": "sh -c agent-payment-policy-mcp"
+    },
+    {
+      "pid": 123046,
+      "startTicks": "4628995",
+      "state": "R",
+      "ppid": 123045,
+      "pgid": 122997,
+      "rssKiB": 31312,
+      "cwd": "/tmp/r5180-lat6_ljb/consumer",
+      "command": "node /tmp/r5180-lat6_ljb/home/.npm/_npx/5dbce4b621437f70/node_modules/.bin/agent-payment-policy-mcp"
+    },
+    {
+      "pid": 123060,
+      "startTicks": "4629068",
+      "state": "R",
+      "ppid": 122997,
+      "pgid": 122997,
+      "rssKiB": 28376,
+      "cwd": "/tmp/r5180-lat6_ljb/consumer",
+      "command": "node /home/ubuntu/.nvm/versions/node/v22.23.4/bin/npm exec --offline --yes --ignore-scripts --no-audit --no-fund --engine-strict --package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz -- agent-payment-policy-mcp"
+    },
+    {
+      "pid": 123072,
+      "startTicks": "4629088",
+      "state": "S",
+      "ppid": 123060,
+      "pgid": 122997,
+      "rssKiB": 1776,
+      "cwd": "/tmp/r5180-lat6_ljb/consumer",
+      "command": "sh -c agent-payment-policy-mcp"
+    },
+    {
+      "pid": 123073,
+      "startTicks": "4629089",
+      "state": "R",
+      "ppid": 123072,
+      "pgid": 122997,
+      "rssKiB": 29076,
+      "cwd": "/tmp/r5180-lat6_ljb/consumer",
+      "command": "node /tmp/r5180-lat6_ljb/home/.npm/_npx/5dbce4b621437f70/node_modules/.bin/agent-payment-policy-mcp"
+    },
+    {
+      "pid": 123082,
+      "startTicks": "4629123",
+      "state": "R",
+      "ppid": 122997,
+      "pgid": 122997,
+      "rssKiB": 14844,
+      "cwd": "/tmp/r5180-lat6_ljb/consumer",
+      "command": "node /home/ubuntu/.nvm/versions/node/v22.23.4/bin/npm exec --offline --yes --ignore-scripts --no-audit --no-fund --engine-strict --package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz -- agent-payment-policy-mcp"
+    },
+    {
+      "pid": 123094,
+      "startTicks": "4629143",
+      "state": "S",
+      "ppid": 123082,
+      "pgid": 122997,
+      "rssKiB": 1776,
+      "cwd": "/tmp/r5180-lat6_ljb/consumer",
+      "command": "sh -c agent-payment-policy-mcp"
+    },
+    {
+      "pid": 123095,
+      "startTicks": "4629143",
+      "state": "R",
+      "ppid": 123094,
+      "pgid": 122997,
+      "rssKiB": 29844,
+      "cwd": "/tmp/r5180-lat6_ljb/consumer",
+      "command": "node /tmp/r5180-lat6_ljb/home/.npm/_npx/5dbce4b621437f70/node_modules/.bin/agent-payment-policy-mcp"
+    },
+    {
+      "pid": 123102,
+      "startTicks": "4629161",
+      "state": "R",
+      "ppid": 122997,
+      "pgid": 122997,
+      "rssKiB": 28372,
+      "cwd": "/tmp/r5180-lat6_ljb/consumer",
+      "command": "node /home/ubuntu/.nvm/versions/node/v22.23.4/bin/npm exec --offline --yes --ignore-scripts --no-audit --no-fund --engine-strict --package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz -- agent-payment-policy-mcp"
+    },
+    {
+      "pid": 123114,
+      "startTicks": "4629182",
+      "state": "S",
+      "ppid": 123102,
+      "pgid": 122997,
+      "rssKiB": 1776,
+      "cwd": "/tmp/r5180-lat6_ljb/consumer",
+      "command": "sh -c agent-payment-policy-mcp"
+    },
+    {
+      "pid": 123115,
+      "startTicks": "4629182",
+      "state": "R",
+      "ppid": 123114,
+      "pgid": 122997,
+      "rssKiB": 30792,
+      "cwd": "/tmp/r5180-lat6_ljb/consumer",
+      "command": "node /tmp/r5180-lat6_ljb/home/.npm/_npx/5dbce4b621437f70/node_modules/.bin/agent-payment-policy-mcp"
+    },
+    {
+      "pid": 123126,
+      "startTicks": "4629428",
+      "state": "R",
+      "ppid": 122997,
+      "pgid": 122997,
+      "rssKiB": 30416,
+      "cwd": "/tmp/r5180-lat6_ljb/consumer",
+      "command": "node /home/ubuntu/.nvm/versions/node/v22.23.4/bin/npm exec --offline --yes --ignore-scripts --no-audit --no-fund --engine-strict --package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz -- agent-payment-policy-mcp"
+    },
+    {
+      "pid": 123138,
+      "startTicks": "4629448",
+      "state": "S",
+      "ppid": 123126,
+      "pgid": 122997,
+      "rssKiB": 1776,
+      "cwd": "/tmp/r5180-lat6_ljb/consumer",
+      "command": "sh -c agent-payment-policy-mcp"
+    },
+    {
+      "pid": 123139,
+      "startTicks": "4629448",
+      "state": "R",
+      "ppid": 123138,
+      "pgid": 122997,
+      "rssKiB": 17224,
+      "cwd": "/tmp/r5180-lat6_ljb/consumer",
+      "command": "node /tmp/r5180-lat6_ljb/home/.npm/_npx/5dbce4b621437f70/node_modules/.bin/agent-payment-policy-mcp"
+    },
+    {
+      "pid": 123146,
+      "startTicks": "4629466",
+      "state": "R",
+      "ppid": 122997,
+      "pgid": 122997,
+      "rssKiB": 28376,
+      "cwd": "/tmp/r5180-lat6_ljb/consumer",
+      "command": "node /home/ubuntu/.nvm/versions/node/v22.23.4/bin/npm exec --offline --yes --ignore-scripts --no-audit --no-fund --engine-strict --package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz -- agent-payment-policy-mcp"
+    },
+    {
+      "pid": 123158,
+      "startTicks": "4629486",
+      "state": "S",
+      "ppid": 123146,
+      "pgid": 122997,
+      "rssKiB": 1772,
+      "cwd": "/tmp/r5180-lat6_ljb/consumer",
+      "command": "sh -c agent-payment-policy-mcp"
+    },
+    {
+      "pid": 123159,
+      "startTicks": "4629486",
+      "state": "R",
+      "ppid": 123158,
+      "pgid": 122997,
+      "rssKiB": 9860,
+      "cwd": "/tmp/r5180-lat6_ljb/consumer",
+      "command": "node /tmp/r5180-lat6_ljb/home/.npm/_npx/5dbce4b621437f70/node_modules/.bin/agent-payment-policy-mcp"
+    },
+    {
+      "pid": 123172,
+      "startTicks": "4629774",
+      "state": "R",
+      "ppid": 122997,
+      "pgid": 122997,
+      "rssKiB": 13132,
+      "cwd": "/tmp/r5180-lat6_ljb/consumer",
+      "command": "node /home/ubuntu/.nvm/versions/node/v22.23.4/bin/npm exec --offline --yes --ignore-scripts --no-audit --no-fund --engine-strict --package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz -- agent-payment-policy-mcp"
+    },
+    {
+      "pid": 123184,
+      "startTicks": "4629795",
+      "state": "S",
+      "ppid": 123172,
+      "pgid": 122997,
+      "rssKiB": 1776,
+      "cwd": "/tmp/r5180-lat6_ljb/consumer",
+      "command": "sh -c agent-payment-policy-mcp"
+    },
+    {
+      "pid": 123185,
+      "startTicks": "4629795",
+      "state": "R",
+      "ppid": 123184,
+      "pgid": 122997,
+      "rssKiB": 1448,
+      "cwd": "/tmp/r5180-lat6_ljb/consumer",
+      "command": "node /tmp/r5180-lat6_ljb/home/.npm/_npx/5dbce4b621437f70/node_modules/.bin/agent-payment-policy-mcp"
+    },
+    {
+      "pid": 123192,
+      "startTicks": "4629813",
+      "state": "R",
+      "ppid": 122997,
+      "pgid": 122997,
+      "rssKiB": 10724,
+      "cwd": "/home/ubuntu/ae14-work/root5180-policy-client-cancellation-20261024",
+      "command": "node --max-old-space-size=256 /home/ubuntu/ae14-work/root5180-policy-client-cancellation-20261024/integrations/mcp/qualification/ROOT5180/sdk.mjs"
+    },
+    {
+      "pid": 123204,
+      "startTicks": "4629834",
+      "state": "S",
+      "ppid": 123192,
+      "pgid": 122997,
+      "rssKiB": 1776,
+      "cwd": "/tmp/r5180-lat6_ljb/consumer",
+      "command": "sh -c agent-payment-policy-mcp"
+    },
+    {
+      "pid": 123205,
+      "startTicks": "4629834",
+      "state": "R",
+      "ppid": 123204,
+      "pgid": 122997,
+      "rssKiB": 20784,
+      "cwd": "/tmp/r5180-lat6_ljb/consumer",
+      "command": "node /tmp/r5180-lat6_ljb/home/.npm/_npx/5dbce4b621437f70/node_modules/.bin/agent-payment-policy-mcp"
+    }
+  ],
+  "beforeContainment": [
+    {
+      "pid": 123095,
+      "startTicks": "4629143",
+      "state": "Z",
+      "ppid": 122994,
+      "pgid": 122997,
+      "rssKiB": 0,
+      "cwd": null,
+      "command": ""
+    },
+    {
+      "pid": 123139,
+      "startTicks": "4629448",
+      "state": "Z",
+      "ppid": 122994,
+      "pgid": 122997,
+      "rssKiB": 0,
+      "cwd": null,
+      "command": ""
+    },
+    {
+      "pid": 123185,
+      "startTicks": "4629795",
+      "state": "Z",
+      "ppid": 122994,
+      "pgid": 122997,
+      "rssKiB": 0,
+      "cwd": null,
+      "command": ""
+    }
+  ],
+  "signals": [],
+  "adoptedReaped": [
+    {
+      "pid": 123095,
+      "exit": 0
+    },
+    {
+      "pid": 123139,
+      "exit": 0
+    },
+    {
+      "pid": 123185,
+      "exit": 0
+    }
+  ],
+  "afterContainment": [],
+  "peakReceiverDescendantsKiB": 311188,
+  "elapsedSeconds": 12.063
+}
