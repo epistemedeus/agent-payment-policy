@@ -52,3 +52,23 @@ jobs:
       - run: mkdir -p artifacts && npm pack --ignore-scripts --pack-destination artifacts
       - run: python3 scripts/check-pack.py artifacts/epistemedeus-agent-payment-policy-mcp-0.1.0.tgz
       - run: python3 scripts/cold-receive.py artifacts/epistemedeus-agent-payment-policy-mcp-0.1.0.tgz
+
+  optional-a2a:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: examples/a2a-request-normalization
+    env:
+      NODE_OPTIONS: --max-old-space-size=512
+      UV_THREADPOOL_SIZE: 1
+      OMP_NUM_THREADS: 1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: examples/a2a-request-normalization/package-lock.json
+      - run: npm ci --ignore-scripts
+      - run: npm test
