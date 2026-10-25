@@ -58,7 +58,7 @@ success and refusal paths, and compare exact core error names/messages.
 
 ## Exact protocol and skill envelope
 
-The chosen contract is [A2A 1.0](https://a2a-protocol.org/v1.0.0/specification/),
+The default contract is [A2A 1.0](https://a2a-protocol.org/v1.0.0/specification/),
 **JSON-RPC 2.0**, with `A2A-Version: 1.0` and method **`SendMessage`** at `/`.
 Discovery is `GET /.well-known/agent-card.json`. The received card advertises
 one `JSONRPC` interface at version `1.0` and one `normalize-request` skill.
@@ -119,12 +119,94 @@ The returned task has one artifact containing one JSON data part:
   errors use the SDK's mapping. HTTP media, size, path and
   local-origin failures use 415/413/404/403, and overlapping calls receive 429.
 
-`message/send`, `role: "user"`, REST `/message:send`, legacy 0.3, streaming,
+Without the explicit compatibility option, `message/send`, `role: "user"`,
+legacy 0.3 and omitted version headers remain refused. REST `/message:send`, streaming,
 batches, notifications, follow-up task calls, push notifications,
 URL/file/raw/text parts, compressed input and non-JSON output are unsupported.
 This is a synchronous, single-turn example with zero task retention. `GetTask`
 returns task-not-found after completion and `ListTasks` returns an empty list.
 The card disables streaming, push notifications and extended cards. It has no authentication and must stay local.
+
+## Explicit legacy 0.3 option
+
+The already pinned SDK also publishes a maintained, opt-in
+[0.3 compatibility layer](https://github.com/a2aproject/a2a-js/blob/29417a5bb4038f804f310ce4fffd267a9375aa90/src/compat/v0_3/README.md).
+Enable it only on the instance intended to serve older callers:
+
+```bash
+node --max-old-space-size=192 server.mjs --legacy-0.3
+node --max-old-space-size=192 client.mjs http://127.0.0.1:PORT/ \
+  '{"method":"GET","target":"https://seller.example/data?asset=ETH"}' --legacy-0.3
+```
+
+Library equivalents are `startServer({ legacyCompat: true })` and
+`callNormalization(url, input, { protocolVersion: '0.3' })`. Both defaults remain
+1.0; the client copies the discovered interface selection for this call and does
+not edit a saved card or another caller's configuration. No dependency or lockfile
+changes are needed. The SDK's `duplicateInterfacesForLegacy` adds precisely one
+0.3 JSONRPC interface beside 1.0. Discovery remains the existing **1.0-shaped**
+card at `/.well-known/agent-card.json`; this example does not expose a legacy
+card router or REST interface. A caller requiring a 0.3-shaped discovery card
+needs a separately supported discovery route; this option proves the declared
+JSONRPC invocation interface and the pinned SDK client's explicit selection.
+
+In this mode, `A2A-Version: 0.3` and an omitted header select the SDK's
+`LegacyJsonRpcTransportHandler`; `A2A-Version: 1.0` selects the original handler.
+Known method names must agree with the selected version. Unsupported versions
+(including unadvertised patch/version strings), streaming and push remain refused.
+Successful legacy responses carry `A2A-Version: 0.3` and the SDK's 0.3 task shape.
+The modern card discovery response retains `A2A-Version: 1.0`.
+
+This **synthetic** request follows the official
+[0.3 schema](https://github.com/a2aproject/A2A/blob/v0.3.0/specification/json/a2a.json).
+It is not a captured platform payload:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": "synthetic-request-1",
+  "method": "message/send",
+  "params": {
+    "message": {
+      "kind": "message",
+      "messageId": "synthetic-message-1",
+      "role": "user",
+      "parts": [{
+        "kind": "data",
+        "data": {"method": "GET", "target": "https://seller.example/data?asset=ETH"}
+      }]
+    },
+    "configuration": {
+      "blocking": true,
+      "acceptedOutputModes": ["application/json"],
+      "historyLength": 0
+    }
+  }
+}
+```
+
+A 0.3 `DataPart` is a JSON object with no media-type field. The official codec
+decodes it to a native data part with an empty media type; this example admits
+only that representation and applies the shared skill/data/size/depth checks
+before the executor. A supplied legacy configuration must explicitly say
+`blocking: true`; omitting configuration entirely uses synchronous processing.
+Part metadata (including the codec's primitive-unwrapping flag), additional part
+fields, text/files/URLs, task references and unknown legacy send-parameter,
+message or configuration fields are refused before decoding can discard or reinterpret them. Input/body
+media rules and exact core refusal names/messages remain unchanged.
+
+The SDK owns both translations and task serialization. Its private `translate/`
+modules are not imported or copied. Legacy artifacts contain the same complete
+`{ok,result}` or `{ok,error:{name,message}}` envelope in a `kind: "data"` part;
+the transport shape differs. `tasks/get` cannot retrieve completed inputs, and
+there is no 0.3 `tasks/list` method. The official legacy client also reports that
+operation as unsupported. History is forced to zero in both modes.
+
+Tests exercise SDK clients for both versions, headerless legacy synthetic
+requests, exact results/refusals and useful recovery, conflicting headers/methods,
+strict legacy validation, zero task retention, HTTP/resource bounds, overlap,
+close/restart and side-effect traps. This is source/loopback compatibility;
+it does not establish a provider adapter repair, hosted use, adoption or revenue.
 
 ## Threat model, bounds and side effects
 
