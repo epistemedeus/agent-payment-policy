@@ -12,7 +12,8 @@ function localUrl(value) {
   return url;
 }
 
-export async function callNormalization(baseUrl, input) {
+export async function callNormalization(baseUrl, input, { protocolVersion = '1.0' } = {}) {
+  if (!['1.0', '0.3'].includes(protocolVersion)) throw new Error('Choose protocolVersion 1.0 or 0.3 explicitly');
   const base = localUrl(baseUrl);
   // Constrain discovery, advertised interfaces, and redirects to the same loopback origin.
   const localFetch = (url, init) => {
@@ -24,10 +25,14 @@ export async function callNormalization(baseUrl, input) {
   const card = await resolver.resolve(base.href);
   const factory = new ClientFactory({
     cardResolver: resolver,
-    transports: [new JsonRpcTransportFactory({ fetchImpl: localFetch })],
+    transports: [new JsonRpcTransportFactory({ fetchImpl: localFetch, legacyCompat: { enabled: protocolVersion === '0.3' } })],
     preferredTransports: ['JSONRPC'],
   });
-  const client = await factory.createFromAgentCard(card);
+  const selectedCard = protocolVersion === '1.0' ? card : {
+    ...card, supportedInterfaces: card.supportedInterfaces.filter(iface => iface.protocolVersion === protocolVersion),
+  };
+  if (!selectedCard.supportedInterfaces.length) throw new Error('Agent does not advertise the requested protocol version');
+  const client = await factory.createFromAgentCard(selectedCard);
   const task = await client.sendMessage({
     message: {
       messageId: randomUUID(), role: Role.ROLE_USER,
@@ -46,6 +51,6 @@ export async function callNormalization(baseUrl, input) {
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   // A supplied JSON value, never a filename or remote request URI to load.
   const input = JSON.parse(process.argv[3] ?? '{"method":"GET","target":"https://seller.example/data?asset=ETH"}');
-  const result = await callNormalization(process.argv[2], input);
+  const result = await callNormalization(process.argv[2], input, { protocolVersion: process.argv[4] === '--legacy-0.3' ? '0.3' : '1.0' });
   console.log(JSON.stringify(result, null, 2));
 }
