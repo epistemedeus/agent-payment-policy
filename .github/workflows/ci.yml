@@ -70,5 +70,8 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: examples/a2a-request-normalization/package-lock.json
+      - name: Install shared core dependencies
+        run: npm ci --ignore-scripts
+        working-directory: .
       - run: npm ci --ignore-scripts
       - run: npm test
