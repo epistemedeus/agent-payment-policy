@@ -1,0 +1,1009 @@
+{
+  "schema": "policy-mcp.root3033.native-no-turn.v1",
+  "ok": true,
+  "archiveSha256": "f45615114494fc7167234743d5a2ff4cda54d20e07de72c49c9e42e6b629c439",
+  "packedFiles": {
+    "LICENSE": "48778414be7220ecf3f9bfbaf1e4d9f462b06e5f035ce3df7cd8d5a488935a11",
+    "DEPENDENCIES.json": "2c1c3ee226536124279329e13e1b2a47f85b434cd16cf3ddddd3e963ecd6131b",
+    "npm-shrinkwrap.json": "0d2274964a1cae97e63490cd04c5af2e2ea349e1edf3421b07eccb10eca924aa",
+    "package.json": "304490cc4460a46f4b60ee90cf0b80480c7f45d5fc6dcab7bd0266b08d0659a1",
+    "SOURCE-MANIFEST.json": "64675a5bdda80d7c6bbc53fc968d35066eeee2a92b7ade4fc84b437d48cb005b",
+    "NOTICE.md": "e9e57e30401f16f4603c2fadd638eed2972c8a24f8b6c2eb8751c31e4040b5c2",
+    "README.md": "90063169d8e935286259c03921d405b80294b15731d0f79ecb6b52f2f94ba946",
+    "bin/agent-payment-policy-mcp.mjs": "f36cb8140f25424c0ca3a45540fc7e4da6345f2494d09408876eab83a7cb8048",
+    "policy/core.mjs": "9b7647903190d0fe5331662803bded1c9d7c81c746957a681dd3e437e9f9b5d7",
+    "src/tools/index.mjs": "906fb74af379c13949ac8833a16d3309cd047a566b5306a4a07d8e4f1d6e6bc1",
+    "src/isolate.mjs": "4b2fb229ab4d7b605c2b1583adf1f3956915c66b0fe143532e31d4991836d267",
+    "src/limits.mjs": "50605105c3b825b818d44004ac745211b4f662d6cb46b29539c9b8fe5fb10716",
+    "src/server.mjs": "f01cf20fcdc810beceec15030d20b7063ef0558b8ca63301f7378fa8040f4e7f",
+    "src/worker.mjs": "cef3b6daa02eecbde0c7d83fc98c344725d0ce010fb8649b3a67e6389ecbe491",
+    "release/SDK-LICENSE.txt": "0382b0057770ca05e9c350a50aa3b1c1fea84da0bc81d723bf00b9aa841be58a"
+  },
+  "installed": "/tmp/policy-mcp-cold-9jwkbw3v/npm-cache/_npx/e914f6c31673c78c/node_modules/@epistemedeus/agent-payment-policy-mcp",
+  "runtimeBefore": [
+    {
+      "name": "adapter",
+      "root": "/tmp/policy-mcp-cold-9jwkbw3v/npm-cache/_npx/e914f6c31673c78c/node_modules/@epistemedeus/agent-payment-policy-mcp",
+      "fileCount": 15,
+      "filesSha256": "e3d5ef67ded38f83ff12c1870cb692a6c5afac0be315886d9cf6e3090c32cac1"
+    },
+    {
+      "name": "@modelcontextprotocol/core",
+      "root": "/tmp/policy-mcp-cold-9jwkbw3v/npm-cache/_npx/e914f6c31673c78c/node_modules/@modelcontextprotocol/core",
+      "fileCount": 21,
+      "filesSha256": "681d6ad625e2d70ee2a0becfc19175dc8b89002ddf96f890b5ad9d8de61e9406"
+    },
+    {
+      "name": "@modelcontextprotocol/server",
+      "root": "/tmp/policy-mcp-cold-9jwkbw3v/npm-cache/_npx/e914f6c31673c78c/node_modules/@modelcontextprotocol/server",
+      "fileCount": 85,
+      "filesSha256": "94fb992bf26ed10738d1683a02e9104f6b558bea859436044726b77f6dcfec5d"
+    },
+    {
+      "name": "agent-payment-policy",
+      "root": "/tmp/policy-mcp-cold-9jwkbw3v/npm-cache/_npx/e914f6c31673c78c/node_modules/agent-payment-policy",
+      "fileCount": 14,
+      "filesSha256": "9e98b684c21d9ab64fa6357bed88e2c84d7dbeb6eabee3211b6152f70e65eb4c"
+    },
+    {
+      "name": "ajv",
+      "root": "/tmp/policy-mcp-cold-9jwkbw3v/npm-cache/_npx/e914f6c31673c78c/node_modules/ajv",
+      "fileCount": 466,
+      "filesSha256": "73551604be9041b43762e2c0eacb22125f75b1825010e65bbd1470655b1cf6af"
+    },
+    {
+      "name": "ajv-formats",
+      "root": "/tmp/policy-mcp-cold-9jwkbw3v/npm-cache/_npx/e914f6c31673c78c/node_modules/ajv-formats",
+      "fileCount": 15,
+      "filesSha256": "2eaa6d9add7ebc331b55da794e73bc75c078526fdcbbff04850e5741fc216d87"
+    },
+    {
+      "name": "fast-deep-equal",
+      "root": "/tmp/policy-mcp-cold-9jwkbw3v/npm-cache/_npx/e914f6c31673c78c/node_modules/fast-deep-equal",
+      "fileCount": 11,
+      "filesSha256": "e63e4ffbea6145526356eb8f6a5983e0167ea7e5ef4a89d147b8040365d56020"
+    },
+    {
+      "name": "fast-uri",
+      "root": "/tmp/policy-mcp-cold-9jwkbw3v/npm-cache/_npx/e914f6c31673c78c/node_modules/fast-uri",
+      "fileCount": 47,
+      "filesSha256": "ecbaf162ca70d4c77a5ce8106bd0e007c85c19cf45066b435d3b6a7ef07bc243"
+    },
+    {
+      "name": "json-schema-traverse",
+      "root": "/tmp/policy-mcp-cold-9jwkbw3v/npm-cache/_npx/e914f6c31673c78c/node_modules/json-schema-traverse",
+      "fileCount": 12,
+      "filesSha256": "8e2aadc17ffc8ba0177876019cb3a1398c8a89a431e8756da9d1a59e60d01b31"
+    },
+    {
+      "name": "require-from-string",
+      "root": "/tmp/policy-mcp-cold-9jwkbw3v/npm-cache/_npx/e914f6c31673c78c/node_modules/require-from-string",
+      "fileCount": 4,
+      "filesSha256": "feb709d246c40a171f7f6ab83bb002b63642e567ccc529df4b4804743e770bcf"
+    },
+    {
+      "name": "zod",
+      "root": "/tmp/policy-mcp-cold-9jwkbw3v/npm-cache/_npx/e914f6c31673c78c/node_modules/zod",
+      "fileCount": 840,
+      "filesSha256": "3a9b6a2bbf84470207b88bedf4debe817a5acb2c2b7662e42c04e7c684efeb42"
+    }
+  ],
+  "node": {
+    "path": "/home/ubuntu/.nvm/versions/node/v22.23.4/bin/node",
+    "sha256": "94efd062ed066c1a0b332e18249859c905e920eeada5df55d24c99b919629a90"
+  },
+  "native": {
+    "launcher": "/home/ubuntu/pilot-native-expand-u-receive-20261022/runtime/node_modules/.bin/codex",
+    "resolvedLauncher": "/home/ubuntu/pilot-native-expand-u-receive-20261022/runtime/node_modules/@openai/codex/bin/codex.js",
+    "launcherSha256": "61b0194f3bb6534439c8d26a3ed57d0805f84b884588b761795323eeb92fcf70",
+    "binary": "/home/ubuntu/pilot-native-expand-u-receive-20261022/runtime/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+    "binarySha256": "399ff69c431c066e40de318fba45c2b07f45a76b19939d247ee4828fc70c4215",
+    "version": "codex-cli 0.163.0"
+  },
+  "producer": {
+    "commit": "23bb53fb8806ea3d84514914a307b7a3557a2088",
+    "files": {
+      "profile.py": "22de3d0b803168537e0db0184e8769d46aa9aea4e9c8a6d7a210f7f3eb4a58a8",
+      "schema-v2.json": "3574289506c80be9d201c1d355edccc4c8b2206c2992e2871c6c27983b5fcf28",
+      "test_stdio_native.py": "2f49d064b9ccdb58e5445a66f1545194c78fbb1b53d80d69165bfba442b94471",
+      "probe_ownership.py": "d1f49054e211056e94508b580273bc8c669050ac11e795fd742f39431664b573",
+      "no_network.py": "d6b66c4a2dd4dd396b9b4a3600f60127bc8b4dc4dd965e1cbe622e48c3d8eacc"
+    }
+  },
+  "sessions": [
+    {
+      "case": "original_product_modern_only_negative_control",
+      "checks": [
+        {
+          "case": "original_correct_refusal",
+          "code": -32603,
+          "requested": "2025-06-18"
+        }
+      ],
+      "methods": [
+        "initialize",
+        "thread/start"
+      ],
+      "lifecycle": {
+        "exit": 0,
+        "forcedAppServerStop": false,
+        "ownedIdentities": [
+          {
+            "pid": 22550,
+            "ppid": 22520,
+            "state": "S",
+            "start": 598958
+          },
+          {
+            "pid": 22560,
+            "ppid": 22550,
+            "state": "S",
+            "start": 598964
+          },
+          {
+            "pid": 22585,
+            "ppid": 22560,
+            "state": "Z",
+            "start": 598970
+          },
+          {
+            "pid": 22639,
+            "ppid": 22560,
+            "state": "R",
+            "start": 598972
+          },
+          {
+            "pid": 22589,
+            "ppid": 22520,
+            "state": "Z",
+            "start": 598970
+          }
+        ],
+        "nativeCleanupResidual": [],
+        "reapedAdoptedPids": [
+          22589
+        ],
+        "liveAfterCleanup": []
+      },
+      "stderrBytes": 743,
+      "protocolObservations": []
+    },
+    {
+      "case": "all_four_useful_refusal_recovery",
+      "checks": [
+        {
+          "case": "exact_four_tool_schema_annotation_inventory",
+          "ok": true
+        },
+        {
+          "case": "supplier_post_body_binding",
+          "tool": "normalize_request",
+          "actual": {
+            "method": "POST",
+            "origin": "https://supplier.example",
+            "pathname": "/stock",
+            "queryKeys": [
+              "day",
+              "warehouse"
+            ],
+            "publicRoute": "POST https://supplier.example/stock",
+            "bodyBinding": {
+              "mediaType": "application/json",
+              "bytes": 82,
+              "digest": "sha256:325e12d3beaf9452eeeb03bacdba6b2e27281b4ddd3af97c5855747678c47c6f"
+            },
+            "bindingDigest": "sha256:73a1ab6d8e586872a74110c40034d0f10f675e71a0b4b474e272524561c1a1c5"
+          },
+          "matchesIndependentExpected": true
+        },
+        {
+          "case": "changed_quantity_binding",
+          "tool": "normalize_request",
+          "actual": {
+            "method": "POST",
+            "origin": "https://supplier.example",
+            "pathname": "/stock",
+            "queryKeys": [
+              "day",
+              "warehouse"
+            ],
+            "publicRoute": "POST https://supplier.example/stock",
+            "bodyBinding": {
+              "mediaType": "application/json",
+              "bytes": 82,
+              "digest": "sha256:7f053c6d4327b1cdd054c01b6ba78cb6bc8aedf8e6d757046c2720f43098dadc"
+            },
+            "bindingDigest": "sha256:8e783f03c1b28caad02a231f46cb5642e3ac3ef0d3b80d75f1a46b4f5ffda94f"
+          },
+          "matchesIndependentExpected": true
+        },
+        {
+          "case": "independent_schema_digest_required_paths",
+          "tool": "inspect_output_schema",
+          "actual": {
+            "schemaDigest": "sha256:bb89f6fd1b055ee5c79ab69250c4a94b0da7283b690a4e26eb7a5ad353da1e02",
+            "canonicalBytes": 121,
+            "requiredPaths": [
+              "stock"
+            ],
+            "decision": "admissible",
+            "schemaRetained": false,
+            "credentialsUsed": false,
+            "walletAccessed": false,
+            "paymentSigned": false,
+            "paymentSent": false
+          },
+          "matchesIndependentExpected": true
+        },
+        {
+          "case": "valid_stock",
+          "tool": "accept_output",
+          "actual": {
+            "valid": true,
+            "responseDigest": "sha256:260bf47a79a9cddec71486da667ac28451dfd9abc62ebca2f43c16894df03d5b",
+            "schemaDigest": "sha256:bb89f6fd1b055ee5c79ab69250c4a94b0da7283b690a4e26eb7a5ad353da1e02"
+          },
+          "matchesIndependentExpected": true
+        },
+        {
+          "case": "wrong_stock_type",
+          "tool": "accept_output",
+          "actual": {
+            "valid": false
+          },
+          "matchesIndependentExpected": true
+        },
+        {
+          "case": "extra_stock_field",
+          "tool": "accept_output",
+          "actual": {
+            "valid": false
+          },
+          "matchesIndependentExpected": true
+        },
+        {
+          "case": "negative_stock",
+          "tool": "accept_output",
+          "actual": {
+            "valid": false
+          },
+          "matchesIndependentExpected": true
+        },
+        {
+          "case": "wrong_schema_digest",
+          "tool": "accept_output",
+          "actual": {
+            "valid": false
+          },
+          "matchesIndependentExpected": true
+        },
+        {
+          "case": "supplied_receipt_reconciled_valid",
+          "tool": "classify_receipt",
+          "actual": {
+            "schemaVersion": "agent-payment-policy.receipt-completeness-report.v1",
+            "protocol": "x402",
+            "state": "reconciled",
+            "receiptPresent": true,
+            "successProven": true,
+            "transactionReferenceProven": true,
+            "provenDimensions": [
+              "amount",
+              "network",
+              "asset",
+              "recipient",
+              "payer"
+            ],
+            "missingDimensions": [],
+            "conflicts": [],
+            "supplementedBy": [],
+            "deliveryState": "valid",
+            "evidenceBoundary": "Classifies caller-verified normalized facts. It does not parse raw receipts, verify signatures or transactions, authorize payment, or prove independent demand.",
+            "rawEvidenceRetained": false,
+            "credentialsUsed": false,
+            "walletAccessed": false,
+            "paymentSigned": false,
+            "paymentSent": false
+          },
+          "matchesIndependentExpected": true
+        },
+        {
+          "case": "supplied_receipt_reconciled_invalid",
+          "tool": "classify_receipt",
+          "actual": {
+            "schemaVersion": "agent-payment-policy.receipt-completeness-report.v1",
+            "protocol": "x402",
+            "state": "reconciled",
+            "receiptPresent": true,
+            "successProven": true,
+            "transactionReferenceProven": true,
+            "provenDimensions": [
+              "amount",
+              "network",
+              "asset",
+              "recipient",
+              "payer"
+            ],
+            "missingDimensions": [],
+            "conflicts": [],
+            "supplementedBy": [],
+            "deliveryState": "invalid",
+            "evidenceBoundary": "Classifies caller-verified normalized facts. It does not parse raw receipts, verify signatures or transactions, authorize payment, or prove independent demand.",
+            "rawEvidenceRetained": false,
+            "credentialsUsed": false,
+            "walletAccessed": false,
+            "paymentSigned": false,
+            "paymentSent": false
+          },
+          "matchesIndependentExpected": true
+        },
+        {
+          "case": "supplied_receipt_partial_unverified",
+          "tool": "classify_receipt",
+          "actual": {
+            "schemaVersion": "agent-payment-policy.receipt-completeness-report.v1",
+            "protocol": "x402",
+            "state": "partial",
+            "receiptPresent": true,
+            "successProven": true,
+            "transactionReferenceProven": true,
+            "provenDimensions": [
+              "amount",
+              "asset",
+              "payer"
+            ],
+            "missingDimensions": [
+              "network",
+              "recipient"
+            ],
+            "conflicts": [],
+            "supplementedBy": [],
+            "deliveryState": "unverified",
+            "evidenceBoundary": "Classifies caller-verified normalized facts. It does not parse raw receipts, verify signatures or transactions, authorize payment, or prove independent demand.",
+            "rawEvidenceRetained": false,
+            "credentialsUsed": false,
+            "walletAccessed": false,
+            "paymentSigned": false,
+            "paymentSent": false
+          },
+          "matchesIndependentExpected": true
+        },
+        {
+          "case": "supplied_receipt_conflict_valid",
+          "tool": "classify_receipt",
+          "actual": {
+            "schemaVersion": "agent-payment-policy.receipt-completeness-report.v1",
+            "protocol": "x402",
+            "state": "conflict",
+            "receiptPresent": true,
+            "successProven": true,
+            "transactionReferenceProven": true,
+            "provenDimensions": [
+              "network",
+              "asset",
+              "recipient",
+              "payer"
+            ],
+            "missingDimensions": [
+              "amount"
+            ],
+            "conflicts": [
+              "receipt.amount"
+            ],
+            "supplementedBy": [],
+            "deliveryState": "valid",
+            "evidenceBoundary": "Classifies caller-verified normalized facts. It does not parse raw receipts, verify signatures or transactions, authorize payment, or prove independent demand.",
+            "rawEvidenceRetained": false,
+            "credentialsUsed": false,
+            "walletAccessed": false,
+            "paymentSigned": false,
+            "paymentSent": false
+          },
+          "matchesIndependentExpected": true
+        },
+        {
+          "case": "supplied_receipt_insufficient_unverified",
+          "tool": "classify_receipt",
+          "actual": {
+            "schemaVersion": "agent-payment-policy.receipt-completeness-report.v1",
+            "protocol": "x402",
+            "state": "insufficient",
+            "receiptPresent": false,
+            "successProven": false,
+            "transactionReferenceProven": false,
+            "provenDimensions": [],
+            "missingDimensions": [
+              "amount",
+              "network",
+              "asset",
+              "recipient",
+              "payer"
+            ],
+            "conflicts": [],
+            "supplementedBy": [],
+            "deliveryState": "unverified",
+            "evidenceBoundary": "Classifies caller-verified normalized facts. It does not parse raw receipts, verify signatures or transactions, authorize payment, or prove independent demand.",
+            "rawEvidenceRetained": false,
+            "credentialsUsed": false,
+            "walletAccessed": false,
+            "paymentSigned": false,
+            "paymentSent": false
+          },
+          "matchesIndependentExpected": true
+        },
+        {
+          "case": "credential_target",
+          "surface": "tool",
+          "code": "POLICY_REFUSAL",
+          "redacted": true
+        },
+        {
+          "case": "missing_argument",
+          "surface": "tool",
+          "code": "INVALID_ARGUMENTS",
+          "redacted": true
+        },
+        {
+          "case": "wrong_argument_type",
+          "surface": "tool",
+          "code": "INVALID_ARGUMENTS",
+          "redacted": true
+        },
+        {
+          "case": "unknown_tool",
+          "surface": "native-protocol",
+          "code": -32603,
+          "redacted": true
+        },
+        {
+          "case": "schema_refusal",
+          "surface": "tool",
+          "code": "POLICY_REFUSAL",
+          "redacted": true
+        },
+        {
+          "case": "useful_recovery_after_every_refusal",
+          "ok": true
+        }
+      ],
+      "methods": [
+        "initialize",
+        "thread/start",
+        "mcpServerStatus/list",
+        "mcpServer/tool/call",
+        "mcpServer/tool/call",
+        "mcpServer/tool/call",
+        "mcpServer/tool/call",
+        "mcpServer/tool/call",
+        "mcpServer/tool/call",
+        "mcpServer/tool/call",
+        "mcpServer/tool/call",
+        "mcpServer/tool/call",
+        "mcpServer/tool/call",
+        "mcpServer/tool/call",
+        "mcpServer/tool/call",
+        "mcpServer/tool/call",
+        "mcpServer/tool/call",
+        "mcpServer/tool/call",
+        "mcpServer/tool/call",
+        "mcpServer/tool/call",
+        "mcpServer/tool/call",
+        "mcpServer/tool/call",
+        "mcpServer/tool/call",
+        "mcpServer/tool/call",
+        "mcpServer/tool/call",
+        "mcpServer/tool/call"
+      ],
+      "lifecycle": {
+        "exit": 0,
+        "forcedAppServerStop": false,
+        "ownedIdentities": [
+          {
+            "pid": 22659,
+            "ppid": 22520,
+            "state": "S",
+            "start": 598987
+          },
+          {
+            "pid": 22669,
+            "ppid": 22659,
+            "state": "Z",
+            "start": 598992
+          },
+          {
+            "pid": 22695,
+            "ppid": 22669,
+            "state": "Z",
+            "start": 598995
+          },
+          {
+            "pid": 22751,
+            "ppid": 22520,
+            "state": "Z",
+            "start": 598997
+          },
+          {
+            "pid": 22769,
+            "ppid": 22669,
+            "state": "R",
+            "start": 599013
+          },
+          {
+            "pid": 22698,
+            "ppid": 22520,
+            "state": "Z",
+            "start": 598995
+          }
+        ],
+        "nativeCleanupResidual": [],
+        "reapedAdoptedPids": [
+          22698,
+          22751
+        ],
+        "liveAfterCleanup": []
+      },
+      "stderrBytes": 65536,
+      "protocolObservations": [
+        {
+          "source": "actual native rmcp initialized peer_info",
+          "negotiated": "2025-06-18",
+          "diagnosticLineSha256": "0a1ccf73bf80227a7c1ec6bef256e797fc84fb02d97177e1c1bd85e8137a2070"
+        },
+        {
+          "source": "actual native rmcp initialized peer_info",
+          "negotiated": "2025-06-18",
+          "diagnosticLineSha256": "384c0470c8c4fab3a14c25e394b5b0be60637570768ef28699f0f27b8bdfc63a"
+        }
+      ]
+    },
+    {
+      "case": "fresh_restart",
+      "checks": [
+        {
+          "case": "exact_four_tool_schema_annotation_inventory",
+          "ok": true
+        },
+        {
+          "case": "supplier_post_body_binding",
+          "tool": "normalize_request",
+          "actual": {
+            "method": "POST",
+            "origin": "https://supplier.example",
+            "pathname": "/stock",
+            "queryKeys": [
+              "day",
+              "warehouse"
+            ],
+            "publicRoute": "POST https://supplier.example/stock",
+            "bodyBinding": {
+              "mediaType": "application/json",
+              "bytes": 82,
+              "digest": "sha256:325e12d3beaf9452eeeb03bacdba6b2e27281b4ddd3af97c5855747678c47c6f"
+            },
+            "bindingDigest": "sha256:73a1ab6d8e586872a74110c40034d0f10f675e71a0b4b474e272524561c1a1c5"
+          },
+          "matchesIndependentExpected": true
+        },
+        {
+          "case": "valid_stock",
+          "tool": "accept_output",
+          "actual": {
+            "valid": true,
+            "responseDigest": "sha256:260bf47a79a9cddec71486da667ac28451dfd9abc62ebca2f43c16894df03d5b",
+            "schemaDigest": "sha256:bb89f6fd1b055ee5c79ab69250c4a94b0da7283b690a4e26eb7a5ad353da1e02"
+          },
+          "matchesIndependentExpected": true
+        }
+      ],
+      "methods": [
+        "initialize",
+        "thread/start",
+        "mcpServerStatus/list",
+        "mcpServer/tool/call",
+        "mcpServer/tool/call"
+      ],
+      "lifecycle": {
+        "exit": 0,
+        "forcedAppServerStop": false,
+        "ownedIdentities": [
+          {
+            "pid": 22799,
+            "ppid": 22520,
+            "state": "Z",
+            "start": 599186
+          },
+          {
+            "pid": 22809,
+            "ppid": 22799,
+            "state": "S",
+            "start": 599191
+          },
+          {
+            "pid": 22834,
+            "ppid": 22809,
+            "state": "Z",
+            "start": 599194
+          },
+          {
+            "pid": 22886,
+            "ppid": 22520,
+            "state": "Z",
+            "start": 599195
+          },
+          {
+            "pid": 22903,
+            "ppid": 22809,
+            "state": "R",
+            "start": 599211
+          },
+          {
+            "pid": 22837,
+            "ppid": 22520,
+            "state": "Z",
+            "start": 599194
+          }
+        ],
+        "nativeCleanupResidual": [],
+        "reapedAdoptedPids": [
+          22837,
+          22886
+        ],
+        "liveAfterCleanup": []
+      },
+      "stderrBytes": 37104,
+      "protocolObservations": [
+        {
+          "source": "actual native rmcp initialized peer_info",
+          "negotiated": "2025-06-18",
+          "diagnosticLineSha256": "d8c97b4f60044ec8b640cd284b291a4063f7690990e781cf8774d47e5fe0de89"
+        },
+        {
+          "source": "actual native rmcp initialized peer_info",
+          "negotiated": "2025-06-18",
+          "diagnosticLineSha256": "d115093650e7e6785bee3c749c76b781205109bc7833a4876927460ea4f83e8e"
+        }
+      ]
+    },
+    {
+      "case": "separate_reduced_allowlist",
+      "checks": [
+        {
+          "case": "filtered_or_unknown",
+          "tool": "accept_output",
+          "surface": "native-protocol",
+          "code": -32603
+        },
+        {
+          "case": "filtered_or_unknown",
+          "tool": "unknown_policy_tool",
+          "surface": "native-protocol",
+          "code": -32603
+        }
+      ],
+      "methods": [
+        "initialize",
+        "thread/start",
+        "mcpServerStatus/list",
+        "mcpServer/tool/call",
+        "mcpServer/tool/call",
+        "mcpServer/tool/call"
+      ],
+      "lifecycle": {
+        "exit": 0,
+        "forcedAppServerStop": false,
+        "ownedIdentities": [
+          {
+            "pid": 22915,
+            "ppid": 22520,
+            "state": "Z",
+            "start": 599249
+          },
+          {
+            "pid": 22950,
+            "ppid": 22927,
+            "state": "Z",
+            "start": 599257
+          },
+          {
+            "pid": 22951,
+            "ppid": 22927,
+            "state": "S",
+            "start": 599257
+          },
+          {
+            "pid": 22952,
+            "ppid": 22927,
+            "state": "S",
+            "start": 599257
+          },
+          {
+            "pid": 22954,
+            "ppid": 22520,
+            "state": "Z",
+            "start": 599257
+          },
+          {
+            "pid": 22927,
+            "ppid": 22915,
+            "state": "S",
+            "start": 599255
+          },
+          {
+            "pid": 23016,
+            "ppid": 22520,
+            "state": "Z",
+            "start": 599259
+          },
+          {
+            "pid": 23028,
+            "ppid": 22927,
+            "state": "R",
+            "start": 599275
+          }
+        ],
+        "nativeCleanupResidual": [],
+        "reapedAdoptedPids": [
+          22954,
+          23016
+        ],
+        "liveAfterCleanup": []
+      },
+      "stderrBytes": 35075,
+      "protocolObservations": [
+        {
+          "source": "actual native rmcp initialized peer_info",
+          "negotiated": "2025-06-18",
+          "diagnosticLineSha256": "7cecbac2b6a089a97e212a842d3afc61b499fd0832fa4cb941098a40697ad1db"
+        },
+        {
+          "source": "actual native rmcp initialized peer_info",
+          "negotiated": "2025-06-18",
+          "diagnosticLineSha256": "d4ead3d1cd4b7937c4cf6fa4462e4c5974a9de1476998bb051ffcb1c87ad1ed7"
+        }
+      ]
+    },
+    {
+      "case": "same_pack_bounded_required_startup_timeout",
+      "checks": [
+        {
+          "case": "thread_creation_refused",
+          "code": -32603
+        }
+      ],
+      "methods": [
+        "initialize",
+        "thread/start"
+      ],
+      "lifecycle": {
+        "exit": 0,
+        "forcedAppServerStop": false,
+        "ownedIdentities": [
+          {
+            "pid": 23039,
+            "ppid": 22520,
+            "state": "S",
+            "start": 599300
+          },
+          {
+            "pid": 23049,
+            "ppid": 23039,
+            "state": "Z",
+            "start": 599306
+          },
+          {
+            "pid": 23074,
+            "ppid": 22520,
+            "state": "Z",
+            "start": 599308
+          },
+          {
+            "pid": 23079,
+            "ppid": 22520,
+            "state": "Z",
+            "start": 599308
+          }
+        ],
+        "nativeCleanupResidual": [],
+        "reapedAdoptedPids": [
+          23074,
+          23079
+        ],
+        "liveAfterCleanup": []
+      },
+      "stderrBytes": 534,
+      "protocolObservations": []
+    },
+    {
+      "case": "fresh_startup_recovery_same_pack",
+      "checks": [
+        {
+          "case": "supplier_post_body_binding",
+          "ok": true
+        }
+      ],
+      "methods": [
+        "initialize",
+        "thread/start",
+        "mcpServer/tool/call"
+      ],
+      "lifecycle": {
+        "exit": 0,
+        "forcedAppServerStop": false,
+        "ownedIdentities": [
+          {
+            "pid": 23136,
+            "ppid": 22520,
+            "state": "S",
+            "start": 599311
+          },
+          {
+            "pid": 23169,
+            "ppid": 23146,
+            "state": "S",
+            "start": 599319
+          },
+          {
+            "pid": 23171,
+            "ppid": 23146,
+            "state": "S",
+            "start": 599319
+          },
+          {
+            "pid": 23172,
+            "ppid": 23146,
+            "state": "Z",
+            "start": 599319
+          },
+          {
+            "pid": 23175,
+            "ppid": 22520,
+            "state": "Z",
+            "start": 599319
+          },
+          {
+            "pid": 23146,
+            "ppid": 23136,
+            "state": "S",
+            "start": 599317
+          },
+          {
+            "pid": 23179,
+            "ppid": 23171,
+            "state": "S",
+            "start": 599319
+          },
+          {
+            "pid": 23182,
+            "ppid": 23175,
+            "state": "R",
+            "start": 599319
+          },
+          {
+            "pid": 23228,
+            "ppid": 22520,
+            "state": "Z",
+            "start": 599321
+          }
+        ],
+        "nativeCleanupResidual": [],
+        "reapedAdoptedPids": [
+          23175,
+          23228
+        ],
+        "liveAfterCleanup": []
+      },
+      "stderrBytes": 17712,
+      "protocolObservations": [
+        {
+          "source": "actual native rmcp initialized peer_info",
+          "negotiated": "2025-06-18",
+          "diagnosticLineSha256": "2ed7328600b20958e4f8bc03287f9487cdc78cebc0b6b73a3a1394e0c54c1e02"
+        }
+      ]
+    }
+  ],
+  "turnStartRequests": 0,
+  "modelInferenceRequests": 0,
+  "authImported": false,
+  "installedAdoption": false,
+  "networkGuard": "read-only producer no_network.py inherited by app-server and descendants",
+  "networkGuardProbe": {
+    "exit": 0,
+    "result": "AF_INET and AF_INET6 denied"
+  },
+  "nativeRequestedProtocol": {
+    "requested": "2025-06-18",
+    "evidence": "actual original-product unsupported-version error data",
+    "negativeControlProductBase": "a6fb83f3abfa5c028b2356fa9665e24212505727",
+    "originalFileHashes": {
+      "package.json": "c1cd8c3a08a7c0abccd26c701c109283715790701f24bcf13397e57fd4af383b",
+      "bin/agent-payment-policy-mcp.mjs": "f36cb8140f25424c0ca3a45540fc7e4da6345f2494d09408876eab83a7cb8048",
+      "policy/core.mjs": "9b7647903190d0fe5331662803bded1c9d7c81c746957a681dd3e437e9f9b5d7",
+      "src/tools/index.mjs": "906fb74af379c13949ac8833a16d3309cd047a566b5306a4a07d8e4f1d6e6bc1",
+      "src/isolate.mjs": "4b2fb229ab4d7b605c2b1583adf1f3956915c66b0fe143532e31d4991836d267",
+      "src/limits.mjs": "50605105c3b825b818d44004ac745211b4f662d6cb46b29539c9b8fe5fb10716",
+      "src/server.mjs": "bbbd411efd837c0a24f480ef8989567f0bdd0d8ebadf16ad0f8d12ca71f5c964",
+      "src/worker.mjs": "cef3b6daa02eecbde0c7d83fc98c344725d0ce010fb8649b3a67e6389ecbe491"
+    },
+    "nativeBinarySha256": "399ff69c431c066e40de318fba45c2b07f45a76b19939d247ee4828fc70c4215",
+    "negotiated": null,
+    "candidateHandshake": false
+  },
+  "sourceHashMismatch": {
+    "exit": 78,
+    "diagnostic": "native MCP profile: stdio source digest mismatch",
+    "nativeNotLaunched": true,
+    "installedFilesMutated": false
+  },
+  "emptyProfileNoAuthFile": true,
+  "runtimeAfter": [
+    {
+      "name": "adapter",
+      "root": "/tmp/policy-mcp-cold-9jwkbw3v/npm-cache/_npx/e914f6c31673c78c/node_modules/@epistemedeus/agent-payment-policy-mcp",
+      "fileCount": 15,
+      "filesSha256": "e3d5ef67ded38f83ff12c1870cb692a6c5afac0be315886d9cf6e3090c32cac1"
+    },
+    {
+      "name": "@modelcontextprotocol/core",
+      "root": "/tmp/policy-mcp-cold-9jwkbw3v/npm-cache/_npx/e914f6c31673c78c/node_modules/@modelcontextprotocol/core",
+      "fileCount": 21,
+      "filesSha256": "681d6ad625e2d70ee2a0becfc19175dc8b89002ddf96f890b5ad9d8de61e9406"
+    },
+    {
+      "name": "@modelcontextprotocol/server",
+      "root": "/tmp/policy-mcp-cold-9jwkbw3v/npm-cache/_npx/e914f6c31673c78c/node_modules/@modelcontextprotocol/server",
+      "fileCount": 85,
+      "filesSha256": "94fb992bf26ed10738d1683a02e9104f6b558bea859436044726b77f6dcfec5d"
+    },
+    {
+      "name": "agent-payment-policy",
+      "root": "/tmp/policy-mcp-cold-9jwkbw3v/npm-cache/_npx/e914f6c31673c78c/node_modules/agent-payment-policy",
+      "fileCount": 14,
+      "filesSha256": "9e98b684c21d9ab64fa6357bed88e2c84d7dbeb6eabee3211b6152f70e65eb4c"
+    },
+    {
+      "name": "ajv",
+      "root": "/tmp/policy-mcp-cold-9jwkbw3v/npm-cache/_npx/e914f6c31673c78c/node_modules/ajv",
+      "fileCount": 466,
+      "filesSha256": "73551604be9041b43762e2c0eacb22125f75b1825010e65bbd1470655b1cf6af"
+    },
+    {
+      "name": "ajv-formats",
+      "root": "/tmp/policy-mcp-cold-9jwkbw3v/npm-cache/_npx/e914f6c31673c78c/node_modules/ajv-formats",
+      "fileCount": 15,
+      "filesSha256": "2eaa6d9add7ebc331b55da794e73bc75c078526fdcbbff04850e5741fc216d87"
+    },
+    {
+      "name": "fast-deep-equal",
+      "root": "/tmp/policy-mcp-cold-9jwkbw3v/npm-cache/_npx/e914f6c31673c78c/node_modules/fast-deep-equal",
+      "fileCount": 11,
+      "filesSha256": "e63e4ffbea6145526356eb8f6a5983e0167ea7e5ef4a89d147b8040365d56020"
+    },
+    {
+      "name": "fast-uri",
+      "root": "/tmp/policy-mcp-cold-9jwkbw3v/npm-cache/_npx/e914f6c31673c78c/node_modules/fast-uri",
+      "fileCount": 47,
+      "filesSha256": "ecbaf162ca70d4c77a5ce8106bd0e007c85c19cf45066b435d3b6a7ef07bc243"
+    },
+    {
+      "name": "json-schema-traverse",
+      "root": "/tmp/policy-mcp-cold-9jwkbw3v/npm-cache/_npx/e914f6c31673c78c/node_modules/json-schema-traverse",
+      "fileCount": 12,
+      "filesSha256": "8e2aadc17ffc8ba0177876019cb3a1398c8a89a431e8756da9d1a59e60d01b31"
+    },
+    {
+      "name": "require-from-string",
+      "root": "/tmp/policy-mcp-cold-9jwkbw3v/npm-cache/_npx/e914f6c31673c78c/node_modules/require-from-string",
+      "fileCount": 4,
+      "filesSha256": "feb709d246c40a171f7f6ab83bb002b63642e567ccc529df4b4804743e770bcf"
+    },
+    {
+      "name": "zod",
+      "root": "/tmp/policy-mcp-cold-9jwkbw3v/npm-cache/_npx/e914f6c31673c78c/node_modules/zod",
+      "fileCount": 840,
+      "filesSha256": "3a9b6a2bbf84470207b88bedf4debe817a5acb2c2b7662e42c04e7c684efeb42"
+    }
+  ],
+  "runtimeAndProducerBytesUnchanged": true,
+  "elapsedSeconds": 4.612
+}

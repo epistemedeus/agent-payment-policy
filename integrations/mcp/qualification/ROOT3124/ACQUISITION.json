@@ -1,0 +1,202 @@
+{
+  "url": "https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz",
+  "steps": [
+    {
+      "label": "https-fetch",
+      "argv": [
+        "curl",
+        "--fail",
+        "--silent",
+        "--show-error",
+        "--location",
+        "--proto",
+        "=https",
+        "--proto-redir",
+        "=https",
+        "--connect-timeout",
+        "10",
+        "--max-time",
+        "30",
+        "--output",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/received.tgz",
+        "https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz"
+      ],
+      "cwd": "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/consumer",
+      "exit": 0,
+      "elapsedSeconds": 0.148,
+      "stdoutBytes": 0,
+      "stderrBytes": 0
+    },
+    {
+      "label": "npm-url-exec-EOF",
+      "argv": [
+        "python3",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/scripts/npm-stdio.py",
+        "npm",
+        "exec",
+        "--yes",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund",
+        "--engine-strict",
+        "--cache",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/npm-cache",
+        "--package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz",
+        "--",
+        "agent-payment-policy-mcp"
+      ],
+      "cwd": "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/consumer",
+      "exit": 0,
+      "elapsedSeconds": 1.589,
+      "stdoutBytes": 0,
+      "stderrBytes": 0
+    },
+    {
+      "label": "official-client-ci",
+      "argv": [
+        "npm",
+        "ci",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund",
+        "--engine-strict",
+        "--cache",
+        "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/client-cache"
+      ],
+      "cwd": "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/client",
+      "exit": 0,
+      "elapsedSeconds": 0.793,
+      "stdoutBytes": 28,
+      "stderrBytes": 0
+    }
+  ],
+  "freshHomeConsumerCaches": true,
+  "scriptsDisabled": true,
+  "archiveBytes": 18633,
+  "archiveSha256": "f45615114494fc7167234743d5a2ff4cda54d20e07de72c49c9e42e6b629c439",
+  "package": "@epistemedeus/agent-payment-policy-mcp@0.1.0",
+  "bin": {
+    "agent-payment-policy-mcp": "bin/agent-payment-policy-mcp.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "shrinkwrapSha256": "0d2274964a1cae97e63490cd04c5af2e2ea349e1edf3421b07eccb10eca924aa",
+  "ok": true,
+  "installed": "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/npm-cache/_npx/5dbce4b621437f70/node_modules/@epistemedeus/agent-payment-policy-mcp",
+  "entry": "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/npm-cache/_npx/5dbce4b621437f70/node_modules/@epistemedeus/agent-payment-policy-mcp/bin/agent-payment-policy-mcp.mjs",
+  "executable": "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/npm-cache/_npx/5dbce4b621437f70/node_modules/.bin/agent-payment-policy-mcp",
+  "policyCli": "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/npm-cache/_npx/5dbce4b621437f70/node_modules/agent-payment-policy/cli.mjs",
+  "runtimeInventory": [
+    {
+      "name": "@modelcontextprotocol/core",
+      "version": "2.3.1",
+      "integrity": "sha512-laVmIhPGpWi7rG9q+0UigblRN0Hws/Yjlb6qLFtVqryXVLkc4h+yN8z731POD2LnAGQlFe7/tXhUm7Bi0YB91g==",
+      "installedTreeSha256": "f59208e5f005e64228f8d61983d0c22012fe834059b2d9ad9d628b528efedfbc",
+      "path": "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/npm-cache/_npx/5dbce4b621437f70/node_modules/@modelcontextprotocol/core/package.json"
+    },
+    {
+      "name": "@modelcontextprotocol/server",
+      "version": "2.3.1",
+      "integrity": "sha512-e59MfWuSssj6DoQ96JCTqdW1AXT5/XtnTl0WWd6MU1Ka434fFUGGosCLJbGNySDhHGvxQWoRWK137FXYFkYNWw==",
+      "installedTreeSha256": "db81738ed48f756521eb114d8c988e2c4fa70197d4dd97497c19487cde669e89",
+      "path": "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/npm-cache/_npx/5dbce4b621437f70/node_modules/@modelcontextprotocol/server/package.json"
+    },
+    {
+      "name": "agent-payment-policy",
+      "version": "0.15.1",
+      "integrity": "sha512-25GlNXX2JnhFo5pO5/0BQcyUmQYr/l0/aD+pmTCo/4mjdVsfNKtH9DySgzEzJ3WmprqXtShLgbiodQ5xnVi1AA==",
+      "installedTreeSha256": "2070ee1368795e8daff9d0c490b21d0958c8f065a841200c55479e1004b2545a",
+      "path": "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/npm-cache/_npx/5dbce4b621437f70/node_modules/agent-payment-policy/package.json"
+    },
+    {
+      "name": "ajv",
+      "version": "8.20.0",
+      "integrity": "sha512-Thbli+OlOj+iMPYFBVBfJ3OmCAnaSyNn4M1vz9T6Gka5Jt9ba/HIR56joy65tY6kx/FCF5VXNB819Y7/GUrBGA==",
+      "installedTreeSha256": "9bf13d80af688544be948c46f3603adfc761c0a8e63ae4185e9f3202d9d2da14",
+      "path": "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/npm-cache/_npx/5dbce4b621437f70/node_modules/ajv/package.json"
+    },
+    {
+      "name": "ajv-formats",
+      "version": "3.0.1",
+      "integrity": "sha512-8iUql50EUR+uUcdRQ3HDqa6EVyo3docL8g5WJ3FNcWmu62IbkGUue/pEyLBW8VGKKucTPgqeks4fIU1DA4yowQ==",
+      "installedTreeSha256": "ebf7b1afd4bbdff2c03703301845083111436fcf2015435f939324808a2f0a3d",
+      "path": "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/npm-cache/_npx/5dbce4b621437f70/node_modules/ajv-formats/package.json"
+    },
+    {
+      "name": "fast-deep-equal",
+      "version": "3.1.3",
+      "integrity": "sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==",
+      "installedTreeSha256": "4f3b31d2d7e7944c12ec56f6bd2ea1de9cabbf79974a624d8d76ca4ccc0b024e",
+      "path": "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/npm-cache/_npx/5dbce4b621437f70/node_modules/fast-deep-equal/package.json"
+    },
+    {
+      "name": "fast-uri",
+      "version": "3.1.9",
+      "integrity": "sha512-hS/0Wt3Ya043oKXs0sIxrMpKQITXhMLIrVAKKXi4gozGC9v7YRWVnXIZzjNPTO02M9BdxLCWqK1yRXgNziVyJQ==",
+      "installedTreeSha256": "66c7f72534c6b0f920005565b5d1d19c0d499bc2ffce534a52d173777e5d8ed9",
+      "path": "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/npm-cache/_npx/5dbce4b621437f70/node_modules/fast-uri/package.json"
+    },
+    {
+      "name": "json-schema-traverse",
+      "version": "1.0.0",
+      "integrity": "sha512-NM8/P9n3XjXhIZn1lLhkFaACTOURQXjWhV4BA/RnOv8xvgqtqpAX9IO4mRQxSx1Rlo4tqzeqb0sOlruaOy3dug==",
+      "installedTreeSha256": "1b72257ad7ded5e4f616b8538159862e7b625e8f54518d1ac36a615827f9ad23",
+      "path": "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/npm-cache/_npx/5dbce4b621437f70/node_modules/json-schema-traverse/package.json"
+    },
+    {
+      "name": "require-from-string",
+      "version": "2.0.2",
+      "integrity": "sha512-Xf0nWe6RseziFMu+Ap9biiUbmplq6S9/p+7w7YXP/JBHhrUDDUhwa+vANyubuqfZWTveU//DYVGsDG7RKL/vEw==",
+      "installedTreeSha256": "acae06d3e34484c6be4e61bc083e5ba4f59e39e6c4548107eb6b1e81172f668d",
+      "path": "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/npm-cache/_npx/5dbce4b621437f70/node_modules/require-from-string/package.json"
+    },
+    {
+      "name": "zod",
+      "version": "4.6.7",
+      "integrity": "sha512-g8W2D2kU6a8untc053fX1uVBKzM7yqAxW/3zwk83+6RyF2+SKOuV+c0wBDhUwzV1PaGapmZH+rmcUzPf+3CGwg==",
+      "installedTreeSha256": "d2b0ca1a4c175ee7900c3b1e5b805e0a2aa6361ce97ca84c67bc68df0e6db441",
+      "path": "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/npm-cache/_npx/5dbce4b621437f70/node_modules/zod/package.json"
+    }
+  ],
+  "packedFiles": {
+    "LICENSE": "48778414be7220ecf3f9bfbaf1e4d9f462b06e5f035ce3df7cd8d5a488935a11",
+    "DEPENDENCIES.json": "2c1c3ee226536124279329e13e1b2a47f85b434cd16cf3ddddd3e963ecd6131b",
+    "npm-shrinkwrap.json": "0d2274964a1cae97e63490cd04c5af2e2ea349e1edf3421b07eccb10eca924aa",
+    "package.json": "304490cc4460a46f4b60ee90cf0b80480c7f45d5fc6dcab7bd0266b08d0659a1",
+    "SOURCE-MANIFEST.json": "64675a5bdda80d7c6bbc53fc968d35066eeee2a92b7ade4fc84b437d48cb005b",
+    "NOTICE.md": "e9e57e30401f16f4603c2fadd638eed2972c8a24f8b6c2eb8751c31e4040b5c2",
+    "README.md": "90063169d8e935286259c03921d405b80294b15731d0f79ecb6b52f2f94ba946",
+    "bin/agent-payment-policy-mcp.mjs": "f36cb8140f25424c0ca3a45540fc7e4da6345f2494d09408876eab83a7cb8048",
+    "policy/core.mjs": "9b7647903190d0fe5331662803bded1c9d7c81c746957a681dd3e437e9f9b5d7",
+    "src/tools/index.mjs": "906fb74af379c13949ac8833a16d3309cd047a566b5306a4a07d8e4f1d6e6bc1",
+    "src/isolate.mjs": "4b2fb229ab4d7b605c2b1583adf1f3956915c66b0fe143532e31d4991836d267",
+    "src/limits.mjs": "50605105c3b825b818d44004ac745211b4f662d6cb46b29539c9b8fe5fb10716",
+    "src/server.mjs": "f01cf20fcdc810beceec15030d20b7063ef0558b8ca63301f7378fa8040f4e7f",
+    "src/worker.mjs": "cef3b6daa02eecbde0c7d83fc98c344725d0ce010fb8649b3a67e6389ecbe491",
+    "release/SDK-LICENSE.txt": "0382b0057770ca05e9c350a50aa3b1c1fea84da0bc81d723bf00b9aa841be58a"
+  },
+  "npmArgs": [
+    "exec",
+    "--yes",
+    "--ignore-scripts",
+    "--no-audit",
+    "--no-fund",
+    "--engine-strict",
+    "--cache",
+    "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/npm-cache",
+    "--package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz"
+  ],
+  "environment": {
+    "PATH": "/home/ubuntu/pilot-native-restore-root1600/runtime/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/codex-path:/home/ubuntu/.grok/bin:/usr/local/cargo/bin:/home/ubuntu/.local/bin:/home/ubuntu/.grok/bin:/usr/local/cargo/bin:/home/ubuntu/.codex/tmp/arg0-linux/codex-arg0cw5lRN:/home/ubuntu/pilot-native-restore-root1600/runtime/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/codex-path:/home/ubuntu/.local/bin:/home/ubuntu/.grok/bin:/usr/local/cargo/bin:/exec-daemon/tools:/exec-daemon:/home/ubuntu/.local/bin:/home/ubuntu/.grok/bin:/usr/local/cargo/bin:/home/ubuntu/.nvm/versions/node/v22.23.3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+    "HOME": "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/home",
+    "NODE_OPTIONS": "--max-old-space-size=192",
+    "npm_config_userconfig": "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/empty.npmrc",
+    "npm_config_globalconfig": "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/absent-global.npmrc",
+    "npm_config_registry": "https://registry.npmjs.org",
+    "npm_config_update_notifier": "false",
+    "npm_config_fetch_retries": "0",
+    "npm_config_fetch_timeout": "20000"
+  },
+  "clientLockSha256": "0d2274964a1cae97e63490cd04c5af2e2ea349e1edf3421b07eccb10eca924aa"
+}

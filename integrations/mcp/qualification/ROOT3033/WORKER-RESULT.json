@@ -1,0 +1,120 @@
+{
+  "schema": "policy-mcp.root3033.worker-result.v1",
+  "operation": "ROOT-SOL-ROOT3033-ROOT3040-261022",
+  "status": "qualified-feature-export-ready",
+  "implementationCommit": "ed519c8b2f3391f59085b5453405e59bf66d4fab",
+  "exportCommit": "Final evidence commit is self-bound by the external FINAL-EXPORT.json receipt and final Git head readback",
+  "productBase": "a6fb83f3abfa5c028b2356fa9665e24212505727",
+  "operatingCommit": "8dda961413b50b8b765cb81c7ba2e013855789e2",
+  "assignmentCommit": "8dda961413b50b8b765cb81c7ba2e013855789e2",
+  "branch": "codex/root3033-policy-mcp-native-compatibility-20261022",
+  "owningDirectory": "integrations/mcp",
+  "package": "@epistemedeus/agent-payment-policy-mcp@0.1.0",
+  "archive": {
+    "path": "candidate.tgz",
+    "sha256": "f45615114494fc7167234743d5a2ff4cda54d20e07de72c49c9e42e6b629c439",
+    "bytes": 18633,
+    "published": false
+  },
+  "model": "gpt-6.1-sol",
+  "effort": "max",
+  "modelChildren": 0,
+  "productionCodeChange": "serveStdio legacy:reject to legacy:serve; same existing factory",
+  "semanticsAndLimitsUnchanged": true,
+  "modernProtocol": "2026-07-28",
+  "nativeRequestedProtocol": "2025-06-18",
+  "nativeNegotiatedProtocol": "2025-06-18",
+  "unsupportedLegacyOffer": "Official initialize counter-offers 2025-11-25 to 2099-01-01; modern discovery continues to advertise only 2026-07-28",
+  "nativeCliVersion": "codex-cli 0.163.0",
+  "checks": {
+    "allCommandsExitZero": true,
+    "coldModernPinnedAuto": true,
+    "independentSupplierCase": true,
+    "fourToolInventorySchemaAnnotationsParity": true,
+    "textStructuredParity": true,
+    "validFalseSuccessful": true,
+    "officialDualEraTimeoutCancellationDisconnectEOFRestart": true,
+    "nativeActualFourUsefulCallsRefusalsRecovery": true,
+    "nativeReducedAllowlist": true,
+    "nativeStartupFailureRecovery": true,
+    "producerHashMismatchBeforeLaunch": true,
+    "runtimeBeforeAfterEqual": true,
+    "networkDenialProbe": {
+      "exit": 0,
+      "result": "AF_INET and AF_INET6 denied"
+    },
+    "unsupportedNode20EngineRefusal": "Unavailable: no separately checked Node20 binary supplied; explicitly unrun",
+    "fullSiteBuildBrowserSuite": "Not run; outside scope"
+  },
+  "authorization": {
+    "existingOrdinarySubscriptionOnly": true,
+    "creditsSpent": false,
+    "apiBilling": false,
+    "purchase": false,
+    "overage": false,
+    "reset": false,
+    "authImported": false,
+    "turnStartRequests": 0,
+    "modelInferenceProbeRequests": 0,
+    "installedAdoption": false,
+    "publication": false,
+    "unrelatedJobsOrAccountsModified": false
+  },
+  "resources": {
+    "declaredTotalKiB": 2621440,
+    "peakSampledTotalKiB": 806832,
+    "sampleIntervalMs": 50,
+    "includesNativeControlTests": true,
+    "totalExecutedVerificationSeconds": 111.404,
+    "setupAcquisitionVerificationSeconds": 61.235,
+    "wallStartedAt": "2026-10-22T16:13:39.193Z",
+    "receiptPreparedAt": "2026-10-22T16:34:24.381977+00:00",
+    "humanReviewMinutes": null,
+    "rootIndependentReviewMinutes": null,
+    "unknownReviewBurdenNotZero": true,
+    "wallThroughScratchRetirementSeconds": 1363.159,
+    "finalAcquisitionSetupSeconds": 1.933
+  },
+  "cleanup": {
+    "allOwnedLiveDescendants": [],
+    "allNativeCleanupResiduals": [],
+    "allNativeAppServersExitedNaturally": true,
+    "receivingScratchRetired": true,
+    "parentOperationRetirementOwner": "Root after export; current original native job remains the writer until completion",
+    "existingJobsPreserved": true,
+    "retiredOwnedScratch": [
+      {
+        "path": "/tmp/policy-mcp-cold-1yt5ckw9",
+        "removed": true
+      },
+      {
+        "path": "/tmp/policy-mcp-cold-9jwkbw3v",
+        "removed": true
+      }
+    ],
+    "retiredAt": "2026-10-22T16:36:22.351900+00:00"
+  },
+  "checkpoint": {
+    "firstAt": "2026-10-22T16:24:42.140218+00:00",
+    "nativeSuccessAt": "2026-10-22T16:25:45.979947+00:00",
+    "deadline": "2026-10-22T16:28:33.686Z",
+    "met": true
+  },
+  "exportDeadline": "2026-10-22T16:55:00.000Z",
+  "nextConsumer": "Root independently cold-receives candidate.tgz through modern and canonical no-turn native paths before any separately admitted installation/publication/model-mediated visitor",
+  "retainedFailures": [
+    "Original exact product modern-only native refusal is an expected negative control, not a security defect or successful handshake",
+    "Bounded native required startup timeout refuses thread creation, then fresh same-pack recovery succeeds",
+    "Credential/schema/argument/unknown/filtered refusals stay bounded and redacted; valid recovery follows",
+    "Hostile synchronous work times out; actual cancellation recovers before the 1500ms deadline in both eras"
+  ],
+  "receipts": [
+    "SOURCE-IDENTITY.json",
+    "ORACLE-FREEZE.json",
+    "FROZEN-USEFUL-CASE.json",
+    "COLD-RECEIVING.json",
+    "NATIVE-RECEIVING.json",
+    "commands.jsonl",
+    "PRIVATE-ARTIFACTS.json"
+  ]
+}

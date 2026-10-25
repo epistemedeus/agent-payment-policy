@@ -1,0 +1,1322 @@
+{
+  "archiveSha256": "f45615114494fc7167234743d5a2ff4cda54d20e07de72c49c9e42e6b629c439",
+  "archiveBytes": 18633,
+  "scratch": "/tmp/r5180-8x9u97p1",
+  "readmeCommand": "npm exec --yes --ignore-scripts --no-audit --no-fund --engine-strict \\\n  --package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz \\\n  -- agent-payment-policy-mcp",
+  "sampledMaximumReceiverDescendantsKiB": 296532,
+  "sampleMs": 10,
+  "cases": [
+    {
+      "mode": "normal-eof",
+      "clientExit": 0,
+      "clientSignalSent": false,
+      "events": [
+        {
+          "at": 46110.374024575,
+          "launch": 122258,
+          "argv": [
+            "sh",
+            "-eu",
+            "-c",
+            "npm exec --yes --ignore-scripts --no-audit --no-fund --engine-strict \\\n  --package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz \\\n  -- agent-payment-policy-mcp"
+          ],
+          "cwd": "/tmp/r5180-8x9u97p1/consumer"
+        },
+        {
+          "at": 46111.673887762,
+          "initialized": true
+        },
+        {
+          "at": 46111.770105979,
+          "decision": "packing_request_binding",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"method\":\"POST\",\"origin\":\"https://supplier.example\",\"pathname\":\"/packing\",\"queryKeys\":[\"batch\",\"region\"],\"publicRoute\":\"POST https://supplier.example/packing\",\"bodyBinding\":{\"mediaType\":\"application/json\",\"bytes\":50,\"digest\":\"sha256:d05dc8bca8b1b2e80411c730dab1c0c0ad01c921bb7f41f66a0fd825269cc2fe\"},\"bindingDigest\":\"sha256:e44f2560b6eb1738b32052763ab08c4382982837fab16d763bd836a04de4b696\"}"
+              }
+            ],
+            "structuredContent": {
+              "method": "POST",
+              "origin": "https://supplier.example",
+              "pathname": "/packing",
+              "queryKeys": [
+                "batch",
+                "region"
+              ],
+              "publicRoute": "POST https://supplier.example/packing",
+              "bodyBinding": {
+                "mediaType": "application/json",
+                "bytes": 50,
+                "digest": "sha256:d05dc8bca8b1b2e80411c730dab1c0c0ad01c921bb7f41f66a0fd825269cc2fe"
+              },
+              "bindingDigest": "sha256:e44f2560b6eb1738b32052763ab08c4382982837fab16d763bd836a04de4b696"
+            }
+          }
+        },
+        {
+          "at": 46112.016726044,
+          "decision": "packing_accepted",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"valid\":true,\"responseDigest\":\"sha256:4c0602e0a65fe976956a482a43a1d5108261a90807999aa03f27bd1a9ecb0dbb\",\"schemaDigest\":\"sha256:3b42772b9133098b0f05c0f10245ccfea38496c1ea50f4569addf88676e4cae9\"}"
+              }
+            ],
+            "structuredContent": {
+              "valid": true,
+              "responseDigest": "sha256:4c0602e0a65fe976956a482a43a1d5108261a90807999aa03f27bd1a9ecb0dbb",
+              "schemaDigest": "sha256:3b42772b9133098b0f05c0f10245ccfea38496c1ea50f4569addf88676e4cae9"
+            }
+          }
+        },
+        {
+          "at": 46112.181329743,
+          "decision": "wrong_units_type",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"valid\":false}"
+              }
+            ],
+            "structuredContent": {
+              "valid": false
+            }
+          }
+        },
+        {
+          "at": 46112.242040074,
+          "refusal": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"error\":{\"code\":\"POLICY_REFUSAL\",\"message\":\"The supplied tool request was refused or could not complete within its bounds.\"}}"
+              }
+            ],
+            "isError": true
+          }
+        },
+        {
+          "at": 46112.242072237,
+          "stdinEOF": true
+        },
+        {
+          "at": 46112.273461758,
+          "launcherExit": 0
+        }
+      ],
+      "firstIdentities": [
+        {
+          "elapsed": 0.0,
+          "pid": 122257,
+          "startTicks": "4611034",
+          "state": "R",
+          "ppid": 122250,
+          "pgid": 122257,
+          "rssKiB": 320,
+          "cwd": "/home/ubuntu/ae14-work/root5180-policy-client-cancellation-20261024",
+          "command": "/usr/bin/python3 /home/ubuntu/ae14-work/root5180-policy-client-cancellation-20261024/integrations/mcp/qualification/ROOT5180/probe.py client normal-eof /tmp/r5180-8x9u97p1 npm exec --yes --ignore-scripts --no-audit --no-fund --engine-strict \\\n  --package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz \\\n  -- agent-payment-policy-mcp"
+        },
+        {
+          "elapsed": 0.031,
+          "pid": 122258,
+          "startTicks": "4611037",
+          "state": "S",
+          "ppid": 122257,
+          "pgid": 122257,
+          "rssKiB": 1776,
+          "cwd": "/tmp/r5180-8x9u97p1/consumer",
+          "command": "sh -eu -c npm exec --yes --ignore-scripts --no-audit --no-fund --engine-strict \\\n  --package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz \\\n  -- agent-payment-policy-mcp"
+        },
+        {
+          "elapsed": 0.031,
+          "pid": 122259,
+          "startTicks": "4611037",
+          "state": "R",
+          "ppid": 122258,
+          "pgid": 122257,
+          "rssKiB": 21608,
+          "cwd": "/tmp/r5180-8x9u97p1/consumer",
+          "command": "node /home/ubuntu/.nvm/versions/node/v22.23.4/bin/npm exec --yes --ignore-scripts --no-audit --no-fund --engine-strict --package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz -- agent-payment-policy-mcp"
+        },
+        {
+          "elapsed": 1.136,
+          "pid": 122275,
+          "startTicks": "4611147",
+          "state": "S",
+          "ppid": 122259,
+          "pgid": 122257,
+          "rssKiB": 1776,
+          "cwd": "/tmp/r5180-8x9u97p1/consumer",
+          "command": "sh -c agent-payment-policy-mcp"
+        },
+        {
+          "elapsed": 1.136,
+          "pid": 122276,
+          "startTicks": "4611148",
+          "state": "R",
+          "ppid": 122275,
+          "pgid": 122257,
+          "rssKiB": 3680,
+          "cwd": "/tmp/r5180-8x9u97p1/consumer",
+          "command": "node /tmp/r5180-8x9u97p1/home/.npm/_npx/5dbce4b621437f70/node_modules/.bin/agent-payment-policy-mcp"
+        }
+      ],
+      "beforeContainment": [],
+      "containmentSignals": [],
+      "adoptedReaped": [],
+      "afterContainment": [],
+      "elapsed": 2.134,
+      "clientStderr": "",
+      "serverStderr": ""
+    },
+    {
+      "mode": "abrupt-close",
+      "clientExit": 0,
+      "clientSignalSent": false,
+      "events": [
+        {
+          "at": 46112.508863825,
+          "launch": 122288,
+          "argv": [
+            "sh",
+            "-eu",
+            "-c",
+            "npm exec --yes --ignore-scripts --no-audit --no-fund --engine-strict \\\n  --package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz \\\n  -- agent-payment-policy-mcp"
+          ],
+          "cwd": "/tmp/r5180-8x9u97p1/consumer"
+        },
+        {
+          "at": 46112.95174122,
+          "initialized": true
+        },
+        {
+          "at": 46113.034965033,
+          "decision": "packing_request_binding",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"method\":\"POST\",\"origin\":\"https://supplier.example\",\"pathname\":\"/packing\",\"queryKeys\":[\"batch\",\"region\"],\"publicRoute\":\"POST https://supplier.example/packing\",\"bodyBinding\":{\"mediaType\":\"application/json\",\"bytes\":50,\"digest\":\"sha256:d05dc8bca8b1b2e80411c730dab1c0c0ad01c921bb7f41f66a0fd825269cc2fe\"},\"bindingDigest\":\"sha256:e44f2560b6eb1738b32052763ab08c4382982837fab16d763bd836a04de4b696\"}"
+              }
+            ],
+            "structuredContent": {
+              "method": "POST",
+              "origin": "https://supplier.example",
+              "pathname": "/packing",
+              "queryKeys": [
+                "batch",
+                "region"
+              ],
+              "publicRoute": "POST https://supplier.example/packing",
+              "bodyBinding": {
+                "mediaType": "application/json",
+                "bytes": 50,
+                "digest": "sha256:d05dc8bca8b1b2e80411c730dab1c0c0ad01c921bb7f41f66a0fd825269cc2fe"
+              },
+              "bindingDigest": "sha256:e44f2560b6eb1738b32052763ab08c4382982837fab16d763bd836a04de4b696"
+            }
+          }
+        },
+        {
+          "at": 46113.174029018,
+          "decision": "packing_accepted",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"valid\":true,\"responseDigest\":\"sha256:4c0602e0a65fe976956a482a43a1d5108261a90807999aa03f27bd1a9ecb0dbb\",\"schemaDigest\":\"sha256:3b42772b9133098b0f05c0f10245ccfea38496c1ea50f4569addf88676e4cae9\"}"
+              }
+            ],
+            "structuredContent": {
+              "valid": true,
+              "responseDigest": "sha256:4c0602e0a65fe976956a482a43a1d5108261a90807999aa03f27bd1a9ecb0dbb",
+              "schemaDigest": "sha256:3b42772b9133098b0f05c0f10245ccfea38496c1ea50f4569addf88676e4cae9"
+            }
+          }
+        },
+        {
+          "at": 46113.303309175,
+          "decision": "wrong_units_type",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"valid\":false}"
+              }
+            ],
+            "structuredContent": {
+              "valid": false
+            }
+          }
+        },
+        {
+          "at": 46113.363509104,
+          "refusal": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"error\":{\"code\":\"POLICY_REFUSAL\",\"message\":\"The supplied tool request was refused or could not complete within its bounds.\"}}"
+              }
+            ],
+            "isError": true
+          }
+        },
+        {
+          "at": 46113.363541371,
+          "closedInputOutput": true
+        },
+        {
+          "at": 46113.378962708,
+          "launcherExit": 0
+        }
+      ],
+      "firstIdentities": [
+        {
+          "elapsed": 0.0,
+          "pid": 122287,
+          "startTicks": "4611248",
+          "state": "R",
+          "ppid": 122250,
+          "pgid": 122287,
+          "rssKiB": 2368,
+          "cwd": "/home/ubuntu/ae14-work/root5180-policy-client-cancellation-20261024",
+          "command": "/usr/bin/python3 /home/ubuntu/ae14-work/root5180-policy-client-cancellation-20261024/integrations/mcp/qualification/ROOT5180/probe.py client abrupt-close /tmp/r5180-8x9u97p1 npm exec --yes --ignore-scripts --no-audit --no-fund --engine-strict \\\n  --package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz \\\n  -- agent-payment-policy-mcp"
+        },
+        {
+          "elapsed": 0.031,
+          "pid": 122288,
+          "startTicks": "4611250",
+          "state": "S",
+          "ppid": 122287,
+          "pgid": 122287,
+          "rssKiB": 1776,
+          "cwd": "/tmp/r5180-8x9u97p1/consumer",
+          "command": "sh -eu -c npm exec --yes --ignore-scripts --no-audit --no-fund --engine-strict \\\n  --package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz \\\n  -- agent-payment-policy-mcp"
+        },
+        {
+          "elapsed": 0.031,
+          "pid": 122289,
+          "startTicks": "4611250",
+          "state": "R",
+          "ppid": 122288,
+          "pgid": 122287,
+          "rssKiB": 22952,
+          "cwd": "/tmp/r5180-8x9u97p1/consumer",
+          "command": "node /home/ubuntu/.nvm/versions/node/v22.23.4/bin/npm exec --yes --ignore-scripts --no-audit --no-fund --engine-strict --package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz -- agent-payment-policy-mcp"
+        },
+        {
+          "elapsed": 0.272,
+          "pid": 122301,
+          "startTicks": "4611275",
+          "state": "S",
+          "ppid": 122289,
+          "pgid": 122287,
+          "rssKiB": 1776,
+          "cwd": "/tmp/r5180-8x9u97p1/consumer",
+          "command": "sh -c agent-payment-policy-mcp"
+        },
+        {
+          "elapsed": 0.272,
+          "pid": 122302,
+          "startTicks": "4611275",
+          "state": "R",
+          "ppid": 122301,
+          "pgid": 122287,
+          "rssKiB": 3988,
+          "cwd": "/tmp/r5180-8x9u97p1/consumer",
+          "command": "node /tmp/r5180-8x9u97p1/home/.npm/_npx/5dbce4b621437f70/node_modules/.bin/agent-payment-policy-mcp"
+        }
+      ],
+      "beforeContainment": [],
+      "containmentSignals": [],
+      "adoptedReaped": [],
+      "afterContainment": [],
+      "elapsed": 1.113,
+      "clientStderr": "",
+      "serverStderr": ""
+    },
+    {
+      "mode": "initialized-client-term",
+      "clientExit": -15,
+      "clientSignalSent": true,
+      "events": [
+        {
+          "at": 46113.623680697,
+          "launch": 122316,
+          "argv": [
+            "sh",
+            "-eu",
+            "-c",
+            "npm exec --yes --ignore-scripts --no-audit --no-fund --engine-strict \\\n  --package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz \\\n  -- agent-payment-policy-mcp"
+          ],
+          "cwd": "/tmp/r5180-8x9u97p1/consumer"
+        },
+        {
+          "at": 46114.028721022,
+          "initialized": true
+        },
+        {
+          "at": 46114.11240084,
+          "decision": "packing_request_binding",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"method\":\"POST\",\"origin\":\"https://supplier.example\",\"pathname\":\"/packing\",\"queryKeys\":[\"batch\",\"region\"],\"publicRoute\":\"POST https://supplier.example/packing\",\"bodyBinding\":{\"mediaType\":\"application/json\",\"bytes\":50,\"digest\":\"sha256:d05dc8bca8b1b2e80411c730dab1c0c0ad01c921bb7f41f66a0fd825269cc2fe\"},\"bindingDigest\":\"sha256:e44f2560b6eb1738b32052763ab08c4382982837fab16d763bd836a04de4b696\"}"
+              }
+            ],
+            "structuredContent": {
+              "method": "POST",
+              "origin": "https://supplier.example",
+              "pathname": "/packing",
+              "queryKeys": [
+                "batch",
+                "region"
+              ],
+              "publicRoute": "POST https://supplier.example/packing",
+              "bodyBinding": {
+                "mediaType": "application/json",
+                "bytes": 50,
+                "digest": "sha256:d05dc8bca8b1b2e80411c730dab1c0c0ad01c921bb7f41f66a0fd825269cc2fe"
+              },
+              "bindingDigest": "sha256:e44f2560b6eb1738b32052763ab08c4382982837fab16d763bd836a04de4b696"
+            }
+          }
+        },
+        {
+          "at": 46114.238687821,
+          "decision": "packing_accepted",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"valid\":true,\"responseDigest\":\"sha256:4c0602e0a65fe976956a482a43a1d5108261a90807999aa03f27bd1a9ecb0dbb\",\"schemaDigest\":\"sha256:3b42772b9133098b0f05c0f10245ccfea38496c1ea50f4569addf88676e4cae9\"}"
+              }
+            ],
+            "structuredContent": {
+              "valid": true,
+              "responseDigest": "sha256:4c0602e0a65fe976956a482a43a1d5108261a90807999aa03f27bd1a9ecb0dbb",
+              "schemaDigest": "sha256:3b42772b9133098b0f05c0f10245ccfea38496c1ea50f4569addf88676e4cae9"
+            }
+          }
+        },
+        {
+          "at": 46114.366400348,
+          "decision": "wrong_units_type",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"valid\":false}"
+              }
+            ],
+            "structuredContent": {
+              "valid": false
+            }
+          }
+        },
+        {
+          "at": 46114.425530007,
+          "refusal": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"error\":{\"code\":\"POLICY_REFUSAL\",\"message\":\"The supplied tool request was refused or could not complete within its bounds.\"}}"
+              }
+            ],
+            "isError": true
+          }
+        },
+        {
+          "at": 46114.425550744,
+          "readyForSignal": true
+        }
+      ],
+      "firstIdentities": [
+        {
+          "elapsed": 0.0,
+          "pid": 122315,
+          "startTicks": "4611359",
+          "state": "R",
+          "ppid": 122250,
+          "pgid": 122315,
+          "rssKiB": 408,
+          "cwd": "/home/ubuntu/ae14-work/root5180-policy-client-cancellation-20261024",
+          "command": "/usr/bin/python3 /home/ubuntu/ae14-work/root5180-policy-client-cancellation-20261024/integrations/mcp/qualification/ROOT5180/probe.py client initialized-client-term /tmp/r5180-8x9u97p1 npm exec --yes --ignore-scripts --no-audit --no-fund --engine-strict \\\n  --package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz \\\n  -- agent-payment-policy-mcp"
+        },
+        {
+          "elapsed": 0.031,
+          "pid": 122316,
+          "startTicks": "4611362",
+          "state": "S",
+          "ppid": 122315,
+          "pgid": 122315,
+          "rssKiB": 1772,
+          "cwd": "/tmp/r5180-8x9u97p1/consumer",
+          "command": "sh -eu -c npm exec --yes --ignore-scripts --no-audit --no-fund --engine-strict \\\n  --package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz \\\n  -- agent-payment-policy-mcp"
+        },
+        {
+          "elapsed": 0.031,
+          "pid": 122317,
+          "startTicks": "4611362",
+          "state": "R",
+          "ppid": 122316,
+          "pgid": 122315,
+          "rssKiB": 22292,
+          "cwd": "/tmp/r5180-8x9u97p1/consumer",
+          "command": "node /home/ubuntu/.nvm/versions/node/v22.23.4/bin/npm exec --yes --ignore-scripts --no-audit --no-fund --engine-strict --package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz -- agent-payment-policy-mcp"
+        },
+        {
+          "elapsed": 0.271,
+          "pid": 122329,
+          "startTicks": "4611386",
+          "state": "S",
+          "ppid": 122317,
+          "pgid": 122315,
+          "rssKiB": 1776,
+          "cwd": "/tmp/r5180-8x9u97p1/consumer",
+          "command": "sh -c agent-payment-policy-mcp"
+        },
+        {
+          "elapsed": 0.271,
+          "pid": 122330,
+          "startTicks": "4611386",
+          "state": "R",
+          "ppid": 122329,
+          "pgid": 122315,
+          "rssKiB": 26148,
+          "cwd": "/tmp/r5180-8x9u97p1/consumer",
+          "command": "node /tmp/r5180-8x9u97p1/home/.npm/_npx/5dbce4b621437f70/node_modules/.bin/agent-payment-policy-mcp"
+        }
+      ],
+      "beforeContainment": [
+        {
+          "pid": 122316,
+          "startTicks": "4611362",
+          "state": "Z",
+          "ppid": 122250,
+          "pgid": 122315,
+          "rssKiB": 0,
+          "cwd": null,
+          "command": ""
+        }
+      ],
+      "containmentSignals": [],
+      "adoptedReaped": [
+        {
+          "pid": 122316,
+          "exit": 0
+        }
+      ],
+      "afterContainment": [],
+      "elapsed": 3.055,
+      "clientStderr": "",
+      "serverStderr": ""
+    },
+    {
+      "mode": "startup-client-term",
+      "clientExit": -15,
+      "clientSignalSent": true,
+      "events": [
+        {
+          "at": 46116.680423826,
+          "launch": 122344,
+          "argv": [
+            "sh",
+            "-eu",
+            "-c",
+            "npm exec --yes --ignore-scripts --no-audit --no-fund --engine-strict \\\n  --package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz \\\n  -- agent-payment-policy-mcp"
+          ],
+          "cwd": "/tmp/r5180-8x9u97p1/consumer"
+        },
+        {
+          "at": 46116.700540369,
+          "readyForSignal": true
+        }
+      ],
+      "firstIdentities": [
+        {
+          "elapsed": 0.0,
+          "pid": 122343,
+          "startTicks": "4611665",
+          "state": "R",
+          "ppid": 122250,
+          "pgid": 122343,
+          "rssKiB": 1432,
+          "cwd": "/home/ubuntu/ae14-work/root5180-policy-client-cancellation-20261024",
+          "command": "/usr/bin/python3 /home/ubuntu/ae14-work/root5180-policy-client-cancellation-20261024/integrations/mcp/qualification/ROOT5180/probe.py client startup-client-term /tmp/r5180-8x9u97p1 npm exec --yes --ignore-scripts --no-audit --no-fund --engine-strict \\\n  --package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz \\\n  -- agent-payment-policy-mcp"
+        },
+        {
+          "elapsed": 0.031,
+          "pid": 122344,
+          "startTicks": "4611667",
+          "state": "S",
+          "ppid": 122343,
+          "pgid": 122343,
+          "rssKiB": 1772,
+          "cwd": "/tmp/r5180-8x9u97p1/consumer",
+          "command": "sh -eu -c npm exec --yes --ignore-scripts --no-audit --no-fund --engine-strict \\\n  --package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz \\\n  -- agent-payment-policy-mcp"
+        },
+        {
+          "elapsed": 0.031,
+          "pid": 122345,
+          "startTicks": "4611668",
+          "state": "R",
+          "ppid": 122344,
+          "pgid": 122343,
+          "rssKiB": 19808,
+          "cwd": "/tmp/r5180-8x9u97p1/consumer",
+          "command": "node /home/ubuntu/.nvm/versions/node/v22.23.4/bin/npm exec --yes --ignore-scripts --no-audit --no-fund --engine-strict --package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz -- agent-payment-policy-mcp"
+        },
+        {
+          "elapsed": 0.273,
+          "pid": 122357,
+          "startTicks": "4611692",
+          "state": "S",
+          "ppid": 122345,
+          "pgid": 122343,
+          "rssKiB": 1776,
+          "cwd": "/tmp/r5180-8x9u97p1/consumer",
+          "command": "sh -c agent-payment-policy-mcp"
+        },
+        {
+          "elapsed": 0.273,
+          "pid": 122358,
+          "startTicks": "4611692",
+          "state": "R",
+          "ppid": 122357,
+          "pgid": 122343,
+          "rssKiB": 22952,
+          "cwd": "/tmp/r5180-8x9u97p1/consumer",
+          "command": "node /tmp/r5180-8x9u97p1/home/.npm/_npx/5dbce4b621437f70/node_modules/.bin/agent-payment-policy-mcp"
+        }
+      ],
+      "beforeContainment": [
+        {
+          "pid": 122344,
+          "startTicks": "4611667",
+          "state": "Z",
+          "ppid": 122250,
+          "pgid": 122343,
+          "rssKiB": 0,
+          "cwd": null,
+          "command": ""
+        }
+      ],
+      "containmentSignals": [],
+      "adoptedReaped": [
+        {
+          "pid": 122344,
+          "exit": 0
+        }
+      ],
+      "afterContainment": [],
+      "elapsed": 2.269,
+      "clientStderr": "",
+      "serverStderr": ""
+    },
+    {
+      "mode": "pending-close",
+      "clientExit": 0,
+      "clientSignalSent": false,
+      "events": [
+        {
+          "at": 46118.950373786,
+          "launch": 122368,
+          "argv": [
+            "sh",
+            "-eu",
+            "-c",
+            "npm exec --yes --ignore-scripts --no-audit --no-fund --engine-strict \\\n  --package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz \\\n  -- agent-payment-policy-mcp"
+          ],
+          "cwd": "/tmp/r5180-8x9u97p1/consumer"
+        },
+        {
+          "at": 46119.356652336,
+          "initialized": true
+        },
+        {
+          "at": 46119.441445804,
+          "decision": "packing_request_binding",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"method\":\"POST\",\"origin\":\"https://supplier.example\",\"pathname\":\"/packing\",\"queryKeys\":[\"batch\",\"region\"],\"publicRoute\":\"POST https://supplier.example/packing\",\"bodyBinding\":{\"mediaType\":\"application/json\",\"bytes\":50,\"digest\":\"sha256:d05dc8bca8b1b2e80411c730dab1c0c0ad01c921bb7f41f66a0fd825269cc2fe\"},\"bindingDigest\":\"sha256:e44f2560b6eb1738b32052763ab08c4382982837fab16d763bd836a04de4b696\"}"
+              }
+            ],
+            "structuredContent": {
+              "method": "POST",
+              "origin": "https://supplier.example",
+              "pathname": "/packing",
+              "queryKeys": [
+                "batch",
+                "region"
+              ],
+              "publicRoute": "POST https://supplier.example/packing",
+              "bodyBinding": {
+                "mediaType": "application/json",
+                "bytes": 50,
+                "digest": "sha256:d05dc8bca8b1b2e80411c730dab1c0c0ad01c921bb7f41f66a0fd825269cc2fe"
+              },
+              "bindingDigest": "sha256:e44f2560b6eb1738b32052763ab08c4382982837fab16d763bd836a04de4b696"
+            }
+          }
+        },
+        {
+          "at": 46119.567953791,
+          "decision": "packing_accepted",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"valid\":true,\"responseDigest\":\"sha256:4c0602e0a65fe976956a482a43a1d5108261a90807999aa03f27bd1a9ecb0dbb\",\"schemaDigest\":\"sha256:3b42772b9133098b0f05c0f10245ccfea38496c1ea50f4569addf88676e4cae9\"}"
+              }
+            ],
+            "structuredContent": {
+              "valid": true,
+              "responseDigest": "sha256:4c0602e0a65fe976956a482a43a1d5108261a90807999aa03f27bd1a9ecb0dbb",
+              "schemaDigest": "sha256:3b42772b9133098b0f05c0f10245ccfea38496c1ea50f4569addf88676e4cae9"
+            }
+          }
+        },
+        {
+          "at": 46119.692361844,
+          "decision": "wrong_units_type",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"valid\":false}"
+              }
+            ],
+            "structuredContent": {
+              "valid": false
+            }
+          }
+        },
+        {
+          "at": 46119.750641401,
+          "refusal": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"error\":{\"code\":\"POLICY_REFUSAL\",\"message\":\"The supplied tool request was refused or could not complete within its bounds.\"}}"
+              }
+            ],
+            "isError": true
+          }
+        },
+        {
+          "at": 46119.900794876,
+          "outstandingRequest": 100
+        },
+        {
+          "at": 46119.900842845,
+          "closedInputOutput": true
+        },
+        {
+          "at": 46119.932659657,
+          "launcherExit": 0
+        }
+      ],
+      "firstIdentities": [
+        {
+          "elapsed": 0.0,
+          "pid": 122367,
+          "startTicks": "4611892",
+          "state": "R",
+          "ppid": 122250,
+          "pgid": 122367,
+          "rssKiB": 1292,
+          "cwd": "/home/ubuntu/ae14-work/root5180-policy-client-cancellation-20261024",
+          "command": "/usr/bin/python3 /home/ubuntu/ae14-work/root5180-policy-client-cancellation-20261024/integrations/mcp/qualification/ROOT5180/probe.py client pending-close /tmp/r5180-8x9u97p1 npm exec --yes --ignore-scripts --no-audit --no-fund --engine-strict \\\n  --package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz \\\n  -- agent-payment-policy-mcp"
+        },
+        {
+          "elapsed": 0.031,
+          "pid": 122368,
+          "startTicks": "4611894",
+          "state": "S",
+          "ppid": 122367,
+          "pgid": 122367,
+          "rssKiB": 1776,
+          "cwd": "/tmp/r5180-8x9u97p1/consumer",
+          "command": "sh -eu -c npm exec --yes --ignore-scripts --no-audit --no-fund --engine-strict \\\n  --package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz \\\n  -- agent-payment-policy-mcp"
+        },
+        {
+          "elapsed": 0.031,
+          "pid": 122369,
+          "startTicks": "4611895",
+          "state": "R",
+          "ppid": 122368,
+          "pgid": 122367,
+          "rssKiB": 21592,
+          "cwd": "/tmp/r5180-8x9u97p1/consumer",
+          "command": "node /home/ubuntu/.nvm/versions/node/v22.23.4/bin/npm exec --yes --ignore-scripts --no-audit --no-fund --engine-strict --package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz -- agent-payment-policy-mcp"
+        },
+        {
+          "elapsed": 0.272,
+          "pid": 122381,
+          "startTicks": "4611918",
+          "state": "S",
+          "ppid": 122369,
+          "pgid": 122367,
+          "rssKiB": 1772,
+          "cwd": "/tmp/r5180-8x9u97p1/consumer",
+          "command": "sh -c agent-payment-policy-mcp"
+        },
+        {
+          "elapsed": 0.272,
+          "pid": 122382,
+          "startTicks": "4611918",
+          "state": "R",
+          "ppid": 122381,
+          "pgid": 122367,
+          "rssKiB": 28376,
+          "cwd": "/tmp/r5180-8x9u97p1/consumer",
+          "command": "node /tmp/r5180-8x9u97p1/home/.npm/_npx/5dbce4b621437f70/node_modules/.bin/agent-payment-policy-mcp"
+        }
+      ],
+      "beforeContainment": [],
+      "containmentSignals": [],
+      "adoptedReaped": [],
+      "afterContainment": [],
+      "elapsed": 1.218,
+      "clientStderr": "",
+      "serverStderr": ""
+    },
+    {
+      "mode": "pending-client-term",
+      "clientExit": -15,
+      "clientSignalSent": true,
+      "events": [
+        {
+          "at": 46120.169868853,
+          "launch": 122397,
+          "argv": [
+            "sh",
+            "-eu",
+            "-c",
+            "npm exec --yes --ignore-scripts --no-audit --no-fund --engine-strict \\\n  --package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz \\\n  -- agent-payment-policy-mcp"
+          ],
+          "cwd": "/tmp/r5180-8x9u97p1/consumer"
+        },
+        {
+          "at": 46120.590597835,
+          "initialized": true
+        },
+        {
+          "at": 46120.676153039,
+          "decision": "packing_request_binding",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"method\":\"POST\",\"origin\":\"https://supplier.example\",\"pathname\":\"/packing\",\"queryKeys\":[\"batch\",\"region\"],\"publicRoute\":\"POST https://supplier.example/packing\",\"bodyBinding\":{\"mediaType\":\"application/json\",\"bytes\":50,\"digest\":\"sha256:d05dc8bca8b1b2e80411c730dab1c0c0ad01c921bb7f41f66a0fd825269cc2fe\"},\"bindingDigest\":\"sha256:e44f2560b6eb1738b32052763ab08c4382982837fab16d763bd836a04de4b696\"}"
+              }
+            ],
+            "structuredContent": {
+              "method": "POST",
+              "origin": "https://supplier.example",
+              "pathname": "/packing",
+              "queryKeys": [
+                "batch",
+                "region"
+              ],
+              "publicRoute": "POST https://supplier.example/packing",
+              "bodyBinding": {
+                "mediaType": "application/json",
+                "bytes": 50,
+                "digest": "sha256:d05dc8bca8b1b2e80411c730dab1c0c0ad01c921bb7f41f66a0fd825269cc2fe"
+              },
+              "bindingDigest": "sha256:e44f2560b6eb1738b32052763ab08c4382982837fab16d763bd836a04de4b696"
+            }
+          }
+        },
+        {
+          "at": 46120.80716505,
+          "decision": "packing_accepted",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"valid\":true,\"responseDigest\":\"sha256:4c0602e0a65fe976956a482a43a1d5108261a90807999aa03f27bd1a9ecb0dbb\",\"schemaDigest\":\"sha256:3b42772b9133098b0f05c0f10245ccfea38496c1ea50f4569addf88676e4cae9\"}"
+              }
+            ],
+            "structuredContent": {
+              "valid": true,
+              "responseDigest": "sha256:4c0602e0a65fe976956a482a43a1d5108261a90807999aa03f27bd1a9ecb0dbb",
+              "schemaDigest": "sha256:3b42772b9133098b0f05c0f10245ccfea38496c1ea50f4569addf88676e4cae9"
+            }
+          }
+        },
+        {
+          "at": 46120.93609678,
+          "decision": "wrong_units_type",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"valid\":false}"
+              }
+            ],
+            "structuredContent": {
+              "valid": false
+            }
+          }
+        },
+        {
+          "at": 46120.995419008,
+          "refusal": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"error\":{\"code\":\"POLICY_REFUSAL\",\"message\":\"The supplied tool request was refused or could not complete within its bounds.\"}}"
+              }
+            ],
+            "isError": true
+          }
+        },
+        {
+          "at": 46121.145654067,
+          "outstandingRequest": 100
+        },
+        {
+          "at": 46121.145694527,
+          "readyForSignal": true
+        }
+      ],
+      "firstIdentities": [
+        {
+          "elapsed": 0.0,
+          "pid": 122396,
+          "startTicks": "4612014",
+          "state": "R",
+          "ppid": 122250,
+          "pgid": 122396,
+          "rssKiB": 1432,
+          "cwd": "/home/ubuntu/ae14-work/root5180-policy-client-cancellation-20261024",
+          "command": "/usr/bin/python3 /home/ubuntu/ae14-work/root5180-policy-client-cancellation-20261024/integrations/mcp/qualification/ROOT5180/probe.py client pending-client-term /tmp/r5180-8x9u97p1 npm exec --yes --ignore-scripts --no-audit --no-fund --engine-strict \\\n  --package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz \\\n  -- agent-payment-policy-mcp"
+        },
+        {
+          "elapsed": 0.031,
+          "pid": 122397,
+          "startTicks": "4612016",
+          "state": "S",
+          "ppid": 122396,
+          "pgid": 122396,
+          "rssKiB": 1776,
+          "cwd": "/tmp/r5180-8x9u97p1/consumer",
+          "command": "sh -eu -c npm exec --yes --ignore-scripts --no-audit --no-fund --engine-strict \\\n  --package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz \\\n  -- agent-payment-policy-mcp"
+        },
+        {
+          "elapsed": 0.031,
+          "pid": 122398,
+          "startTicks": "4612016",
+          "state": "R",
+          "ppid": 122397,
+          "pgid": 122396,
+          "rssKiB": 21608,
+          "cwd": "/tmp/r5180-8x9u97p1/consumer",
+          "command": "node /home/ubuntu/.nvm/versions/node/v22.23.4/bin/npm exec --yes --ignore-scripts --no-audit --no-fund --engine-strict --package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz -- agent-payment-policy-mcp"
+        },
+        {
+          "elapsed": 0.282,
+          "pid": 122410,
+          "startTicks": "4612041",
+          "state": "S",
+          "ppid": 122398,
+          "pgid": 122396,
+          "rssKiB": 1776,
+          "cwd": "/tmp/r5180-8x9u97p1/consumer",
+          "command": "sh -c agent-payment-policy-mcp"
+        },
+        {
+          "elapsed": 0.282,
+          "pid": 122411,
+          "startTicks": "4612041",
+          "state": "R",
+          "ppid": 122410,
+          "pgid": 122396,
+          "rssKiB": 28372,
+          "cwd": "/tmp/r5180-8x9u97p1/consumer",
+          "command": "node /tmp/r5180-8x9u97p1/home/.npm/_npx/5dbce4b621437f70/node_modules/.bin/agent-payment-policy-mcp"
+        }
+      ],
+      "beforeContainment": [
+        {
+          "pid": 122397,
+          "startTicks": "4612016",
+          "state": "Z",
+          "ppid": 122250,
+          "pgid": 122396,
+          "rssKiB": 0,
+          "cwd": null,
+          "command": ""
+        }
+      ],
+      "containmentSignals": [],
+      "adoptedReaped": [
+        {
+          "pid": 122397,
+          "exit": 0
+        }
+      ],
+      "afterContainment": [],
+      "elapsed": 3.225,
+      "clientStderr": "",
+      "serverStderr": ""
+    },
+    {
+      "mode": "npm-term",
+      "clientExit": 0,
+      "clientSignalSent": false,
+      "events": [
+        {
+          "at": 46123.397028828,
+          "launch": 122424,
+          "argv": [
+            "sh",
+            "-eu",
+            "-c",
+            "npm exec --yes --ignore-scripts --no-audit --no-fund --engine-strict \\\n  --package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz \\\n  -- agent-payment-policy-mcp"
+          ],
+          "cwd": "/tmp/r5180-8x9u97p1/consumer"
+        },
+        {
+          "at": 46123.813680805,
+          "initialized": true
+        },
+        {
+          "at": 46123.899691951,
+          "decision": "packing_request_binding",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"method\":\"POST\",\"origin\":\"https://supplier.example\",\"pathname\":\"/packing\",\"queryKeys\":[\"batch\",\"region\"],\"publicRoute\":\"POST https://supplier.example/packing\",\"bodyBinding\":{\"mediaType\":\"application/json\",\"bytes\":50,\"digest\":\"sha256:d05dc8bca8b1b2e80411c730dab1c0c0ad01c921bb7f41f66a0fd825269cc2fe\"},\"bindingDigest\":\"sha256:e44f2560b6eb1738b32052763ab08c4382982837fab16d763bd836a04de4b696\"}"
+              }
+            ],
+            "structuredContent": {
+              "method": "POST",
+              "origin": "https://supplier.example",
+              "pathname": "/packing",
+              "queryKeys": [
+                "batch",
+                "region"
+              ],
+              "publicRoute": "POST https://supplier.example/packing",
+              "bodyBinding": {
+                "mediaType": "application/json",
+                "bytes": 50,
+                "digest": "sha256:d05dc8bca8b1b2e80411c730dab1c0c0ad01c921bb7f41f66a0fd825269cc2fe"
+              },
+              "bindingDigest": "sha256:e44f2560b6eb1738b32052763ab08c4382982837fab16d763bd836a04de4b696"
+            }
+          }
+        },
+        {
+          "at": 46124.028074679,
+          "decision": "packing_accepted",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"valid\":true,\"responseDigest\":\"sha256:4c0602e0a65fe976956a482a43a1d5108261a90807999aa03f27bd1a9ecb0dbb\",\"schemaDigest\":\"sha256:3b42772b9133098b0f05c0f10245ccfea38496c1ea50f4569addf88676e4cae9\"}"
+              }
+            ],
+            "structuredContent": {
+              "valid": true,
+              "responseDigest": "sha256:4c0602e0a65fe976956a482a43a1d5108261a90807999aa03f27bd1a9ecb0dbb",
+              "schemaDigest": "sha256:3b42772b9133098b0f05c0f10245ccfea38496c1ea50f4569addf88676e4cae9"
+            }
+          }
+        },
+        {
+          "at": 46124.154486104,
+          "decision": "wrong_units_type",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"valid\":false}"
+              }
+            ],
+            "structuredContent": {
+              "valid": false
+            }
+          }
+        },
+        {
+          "at": 46124.213378174,
+          "refusal": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"error\":{\"code\":\"POLICY_REFUSAL\",\"message\":\"The supplied tool request was refused or could not complete within its bounds.\"}}"
+              }
+            ],
+            "isError": true
+          }
+        },
+        {
+          "at": 46124.213399046,
+          "signalNpm": 122424
+        },
+        {
+          "at": 46128.213590107,
+          "launcherExit": -15
+        }
+      ],
+      "firstIdentities": [
+        {
+          "elapsed": 0.0,
+          "pid": 122423,
+          "startTicks": "4612336",
+          "state": "R",
+          "ppid": 122250,
+          "pgid": 122423,
+          "rssKiB": 3768,
+          "cwd": "/home/ubuntu/ae14-work/root5180-policy-client-cancellation-20261024",
+          "command": "/usr/bin/python3 /home/ubuntu/ae14-work/root5180-policy-client-cancellation-20261024/integrations/mcp/qualification/ROOT5180/probe.py client npm-term /tmp/r5180-8x9u97p1 npm exec --yes --ignore-scripts --no-audit --no-fund --engine-strict \\\n  --package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz \\\n  -- agent-payment-policy-mcp"
+        },
+        {
+          "elapsed": 0.031,
+          "pid": 122424,
+          "startTicks": "4612339",
+          "state": "S",
+          "ppid": 122423,
+          "pgid": 122423,
+          "rssKiB": 1776,
+          "cwd": "/tmp/r5180-8x9u97p1/consumer",
+          "command": "sh -eu -c npm exec --yes --ignore-scripts --no-audit --no-fund --engine-strict \\\n  --package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz \\\n  -- agent-payment-policy-mcp"
+        },
+        {
+          "elapsed": 0.031,
+          "pid": 122425,
+          "startTicks": "4612339",
+          "state": "R",
+          "ppid": 122424,
+          "pgid": 122423,
+          "rssKiB": 17220,
+          "cwd": "/tmp/r5180-8x9u97p1/consumer",
+          "command": "node /home/ubuntu/.nvm/versions/node/v22.23.4/bin/npm exec --yes --ignore-scripts --no-audit --no-fund --engine-strict --package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz -- agent-payment-policy-mcp"
+        },
+        {
+          "elapsed": 0.281,
+          "pid": 122439,
+          "startTicks": "4612364",
+          "state": "S",
+          "ppid": 122425,
+          "pgid": 122423,
+          "rssKiB": 1772,
+          "cwd": "/tmp/r5180-8x9u97p1/consumer",
+          "command": "sh -c agent-payment-policy-mcp"
+        },
+        {
+          "elapsed": 0.281,
+          "pid": 122440,
+          "startTicks": "4612364",
+          "state": "R",
+          "ppid": 122439,
+          "pgid": 122423,
+          "rssKiB": 28536,
+          "cwd": "/tmp/r5180-8x9u97p1/consumer",
+          "command": "node /tmp/r5180-8x9u97p1/home/.npm/_npx/5dbce4b621437f70/node_modules/.bin/agent-payment-policy-mcp"
+        }
+      ],
+      "beforeContainment": [
+        {
+          "pid": 122425,
+          "startTicks": "4612339",
+          "state": "Z",
+          "ppid": 122250,
+          "pgid": 122423,
+          "rssKiB": 0,
+          "cwd": null,
+          "command": ""
+        }
+      ],
+      "containmentSignals": [],
+      "adoptedReaped": [
+        {
+          "pid": 122425,
+          "exit": 0
+        }
+      ],
+      "afterContainment": [],
+      "elapsed": 10.068,
+      "clientStderr": "",
+      "serverStderr": ""
+    },
+    {
+      "mode": "recovery",
+      "clientExit": 0,
+      "clientSignalSent": false,
+      "events": [
+        {
+          "at": 46133.466272101,
+          "launch": 122458,
+          "argv": [
+            "sh",
+            "-eu",
+            "-c",
+            "npm exec --yes --ignore-scripts --no-audit --no-fund --engine-strict \\\n  --package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz \\\n  -- agent-payment-policy-mcp"
+          ],
+          "cwd": "/tmp/r5180-8x9u97p1/consumer"
+        },
+        {
+          "at": 46133.876972363,
+          "initialized": true
+        },
+        {
+          "at": 46133.961184392,
+          "decision": "packing_request_binding",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"method\":\"POST\",\"origin\":\"https://supplier.example\",\"pathname\":\"/packing\",\"queryKeys\":[\"batch\",\"region\"],\"publicRoute\":\"POST https://supplier.example/packing\",\"bodyBinding\":{\"mediaType\":\"application/json\",\"bytes\":50,\"digest\":\"sha256:d05dc8bca8b1b2e80411c730dab1c0c0ad01c921bb7f41f66a0fd825269cc2fe\"},\"bindingDigest\":\"sha256:e44f2560b6eb1738b32052763ab08c4382982837fab16d763bd836a04de4b696\"}"
+              }
+            ],
+            "structuredContent": {
+              "method": "POST",
+              "origin": "https://supplier.example",
+              "pathname": "/packing",
+              "queryKeys": [
+                "batch",
+                "region"
+              ],
+              "publicRoute": "POST https://supplier.example/packing",
+              "bodyBinding": {
+                "mediaType": "application/json",
+                "bytes": 50,
+                "digest": "sha256:d05dc8bca8b1b2e80411c730dab1c0c0ad01c921bb7f41f66a0fd825269cc2fe"
+              },
+              "bindingDigest": "sha256:e44f2560b6eb1738b32052763ab08c4382982837fab16d763bd836a04de4b696"
+            }
+          }
+        },
+        {
+          "at": 46134.08706739,
+          "decision": "packing_accepted",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"valid\":true,\"responseDigest\":\"sha256:4c0602e0a65fe976956a482a43a1d5108261a90807999aa03f27bd1a9ecb0dbb\",\"schemaDigest\":\"sha256:3b42772b9133098b0f05c0f10245ccfea38496c1ea50f4569addf88676e4cae9\"}"
+              }
+            ],
+            "structuredContent": {
+              "valid": true,
+              "responseDigest": "sha256:4c0602e0a65fe976956a482a43a1d5108261a90807999aa03f27bd1a9ecb0dbb",
+              "schemaDigest": "sha256:3b42772b9133098b0f05c0f10245ccfea38496c1ea50f4569addf88676e4cae9"
+            }
+          }
+        },
+        {
+          "at": 46134.211278489,
+          "decision": "wrong_units_type",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"valid\":false}"
+              }
+            ],
+            "structuredContent": {
+              "valid": false
+            }
+          }
+        },
+        {
+          "at": 46134.270155889,
+          "refusal": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"error\":{\"code\":\"POLICY_REFUSAL\",\"message\":\"The supplied tool request was refused or could not complete within its bounds.\"}}"
+              }
+            ],
+            "isError": true
+          }
+        },
+        {
+          "at": 46134.270185522,
+          "stdinEOF": true
+        },
+        {
+          "at": 46134.285498684,
+          "launcherExit": 0
+        }
+      ],
+      "firstIdentities": [
+        {
+          "elapsed": 0.0,
+          "pid": 122457,
+          "startTicks": "4613343",
+          "state": "R",
+          "ppid": 122250,
+          "pgid": 122457,
+          "rssKiB": 688,
+          "cwd": "/home/ubuntu/ae14-work/root5180-policy-client-cancellation-20261024",
+          "command": "/usr/bin/python3 /home/ubuntu/ae14-work/root5180-policy-client-cancellation-20261024/integrations/mcp/qualification/ROOT5180/probe.py client recovery /tmp/r5180-8x9u97p1 npm exec --yes --ignore-scripts --no-audit --no-fund --engine-strict \\\n  --package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz \\\n  -- agent-payment-policy-mcp"
+        },
+        {
+          "elapsed": 0.031,
+          "pid": 122458,
+          "startTicks": "4613346",
+          "state": "S",
+          "ppid": 122457,
+          "pgid": 122457,
+          "rssKiB": 1776,
+          "cwd": "/tmp/r5180-8x9u97p1/consumer",
+          "command": "sh -eu -c npm exec --yes --ignore-scripts --no-audit --no-fund --engine-strict \\\n  --package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz \\\n  -- agent-payment-policy-mcp"
+        },
+        {
+          "elapsed": 0.031,
+          "pid": 122459,
+          "startTicks": "4613346",
+          "state": "R",
+          "ppid": 122458,
+          "pgid": 122457,
+          "rssKiB": 20640,
+          "cwd": "/tmp/r5180-8x9u97p1/consumer",
+          "command": "node /home/ubuntu/.nvm/versions/node/v22.23.4/bin/npm exec --yes --ignore-scripts --no-audit --no-fund --engine-strict --package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz -- agent-payment-policy-mcp"
+        },
+        {
+          "elapsed": 0.271,
+          "pid": 122471,
+          "startTicks": "4613370",
+          "state": "R",
+          "ppid": 122459,
+          "pgid": 122457,
+          "rssKiB": 0,
+          "cwd": "/tmp/r5180-8x9u97p1/consumer",
+          "command": ""
+        },
+        {
+          "elapsed": 0.282,
+          "pid": 122472,
+          "startTicks": "4613370",
+          "state": "R",
+          "ppid": 122471,
+          "pgid": 122457,
+          "rssKiB": 33228,
+          "cwd": "/tmp/r5180-8x9u97p1/consumer",
+          "command": "node /tmp/r5180-8x9u97p1/home/.npm/_npx/5dbce4b621437f70/node_modules/.bin/agent-payment-policy-mcp"
+        }
+      ],
+      "beforeContainment": [],
+      "containmentSignals": [],
+      "adoptedReaped": [],
+      "afterContainment": [],
+      "elapsed": 1.061,
+      "clientStderr": "",
+      "serverStderr": ""
+    }
+  ]
+}

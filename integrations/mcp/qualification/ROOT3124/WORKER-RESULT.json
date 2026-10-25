@@ -1,0 +1,102 @@
+{
+  "schema": "policy-mcp.root3124.worker-result.v1",
+  "status": "qualified-feature-export-ready",
+  "productBase": "239682a8c3429d807b4ad4ce712af8d15268b354",
+  "operatingAndAssignmentCommit": "f8768a1af46d3c46aecb492e965ab46bb5422d76",
+  "branch": "codex/root3124-policy-mcp-public-acquisition-20261022",
+  "origin": "https://github.com/epistemedeus/agent-payment-policy.git",
+  "model": "gpt-6.1-sol",
+  "effort": "xhigh",
+  "modelChildren": 0,
+  "nestedModelCli": false,
+  "archive": {
+    "url": "https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz",
+    "bytes": 18633,
+    "sha256": "f45615114494fc7167234743d5a2ff4cda54d20e07de72c49c9e42e6b629c439"
+  },
+  "package": "@epistemedeus/agent-payment-policy-mcp@0.1.0",
+  "bin": "agent-payment-policy-mcp",
+  "runtime": {
+    "node": "v22.23.3",
+    "npm": "10.9.9",
+    "sdkServerAndCore": "2.3.1",
+    "policy": "0.15.1",
+    "runtimePackageTrees": 10,
+    "clientLockedPackageTrees": 21,
+    "packedFiles": 15
+  },
+  "checks": {
+    "coldHttpsFetchAndHash": true,
+    "coldNpmUrlExecScriptsDisabled": true,
+    "exactReadmeBlocksWithFreshDefaultCache": true,
+    "optionalNpmNameHttpStatus": 404,
+    "officialSdkModern": "2026-07-28",
+    "officialSdkLegacy": "2025-06-18",
+    "usefulDecisionsPerSession": 7,
+    "sessionsPerRun": 4,
+    "sdkRuns": 2,
+    "boundedRefusalAndUsefulRecovery": true,
+    "freshRestartBothEras": true,
+    "directCliSameFactsAndDecisions": true,
+    "intentionalDirectNegativeExits": [
+      1,
+      1
+    ],
+    "allPackedAndRuntimeBytesUnchanged": true,
+    "runtimeNetworkDenied": true,
+    "sampledRuntimeInternetSockets": 0
+  },
+  "acquisitionFailures": [],
+  "observationLimit": "Process/socket sampling is not an exhaustive syscall trace; one short-lived process metadata sample is unresolved.",
+  "commands": {
+    "receipt": "commands.jsonl",
+    "boundedReceivingCommands": 9,
+    "exits": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "totalVerificationSeconds": 17.965,
+    "nestedArgvReceipts": [
+      "ACQUISITION.json",
+      "README-CHECK.json",
+      "SDK-RECEIVING.json",
+      "DIRECT-CLI.json"
+    ]
+  },
+  "resources": {
+    "declaredTotalKiB": 2621440,
+    "peakSampledNativeControlTestsKiB": 804084,
+    "controlAllowanceKiB": 131072,
+    "totalWithAllowanceKiB": 935156,
+    "sampleIntervalMs": 50,
+    "continuousEnforcementClaim": false,
+    "hostFloorChanged": false
+  },
+  "cleanup": {
+    "ownedLiveResiduals": [],
+    "installDirectoriesRemoved": 8,
+    "otherJobsPreserved": true,
+    "parentRetirementOwner": "Root after completion"
+  },
+  "scope": {
+    "changed": [
+      "integrations/mcp/README.md",
+      "integrations/mcp/qualification/ROOT3124/"
+    ],
+    "serverCoreLockArchiveUnchanged": true,
+    "credentialsReadOrCopied": false,
+    "accountStoresDefaultsKernelChanged": false,
+    "publicationReleaseTagAssetCatalog": false,
+    "moneyOrContacts": false,
+    "modelMediatedOrOutsideUseClaim": false
+  },
+  "finalExport": "Ignored integrations/mcp/evidence/ROOT3124/FINAL-EXPORT.json after commit/push; final chat returns exact head/tree/readback",
+  "nextDecision": "Root receives the feature and owns PR/release; no optional registry publication is required for the tested URL route."
+}

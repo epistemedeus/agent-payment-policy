@@ -1,0 +1,42 @@
+{
+  "at": "2026-10-22T19:04:02.861885+00:00",
+  "ownedLiveResiduals": [],
+  "retired": [
+    {
+      "path": "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/home",
+      "removed": true
+    },
+    {
+      "path": "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/consumer",
+      "removed": true
+    },
+    {
+      "path": "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/npm-cache",
+      "removed": true
+    },
+    {
+      "path": "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/client",
+      "removed": true
+    },
+    {
+      "path": "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/client-cache",
+      "removed": true
+    },
+    {
+      "path": "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/direct",
+      "removed": true
+    },
+    {
+      "path": "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/readme-home",
+      "removed": true
+    },
+    {
+      "path": "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/readme-consumer",
+      "removed": true
+    }
+  ],
+  "receivedScratchArchiveRemoved": true,
+  "originalCommittedArchiveUnchanged": true,
+  "otherJobsAccountsKernelAndHostFloorModified": false,
+  "parentOperationRetirementOwner": "Root after native completion; writer is still active during export"
+}

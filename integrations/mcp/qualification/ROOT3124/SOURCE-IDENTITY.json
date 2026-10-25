@@ -1,0 +1,74 @@
+{
+  "productBase": "239682a8c3429d807b4ad4ce712af8d15268b354",
+  "operatingAndAssignmentCommit": "f8768a1af46d3c46aecb492e965ab46bb5422d76",
+  "receiptSha256": "874ee80e0ddfada7284582866a77d572767a9b9fbb6d2a52cd6b0095e22b9a4d",
+  "branch": "codex/root3124-policy-mcp-public-acquisition-20261022",
+  "cwd": "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022",
+  "origin": "https://github.com/epistemedeus/agent-payment-policy.git",
+  "priorIndependentReceiving": "pilot@ad3709035dec2c095bf6de9ea88014772a2675a6:experiments/root3082-policy-mcp-cold-receiving/RESULT.md",
+  "nativeModel": "gpt-6.1-sol",
+  "effort": "xhigh",
+  "modelChildren": 0,
+  "node": {
+    "path": "/exec-daemon/node",
+    "version": "v22.23.3",
+    "sha256": "fde6a4bf8d0562f7751d1a2d6cb9b417c4cfe107bbcb0aa3e9a24e125e348f48"
+  },
+  "npmVersion": "10.9.9",
+  "nativeAncestorControls": [
+    {
+      "pid": 359671,
+      "model": "gpt-6.1-sol",
+      "effort": "xhigh"
+    },
+    {
+      "pid": 359679,
+      "model": "gpt-6.1-sol",
+      "effort": "xhigh"
+    }
+  ],
+  "host": {
+    "provider": "cursor",
+    "agentId": "bc-73866676-a524-42cf-a412-7e999c83b7bf",
+    "bootId": "30fc65fd-e38a-4e20-b034-2d50a79772d1"
+  },
+  "executionLifetime": {
+    "checkpointBy": "2026-10-22T19:20:00Z",
+    "requiredUntil": "2026-10-22T19:40:00Z",
+    "enrollment": {
+      "path": "/home/ubuntu/root-sol-window100337/root3124-public-acquisition-control-20261022/LIFETIME-ENROLLMENT.json",
+      "sha256": "0c203baacfe646b68f964ff49ca3a257d4a6eaea6183fc4ccf318dea87c18670"
+    },
+    "providerRetentionGuaranteed": false
+  },
+  "declaredInputMembers": [
+    {
+      "role": "instructions",
+      "path": "AGENTS.md",
+      "blob": "2b819aee80e3c64df7e4b3dadc3747e546662ef4",
+      "bytes": 32501,
+      "sha256": "5054aa9c80d1a146db66e0689349c036ce1c3cbeddc974513ceced8e39db7e16"
+    },
+    {
+      "role": "state",
+      "path": "overview/STATE.md",
+      "blob": "f340690e722cc42888b90c28006139db06caad6a",
+      "bytes": 23313,
+      "sha256": "3f44b8e5b9e5224bdf5c8d3a69bf231440204a38584b5af33d7d151b8a038c86"
+    },
+    {
+      "role": "execution-plan",
+      "path": "overview/MACHINE-COMMERCE-EXECUTION-PLAN.md",
+      "blob": "25fd8d8de590096d64694e206c0bd6ad63660157",
+      "bytes": 27853,
+      "sha256": "419a8aa87800016beef89430c2a60c5689f2368ea662a7e111bd6592e632cf78"
+    },
+    {
+      "role": "assignment",
+      "path": "overview/remote-worker/assignments/ROOT3124-POLICY-MCP-PUBLIC-ACQUISITION.md",
+      "blob": "3215a1f8acf01acc263d6f24e50561eb45f7ab65",
+      "bytes": 5513,
+      "sha256": "54fe3b53475e501159ada64022904f0ff6d0dceb59ff42d2fbbdd5328d33492e"
+    }
+  ]
+}

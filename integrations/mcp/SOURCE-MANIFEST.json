@@ -1,0 +1,57 @@
+{
+  "policy": {
+    "repository": "https://github.com/epistemedeus/agent-payment-policy",
+    "commit": "ad2065914251e1f807ab6c226a9bdb3dd631dd7b",
+    "package": "agent-payment-policy",
+    "version": "0.15.1",
+    "sourceDerivedCopy": false,
+    "npmIntegrity": "sha512-25GlNXX2JnhFo5pO5/0BQcyUmQYr/l0/aD+pmTCo/4mjdVsfNKtH9DySgzEzJ3WmprqXtShLgbiodQ5xnVi1AA==",
+    "comparedFiles": {
+      "core.mjs": "437871515006ca1b15dc050ca944ff6941b3bc55633a9c26735b54bc33e019a1",
+      "cli.mjs": "7a46b8e7deb967bef7d57f0c1d39181cac3e108ca961ca54abb2c126400c5f87",
+      "LICENSE": "48778414be7220ecf3f9bfbaf1e4d9f462b06e5f035ce3df7cd8d5a488935a11"
+    }
+  },
+  "sdk": {
+    "repository": "https://github.com/modelcontextprotocol/typescript-sdk",
+    "commit": "fcef852f6cdafea07f36cf6fae69b37c8adf85be",
+    "version": "2.3.1",
+    "license": "Apache-2.0 with retained MIT transition notice"
+  },
+  "protocol": {
+    "repository": "https://github.com/modelcontextprotocol/modelcontextprotocol",
+    "commit": "80041ab0a139a8f4fb3adbc99f7ae9113ea59671",
+    "revision": "2026-07-28"
+  },
+  "registrySchema": {
+    "url": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+    "sha256": "3fba09590c99f61735d234822279f4223fab9e300c0a81e81c91ab62a4114de0",
+    "bytes": 22090
+  },
+  "adapterPublicSource": {
+    "repository": "https://github.com/epistemedeus/agent-payment-policy",
+    "directory": "integrations/mcp",
+    "role": "owning source projection",
+    "status": "Feature source; final commit/tree/archive binding is external. No npm publication or registry listing is asserted."
+  },
+  "compatibility": {
+    "owningProductBase": "a6fb83f3abfa5c028b2356fa9665e24212505727",
+    "operatingAndAssignment": "8dda961413b50b8b765cb81c7ba2e013855789e2",
+    "serving": "Official public serveStdio factory with legacy:serve; one era pinned per connection",
+    "modernRevision": "2026-07-28",
+    "qualifiedLegacyRevision": "2025-06-18",
+    "nativeProfileProducer": {
+      "repository": "https://github.com/epistemedeus/pilot",
+      "commit": "23bb53fb8806ea3d84514914a307b7a3557a2088",
+      "directory": "tools/ops/native-sol-mcp-profile",
+      "role": "Read-only v2 profile and no-turn receiving helpers; not policy implementation"
+    },
+    "receiving": "qualification/ROOT3033; exact packed bytes, actual runtime identities and export binding in receipts; no installed adoption or model turn"
+  },
+  "producer": {
+    "repository": "https://github.com/epistemedeus/pilot",
+    "commit": "db118fd53df418cd9059195ba148b17b3165840c",
+    "directory": "experiments/oct22-policy-mcp-distribution",
+    "role": "accepted producer; not owning package repository"
+  }
+}

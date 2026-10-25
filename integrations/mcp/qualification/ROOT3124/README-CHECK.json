@@ -1,0 +1,33 @@
+{
+  "ok": true,
+  "freshHomeAndDefaultCache": true,
+  "launchInput": "EOF; useful calls separately in SDK-RECEIVING.json",
+  "steps": [
+    {
+      "argv": [
+        "sh",
+        "-eu",
+        "-c",
+        "npm exec --yes --ignore-scripts --no-audit --no-fund --engine-strict \\\n  --package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz \\\n  -- agent-payment-policy-mcp"
+      ],
+      "cwd": "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/readme-consumer",
+      "exit": 0,
+      "elapsedSeconds": 1.305,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "sh",
+        "-eu",
+        "-c",
+        "curl --fail --silent --show-error --location --proto '=https' --proto-redir '=https' \\\n  --connect-timeout 10 --max-time 30 --output candidate.tgz \\\n  https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz\necho 'f45615114494fc7167234743d5a2ff4cda54d20e07de72c49c9e42e6b629c439  candidate.tgz' | sha256sum --check"
+      ],
+      "cwd": "/home/ubuntu/ae14-work/root3124-policy-mcp-public-acquisition-20261022/integrations/mcp/evidence/ROOT3124/readme-consumer",
+      "exit": 0,
+      "elapsedSeconds": 0.032,
+      "stdout": "candidate.tgz: OK\n",
+      "stderr": ""
+    }
+  ]
+}

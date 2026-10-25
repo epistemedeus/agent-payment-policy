@@ -1,0 +1,4 @@
+{
+  "path": "/tmp/r5180-lat6_ljb",
+  "readmeCommand": "npm exec --yes --ignore-scripts --no-audit --no-fund --engine-strict \\\n  --package=https://raw.githubusercontent.com/epistemedeus/agent-payment-policy/239682a8c3429d807b4ad4ce712af8d15268b354/integrations/mcp/qualification/ROOT3033/candidate.tgz \\\n  -- agent-payment-policy-mcp"
+}

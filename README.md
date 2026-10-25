@@ -126,6 +126,8 @@ The demo generates an ephemeral policy key and produces a plan plus a verified
 authorization. It performs no network request and no payment. Running the CLI
 with no command prints usage and does not generate keys, sign, or pay.
 
+The optional [MCP stdio integration](integrations/mcp/README.md#install-and-launch) is a separate package.
+
 ## Five-minute local adoption
 
 Pack this repository and run the two credential-free examples. Version 0.15.0
@@ -678,3 +680,4 @@ unauthenticated unless the integrating caller supplies a separate trust layer.
 The paid response must still be validated against the independently authorized
 output contract after settlement. Complex JSON Schema composition remains
 `partial` instead of receiving invented coverage.
+
