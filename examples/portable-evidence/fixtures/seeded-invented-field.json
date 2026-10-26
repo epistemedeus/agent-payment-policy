@@ -1,0 +1,40 @@
+{
+  "note": "Invented receipt field bind request. loyaltyPoints is not a live offer-receipt payload key and is not a createReceipt.settlement field. Expected: evidence null, invented_receipt_field, exit 1.",
+  "bindFields": ["loyaltyPoints"],
+  "paymentRequired": {
+    "x402Version": 2,
+    "extensions": {
+      "offer-receipt": {
+        "info": {
+          "offers": [
+            {
+              "format": "eip712",
+              "acceptIndex": 0,
+              "payload": {
+                "version": 1,
+                "resourceUrl": "https://agents.samedaydesk.com/extract?url=https://example.com",
+                "scheme": "exact",
+                "network": "eip155:8453",
+                "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+                "payTo": "0x8904dF3DE6DFEe6a7C8cc38619d2f17806213Cee",
+                "amount": "5000",
+                "validUntil": 1789644914,
+                "loyaltyPoints": 99
+              },
+              "signature": "fixture-not-verified"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "receipt": {
+    "settlement": {
+      "amountAtomic": "5000",
+      "recipient": "0x8904dF3DE6DFEe6a7C8cc38619d2f17806213Cee",
+      "network": "eip155:8453",
+      "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "transactionReference": "0xcreate-receipt-settlement-fixture"
+    }
+  }
+}
