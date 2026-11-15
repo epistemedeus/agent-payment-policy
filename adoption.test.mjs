@@ -10,6 +10,7 @@ const ROOT = dirname(fileURLToPath(import.meta.url));
 const EXAMPLES = [
   "examples/mock-x402-mpp-preflight.mjs",
   "examples/verify-policy-receipt.mjs",
+  "examples/x402-paid-402-evidence.mjs",
 ];
 const FORBIDDEN_SOURCE = [
   /\bauthorizePlan\b/,
@@ -169,7 +170,7 @@ test("packed package examples run in a temporary consumer", { timeout: 120_000 }
     const installedExamples = join(consumer, "node_modules/agent-payment-policy/examples");
     assert.deepEqual(
       readdirSync(installedExamples).filter((name) => name.endsWith(".mjs")).sort(),
-      ["mock-x402-mpp-preflight.mjs", "verify-policy-receipt.mjs"],
+      EXAMPLES.map((file) => file.split("/").at(-1)).sort(),
     );
     assert.equal(
       readdirSync(join(installedExamples, "fixtures")).includes("policy-authorization.json"),
@@ -203,6 +204,15 @@ test("packed package examples run in a temporary consumer", { timeout: 120_000 }
     assert.equal(verify.completeness.state, "reconciled");
     assert.equal(verify.boundary.paymentSigned, false);
     assert.equal(verify.boundary.completenessObservationsSynthetic, true);
+    for (const entry of ["node_modules/agent-payment-policy/examples", "examples"]) {
+      const cases = parseJsonProcess(
+        runNode([`${entry}/x402-paid-402-evidence.mjs`], { cwd: consumer }),
+        `consumer 402 evidence from ${entry}`,
+      );
+      assert.equal(cases.length, 5);
+      assert.equal(cases.at(-1).evidence.state, "conflict");
+      assert.ok(cases.every(({ evidence }) => !evidence.paymentSigned && !evidence.paymentSent));
+    }
   } finally {
     if (previousDryRun === undefined) delete process.env.npm_config_dry_run;
     else process.env.npm_config_dry_run = previousDryRun;

@@ -268,6 +268,14 @@ must verify every input fact first. This evaluator does not parse a raw receipt,
 verify a transaction or signature, authorize payment, access a wallet, or prove
 independent demand.
 
+For a local file:
+
+```bash
+npx agent-payment-policy receipt-completeness-check ./observation.json
+npx agent-payment-policy receipt-completeness-check ./observation.json --fail-on conflict
+npx agent-payment-policy receipt-completeness-schema
+```
+
 ### x402 example: a paid 402 can contain a new quote and an earlier payment report
 
 The [x402 HTTP transport](https://github.com/x402-foundation/x402/blob/1a084343e165d6f61b60b34f6146d6e4a4a7f3ca/specs/transports-v2/http.md#L142-L162)
@@ -283,6 +291,7 @@ unchanged receipt-completeness evaluator after the normal dependency install:
 
 ```bash
 npm ci --ignore-scripts
+node examples/x402-paid-402-evidence.mjs
 node --test x402-paid-402-evidence.test.mjs
 ```
 
@@ -290,14 +299,6 @@ The example labels the [proposed challenge diagnostic](https://github.com/x402-f
 separately from the existing settlement reason and checks that a reported
 pending locator or an earlier conflicting receipt is not a completed payment.
 It does not implement the proposal, interpret a real header or direct a retry.
-
-For a local file:
-
-```bash
-npx agent-payment-policy receipt-completeness-check ./observation.json
-npx agent-payment-policy receipt-completeness-check ./observation.json --fail-on conflict
-npx agent-payment-policy receipt-completeness-schema
-```
 
 ## Gate a delegated signer
 

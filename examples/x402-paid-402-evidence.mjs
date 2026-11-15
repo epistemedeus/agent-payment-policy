@@ -1,4 +1,5 @@
-import { evaluateReceiptCompleteness, SCHEMAS } from "../core.mjs";
+import { pathToFileURL } from "node:url";
+import { evaluateReceiptCompleteness, SCHEMAS } from "agent-payment-policy";
 
 // Synthetic interoperability examples. This is not a header parser, payer,
 // retry policy, or proof that a response belongs to an authorized attempt.
@@ -51,3 +52,7 @@ export const cases = [
   { name: "sent, matching pending locator", dispatched: true, challenge: {}, retryAfter: null, settlement: { success: false, errorReason: "settlement_pending", transaction: original.reference, network: original.network }, original },
   { name: "sent, different earlier locator", dispatched: true, challenge: {}, retryAfter: null, settlement: { success: true, transaction: "0x" + "2".repeat(64), network: original.network }, original },
 ];
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  console.log(JSON.stringify(cases.map(({ name, ...input }) => ({ name, ...observeExample(input) })), null, 2));
+}
