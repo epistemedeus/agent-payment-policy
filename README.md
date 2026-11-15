@@ -268,6 +268,29 @@ must verify every input fact first. This evaluator does not parse a raw receipt,
 verify a transaction or signature, authorize payment, access a wallet, or prove
 independent demand.
 
+### x402 example: a paid 402 can contain a new quote and an earlier payment report
+
+The [x402 HTTP transport](https://github.com/x402-foundation/x402/blob/1a084343e165d6f61b60b34f6146d6e4a4a7f3ca/specs/transports-v2/http.md#L142-L162)
+already uses a failed `PAYMENT-RESPONSE` on HTTP 402. Keep it separate from
+`PAYMENT-REQUIRED`, which describes the offer at the time of the response.
+`Retry-After` is a [wait hint](https://www.rfc-editor.org/rfc/rfc9110.html#section-10.2.3),
+not payment authority. After dispatch, reconcile the original attempt before
+considering any new authorization. An earlier receipt even for the same URL
+does not by itself establish the outcome of the current attempt.
+
+Run the [synthetic cases](examples/x402-paid-402-evidence.mjs) through the
+unchanged receipt-completeness evaluator after the normal dependency install:
+
+```bash
+npm ci --ignore-scripts
+node --test x402-paid-402-evidence.test.mjs
+```
+
+The example labels the [proposed challenge diagnostic](https://github.com/x402-foundation/x402/issues/4252)
+separately from the existing settlement reason and checks that a reported
+pending locator or an earlier conflicting receipt is not a completed payment.
+It does not implement the proposal, interpret a real header or direct a retry.
+
 For a local file:
 
 ```bash
