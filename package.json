@@ -1,6 +1,6 @@
 {
   "name": "agent-payment-policy",
-  "version": "0.15.1",
+  "version": "0.15.2",
   "description": "Pre-purchase seller evidence, policy authorization, and receipt primitives for AI agents buying APIs through x402 or MPP",
   "keywords": [
     "x402",
@@ -28,7 +28,8 @@
     "README.md",
     "LICENSE",
     "SECURITY.md",
-    "docs",
+    "docs/data-handling.md",
+    "docs/threat-model.md",
     "skills",
     "examples"
   ],

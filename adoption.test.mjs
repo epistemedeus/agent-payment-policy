@@ -167,7 +167,13 @@ test("packed package examples run in a temporary consumer", { timeout: 120_000 }
       env: isolatedNpmEnv(),
     });
     assert.equal(install.status, 0, install.stderr + install.stdout);
-    const installedExamples = join(consumer, "node_modules/agent-payment-policy/examples");
+    const installedRoot = join(consumer, "node_modules/agent-payment-policy");
+    assert.deepEqual(readdirSync(join(installedRoot, "docs")).sort(), [
+      "data-handling.md",
+      "threat-model.md",
+    ]);
+    assert.equal(existsSync(join(installedRoot, "integrations")), false);
+    const installedExamples = join(installedRoot, "examples");
     assert.deepEqual(
       readdirSync(installedExamples).filter((name) => name.endsWith(".mjs")).sort(),
       EXAMPLES.map((file) => file.split("/").at(-1)).sort(),
