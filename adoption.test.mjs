@@ -209,8 +209,7 @@ test("packed package examples run in a temporary consumer", { timeout: 120_000 }
         runNode([`${entry}/x402-paid-402-evidence.mjs`], { cwd: consumer }),
         `consumer 402 evidence from ${entry}`,
       );
-      assert.equal(cases.length, 5);
-      assert.equal(cases.at(-1).evidence.state, "conflict");
+      assertPaidAttemptCases(cases);
       assert.ok(cases.every(({ evidence }) => !evidence.paymentSigned && !evidence.paymentSent));
     }
   } finally {
@@ -219,3 +218,35 @@ test("packed package examples run in a temporary consumer", { timeout: 120_000 }
     rmSync(scratch, { recursive: true, force: true });
   }
 });
+
+function assertPaidAttemptCases(cases) {
+  assert.equal(cases.length, 9);
+  const byName = name => cases.find(item => item.name === name);
+  const conflict = byName("sent, conflicting locator for this dispatch");
+  assert.equal(conflict.receiptScope, "same_attempt");
+  assert.deepEqual(conflict.evidence.conflicts, ["receipt.transaction_reference"]);
+  const pending = byName("sent, matching pending locator");
+  assert.equal(pending.evidence.state, "insufficient");
+  assert.equal(pending.reportedSettlementReason, "settlement_pending");
+  assert.equal(pending.lookupHint, true);
+  for (const [name, scope, lookupHint] of [
+    ["sent, unbound locator with reused client identifier", "unverified_attempt", true],
+    ["repeat purchase, earlier receipt from another dispatch", "different_attempt", false],
+  ]) {
+    const item = byName(name);
+    assert.equal(item.receiptScope, scope);
+    assert.equal(item.lookupHint, lookupHint);
+    assert.equal(item.challengeReason, "resource_unavailable");
+    assert.equal(item.evidence.receiptPresent, false);
+    assert.equal(item.evidence.successProven, false);
+    assert.equal(item.evidence.state, "insufficient");
+    assert.deepEqual(item.evidence.conflicts, []);
+  }
+  for (const name of ["first paid result, checked for its dispatch", "repeat paid result, checked for its dispatch"]) {
+    const item = byName(name);
+    assert.equal(item.receiptScope, "same_attempt");
+    assert.equal(item.evidence.state, "reconciled");
+    assert.equal(item.evidence.deliveryState, "unverified");
+    assert.deepEqual(item.evidence.conflicts, []);
+  }
+}
