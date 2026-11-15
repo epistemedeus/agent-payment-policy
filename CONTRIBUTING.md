@@ -18,6 +18,12 @@ npm pack --dry-run
 examples. Those examples must stay credential-free: no `authorizePlan`, wallet
 access, network client, or payment send on the default path.
 
+For a core package release, update the root manifest and lock together with
+the exact npm install pin in the README, examples README, and bundled skill.
+Run the normal checks on the merged source before publishing the GitHub
+release for the trusted npm workflow. Read back the actual registry version;
+a Git tag is not proof the npm publication succeeded.
+
 Changes that add network access, persistent storage, wallet execution, payment
 signing, redirects, or DNS resolution require a separate threat-model section
 and integration review.
