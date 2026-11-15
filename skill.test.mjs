@@ -18,6 +18,7 @@ const interfaceMetadata = readFileSync(
   "utf8",
 );
 const exampleReadme = readFileSync(new URL("./examples/README.md", import.meta.url), "utf8");
+const readme = readFileSync(new URL("./README.md", import.meta.url), "utf8");
 
 function fencedBlock(language) {
   const match = skill.match(new RegExp("```" + language + "\\n([\\s\\S]*?)```"));
@@ -42,8 +43,14 @@ test("ships a valid neutral agent-payment-policy skill with the package", () => 
 });
 
 test("packaged install examples pin the current package version", () => {
-  assert.match(skill, new RegExp(`agent-payment-policy@${packageJson.version.replaceAll(".", "\\.")}`));
-  assert.match(exampleReadme, new RegExp(`agent-payment-policy-${packageJson.version.replaceAll(".", "\\.")}\\.tgz`));
+  const install = `npm install --save-exact agent-payment-policy@${packageJson.version}`;
+  for (const [path, text] of [
+    ["SKILL.md", skill],
+    ["README.md", readme],
+    ["examples/README.md", exampleReadme],
+  ]) {
+    assert.ok(text.split("\n").includes(install), `${path} must pin the published install`);
+  }
 });
 
 test("skill library example uses real output-contract field names", () => {

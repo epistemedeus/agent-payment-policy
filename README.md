@@ -112,6 +112,11 @@ nullable root exposes no guaranteed property paths. The exact prepared schema
 still validates the selected runtime branch, so a non-null object must satisfy
 its own nested requirements while `null` remains valid when permitted.
 
+Version 0.15.2 packages an offline x402 example that keeps a new quote
+separate from settlement evidence about the exact dispatched attempt. It
+includes a valid repeat purchase and shows why an unbound receipt reference
+does not settle the current attempt. The core and CLI behavior are unchanged.
+
 ## Try it
 
 ```bash
@@ -126,18 +131,17 @@ The demo generates an ephemeral policy key and produces a plan plus a verified
 authorization. It performs no network request and no payment. Running the CLI
 with no command prints usage and does not generate keys, sign, or pay.
 
-The optional [MCP stdio integration](integrations/mcp/README.md#install-and-launch) is a separate package.
+The optional [MCP stdio integration](https://github.com/epistemedeus/agent-payment-policy/blob/main/integrations/mcp/README.md#install-and-launch)
+is a separate package, not bundled here.
 
 ## Five-minute local adoption
 
-Pack this repository and run the two credential-free examples. Version 0.15.0
-ships them; version 0.14.1 does not. They use mock x402 and MPP offers plus a
-frozen policy-authorization fixture. They do not fetch, load a wallet, sign a
-payment, or send a payment.
+Install the published package and run the credential-free examples. They use
+mock x402 and MPP offers plus a frozen policy-authorization fixture. They do
+not fetch, load a wallet, sign a payment, or send a payment.
 
 ```bash
-npm pack --ignore-scripts
-npm install ./agent-payment-policy-0.15.1.tgz
+npm install --save-exact agent-payment-policy@0.15.2
 node node_modules/agent-payment-policy/examples/mock-x402-mpp-preflight.mjs
 node node_modules/agent-payment-policy/examples/verify-policy-receipt.mjs
 ```
@@ -289,7 +293,14 @@ identifier can appear across different attempts. Neither an unbound locator
 nor a known receipt for a different attempt is evidence about this one.
 
 Run the [synthetic cases](examples/x402-paid-402-evidence.mjs) through the
-unchanged receipt-completeness evaluator after the normal dependency install:
+unchanged receipt-completeness evaluator from the installed package:
+
+```bash
+npm install --save-exact agent-payment-policy@0.15.2
+node node_modules/agent-payment-policy/examples/x402-paid-402-evidence.mjs
+```
+
+From a source checkout, run the same fixture and its regression test:
 
 ```bash
 npm ci --ignore-scripts

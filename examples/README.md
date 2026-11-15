@@ -1,18 +1,18 @@
 # Adoption examples
 
-These two scripts are the smallest local adoption path. They use caller-supplied
-mock x402 and MPP offers plus a frozen policy-authorization fixture. They do not
-fetch, load a wallet, accept credentials, sign a payment, or send a payment.
+These scripts are the smallest local adoption path. They use caller-supplied
+mock x402 and MPP offers plus a frozen policy-authorization fixture. The
+examples do not fetch, load a wallet, accept credentials, sign a payment, or
+send a payment.
 
-Versions before 0.15.0, including 0.14.1, do not include `examples/`. Version
-0.15.0 and later include them. To test the exact source tree before installation, pack
-this repository:
+The first two examples ship starting in 0.15.0. The paid-response example
+ships starting in 0.15.2. From a new project:
 
 ```bash
-npm pack --ignore-scripts
-npm install ./agent-payment-policy-0.15.1.tgz
+npm install --save-exact agent-payment-policy@0.15.2
 node node_modules/agent-payment-policy/examples/mock-x402-mpp-preflight.mjs
 node node_modules/agent-payment-policy/examples/verify-policy-receipt.mjs
+node node_modules/agent-payment-policy/examples/x402-paid-402-evidence.mjs
 ```
 
 `mock-x402-mpp-preflight.mjs` compares catalog and runtime offers, checks listing
@@ -27,6 +27,11 @@ Ed25519 policy authorization fixture, binds a public-safe receipt, and
 classifies receipt completeness from synthetic caller-supplied observations.
 The completeness report is a fixture classifier. It is not chain, wallet, or
 facilitator evidence. It does not generate keys.
+
+`x402-paid-402-evidence.mjs` compares nine synthetic cases. It separates
+offer and settlement observations, shows a conflict tied to the same
+dispatch, and preserves a valid distinct repeat. It makes no settlement
+lookup and gives no retry authorization.
 
 The CLI `demo` command is a separate ephemeral policy-signing walkthrough. It is
 not the default command and is not required to run these examples.
