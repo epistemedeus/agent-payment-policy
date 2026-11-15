@@ -283,8 +283,10 @@ already uses a failed `PAYMENT-RESPONSE` on HTTP 402. Keep it separate from
 `PAYMENT-REQUIRED`, which describes the offer at the time of the response.
 `Retry-After` is a [wait hint](https://www.rfc-editor.org/rfc/rfc9110.html#section-10.2.3),
 not payment authority. After dispatch, reconcile the original attempt before
-considering any new authorization. An earlier receipt even for the same URL
-does not by itself establish the outcome of the current attempt.
+considering any new authorization. Compare contradictory payment facts only
+within the same authorized dispatch. The same route, payer or echoed client
+identifier can appear across different attempts. Neither an unbound locator
+nor a known receipt for a different attempt is evidence about this one.
 
 Run the [synthetic cases](examples/x402-paid-402-evidence.mjs) through the
 unchanged receipt-completeness evaluator after the normal dependency install:
@@ -296,9 +298,15 @@ node --test x402-paid-402-evidence.test.mjs
 ```
 
 The example labels the [proposed challenge diagnostic](https://github.com/x402-foundation/x402/issues/4252)
-separately from the existing settlement reason and checks that a reported
-pending locator or an earlier conflicting receipt is not a completed payment.
-It does not implement the proposal, interpret a real header or direct a retry.
+separately from the existing settlement reason. A separately bound same-attempt
+mismatch conflicts; a pending or unbound locator can help locate evidence later,
+but does not establish a payment and is not fetched inline. Two different
+authorized attempts with independently checked receipts can both reconcile
+on the same route. Neither reconciliation proves delivery. The synthetic
+dispatch binding stands in for the consumer's verification of the exact
+authorized payment they dispatched; it is not supplied by the challenge.
+This example does not implement the proposal, interpret a real header or
+direct a retry.
 
 ## Gate a delegated signer
 
