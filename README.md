@@ -319,6 +319,25 @@ authorized payment they dispatched; it is not supplied by the challenge.
 This example does not implement the proposal, interpret a real header or
 direct a retry.
 
+The repository also includes a second offline view over **saved receipt
+observations**. It counts two views of one independently verified settlement
+effect once, and counts separately authorized, separately verified purchases
+twice. A matching authorization with no verified effect stays unknown.
+Conflicting checked effects are flagged, not silently merged. This view is
+in the source checkout, not the 0.15.2 registry artifact:
+
+```bash
+npm ci --ignore-scripts
+node examples/x402-paid-402-evidence.mjs --saved-observations
+```
+
+Pass only trusted, scope-bound identities into this kind of comparison.
+A client hint, receipt field, or transaction hash alone is not that binding.
+Multiple effects can share a transaction, so use an identity specific to
+the settled effect. Neither repeated observations nor a settled effect
+prove that the task was delivered. The example does not test a payment rail,
+settle a payment, or prescribe any network request.
+
 ## Gate a delegated signer
 
 ```js

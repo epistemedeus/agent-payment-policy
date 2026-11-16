@@ -217,6 +217,12 @@ test("packed package examples run in a temporary consumer", { timeout: 120_000 }
       );
       assertPaidAttemptCases(cases);
       assert.ok(cases.every(({ evidence }) => !evidence.paymentSigned && !evidence.paymentSent));
+      const saved = parseJsonProcess(
+        runNode([`${entry}/x402-paid-402-evidence.mjs`, "--saved-observations"], { cwd: consumer }),
+        `consumer saved receipt observations from ${entry}`,
+      );
+      assert.deepEqual(saved.map(item => item.reconciledSettlements), [1, 2, 0, 0, 0]);
+      assert.ok(saved.every(item => item.delivery === "unverified" && !item.paymentAuthorized));
     }
   } finally {
     if (previousDryRun === undefined) delete process.env.npm_config_dry_run;

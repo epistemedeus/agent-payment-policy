@@ -78,6 +78,68 @@ export const cases = [
   { name: "repeat paid result, checked for its dispatch", dispatched: true, challenge: null, retryAfter: null, settlement: secondReport, original: repeat, receiptFor: repeat.dispatchEvidence, checkedTransaction: checked(repeat) },
 ];
 
+// Classify saved observations only. The caller must already have verified
+// the authorization identity and the settlement effect it references. Treat
+// these opaque values as fixture data, not as payment or delivery authority.
+export function summarizeSavedReceipts(observations) {
+  const effectsByAuthorization = new Map();
+  const ownersByEffect = new Map();
+  let unverifiedObservations = 0;
+  for (const { authorization, checkedEffect } of observations) {
+    if (typeof authorization !== "string" || !authorization.trim()) {
+      unverifiedObservations++;
+      continue;
+    }
+    const effects = effectsByAuthorization.get(authorization) ?? new Set();
+    effectsByAuthorization.set(authorization, effects);
+    const effect = checkedEffect?.effect;
+    if (checkedEffect?.authorization !== authorization || typeof effect !== "string" || !effect.trim()) {
+      unverifiedObservations++;
+      continue;
+    }
+    effects.add(effect);
+    const owners = ownersByEffect.get(effect) ?? new Set();
+    owners.add(authorization);
+    ownersByEffect.set(effect, owners);
+  }
+  const authorizations = [...effectsByAuthorization].map(([authorization, effects]) => {
+    const conflict = effects.size > 1 || [...effects].some(effect => ownersByEffect.get(effect).size > 1);
+    return { authorization, checkedEffects: effects.size,
+      settlement: conflict ? "conflict" : effects.size === 1 ? "reconciled" : "unverified" };
+  });
+  return {
+    receiptObservations: observations.length,
+    unverifiedObservations,
+    reconciledSettlements: authorizations.filter(item => item.settlement === "reconciled").length,
+    authorizations,
+    delivery: "unverified",
+    paymentAuthorized: false,
+  };
+}
+
+const saved = authorization => ({ authorization, paymentIdentifier: "same-client-supplied-identifier" });
+const savedChecked = (authorization, effect) => ({
+  ...saved(authorization), checkedEffect: { authorization, effect },
+});
+const a = savedChecked("fixture-authorization-a", "fixture-effect-1");
+const b = savedChecked("fixture-authorization-b", "fixture-effect-2");
+export const savedReceiptCases = [
+  { name: "same confirmed effect observed twice", observations: [a, { ...a, observation: "later-view" }] },
+  { name: "distinct authorized purchases with the same client hint", observations: [a, b] },
+  { name: "same authorization without bound settlement evidence", observations: [
+    saved(a.authorization), { ...saved(a.authorization), checkedEffect: b.checkedEffect },
+  ] },
+  { name: "one authorization with conflicting checked effects", observations: [
+    a, savedChecked(a.authorization, b.checkedEffect.effect),
+  ] },
+  { name: "one checked effect attributed to distinct authorizations", observations: [
+    a, savedChecked(b.authorization, a.checkedEffect.effect),
+  ] },
+];
+
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  console.log(JSON.stringify(cases.map(({ name, ...input }) => ({ name, ...observeExample(input) })), null, 2));
+  const output = process.argv[2] === "--saved-observations"
+    ? savedReceiptCases.map(({ name, observations }) => ({ name, ...summarizeSavedReceipts(observations) }))
+    : cases.map(({ name, ...input }) => ({ name, ...observeExample(input) }));
+  console.log(JSON.stringify(output, null, 2));
 }
